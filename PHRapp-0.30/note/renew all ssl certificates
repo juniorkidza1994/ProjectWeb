@@ -1,5 +1,0 @@
-Run the following commands:
-./Certs/cert_gen.sh
-./database_scripts/db_setup.sh
-./bin/Makefile   #Update the new certificates to the Certs_and_keys_pool directory
-

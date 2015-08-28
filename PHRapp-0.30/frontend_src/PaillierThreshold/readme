@@ -1,6 +1,0 @@
-We must remove 'System.out.println()' command from the sourcecode and compile using command: 'javac paillierp/*.java'.
-Then, we have to implement Serializable to "PaillierThreshold.class(PaillierThreshold.java file)" so that it can serialize into a disk. 
-And then remake JAR file using command: 'jar cvfm paillier.jar manifest paillierp/*.class paillierp/key/*.class paillierp/zkp/*.class'.
-
-
-Note that a working directory is "super-directory of 'paillierp'".
