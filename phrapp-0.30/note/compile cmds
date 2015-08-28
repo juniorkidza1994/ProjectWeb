@@ -1,0 +1,80 @@
+To compile the Attribute Authority
+	gcc att_auth_adding_attribute_response.c att_auth_adding_user_response.c att_auth_authentication_and_cpabe_pri_key_response.c att_auth_main.c common.c mysql_common.c -o att_auth -I/usr/local/ssl/include -I/usr/local/openssl/include -Wl,--start-group /usr/local/ssl/lib/libssl.a /usr/local/ssl/lib/libcrypto.a /usr/local/openssl/lib/libssl.a /usr/local/openssl/lib/libcrypto.a -Wl,--end-group -ldl -lpthread `mysql_config --cflags --libs` -Wall
+
+
+
+To compile the Access-privilege Authority
+	gcc acc_priv_auth_adding_acc_cert_response.c acc_priv_auth_authentication_and_access_cert_response.c acc_priv_auth_main.c common.c mysql_common.c -o acc_priv_auth -I/usr/local/ssl/include -I/usr/local/openssl/include -Wl,--start-group /usr/local/ssl/lib/libssl.a /usr/local/ssl/lib/libcrypto.a /usr/local/openssl/lib/libssl.a /usr/local/openssl/lib/libcrypto.a -Wl,--end-group -ldl -lpthread `mysql_config --cflags --libs` -Wall
+
+
+
+To compile the Auditing Server
+	gcc aud_serv_records_tran_logs.c common.c mysql_common.c -o aud_serv -I/usr/local/ssl/include -I/usr/local/openssl/include -Wl,--start-group /usr/local/ssl/lib/libssl.a /usr/local/ssl/lib/libcrypto.a /usr/local/openssl/lib/libssl.a /usr/local/openssl/lib/libcrypto.a -Wl,--end-group -ldl -lpthread `mysql_config --cflags --libs` -Wall
+
+
+
+To compile the User
+	gcc user_authentication_and_cpabe_pri_key_request.c user_main.c common.c -o user -I/usr/local/ssl/include -I/usr/local/openssl/include -Wl,--start-group /usr/local/ssl/lib/libssl.a /usr/local/ssl/lib/libcrypto.a /usr/local/openssl/lib/libssl.a /usr/local/openssl/lib/libcrypto.a -Wl,--end-group -ldl `mysql_config --cflags --libs` -Wall
+
+
+
+To compile the Admin
+	gcc user_authentication_and_cpabe_pri_key_request.c admin_adds_attribute.c admin_adds_user.c admin_main.c simclist.c common.c -o admin -I/usr/local/ssl/include -I/usr/local/openssl/include -Wl,--start-group /usr/local/ssl/lib/libssl.a /usr/local/ssl/lib/libcrypto.a /usr/local/openssl/lib/libssl.a /usr/local/openssl/lib/libcrypto.a -Wl,--end-group -ldl `mysql_config --cflags --libs` -Wall <<<<-std=c99>>>>
+
+
+
+gcc -Wall -ansi -pedantic
+gcc -MM *.c
+
+
+
+SHA1 digest
+	openssl dgst -sha1 file.txt
+
+
+
+javac -cp '.:swingx-all-1.6.3.jar' Login.java -Xlint
+javac -cp '.:swingx-all-1.6.3.jar' AdminMain.java -Xlint
+
+////////////////////////////////////////// JNI ////////////////////////////////////////////////////////
+
+# Compile the Java class
+javac -cp '.:swingx-all-1.6.3.jar' Login.java -Xlint
+javac -cp '.:swingx-all-1.6.3.jar' AdminMain.java -Xlint
+javac -cp UserMain.java -Xlint
+
+# Generate a C header file
+javah -jni Login
+javah -jni AdminMain
+javah -jni UserMain
+
+# Compile the implementation of the C interface
+gcc -c -I/usr/java/j2sdk1.4.0_02/include -I/usr/java/j2sdk1.4.0_02/include/linux user_authentication_and_cpabe_pri_key_request.c admin_loads_attribute_list.c admin_loads_user_list.c admin_adds_attribute.c admin_adds_user.c admin_login_jni.c admin_main_jni.c simclist.c common.c -I/usr/local/ssl/include -I/usr/local/openssl/include -Wall
+
+# Convert it to a shared library
+ld -G user_authentication_and_cpabe_pri_key_request.o login_jni.o common.o /usr/local/ssl/lib/libssl.a /usr/local/ssl/lib/libcrypto.a /usr/local/openssl/lib/libssl.a /usr/local/openssl/lib/libcrypto.a -o libPHRapp_Login_JNI.so -lc -lpthread
+
+ld -G admin_loads_attribute_list.o admin_loads_user_list.o admin_adds_attribute.o admin_adds_user.o admin_main_jni.o simclist.o common.o /usr/local/ssl/lib/libssl.a /usr/local/ssl/lib/libcrypto.a /usr/local/openssl/lib/libssl.a /usr/local/openssl/lib/libcrypto.a -o libPHRapp_Admin_JNI.so -lc -lpthread
+
+# Set the search path for shared libraries
+export LD_LIBRARY_PATH=.
+
+# Permanently add path
+put two commands below at the end of file in "gedit ~/.bashrc"
+LD_LIBRARY_PATH=/home/br1gh7n4ry/Desktop/PHRapp/bin
+export LD_LIBRARY_PATH
+
+# Run the Java program
+java -cp '.:swingx-all-1.6.3.jar' Login
+java -cp '.:swingx-all-1.6.3.jar:commons-lang3-3.1.jar' Login
+
+java -classpath *:. Login
+java -classpath *:/home/br1gh7n4ry/Desktop/PHRapp/bin/ Login
+
+java -Djava.library.path=. -classpath *:. Login
+java -Djava.library.path=. -classpath *:. EmU_Login
+
+
+
+
+

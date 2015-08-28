@@ -1,0 +1,19 @@
+{
+  "name": "webcient",
+  "version": "0.0.0",
+  "authors": [
+    "Tanapol <junior_kid_za@hotmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "angularjs#~1.4.4",
+    "bootstrap": "~3.3.5"
+  }
+}
