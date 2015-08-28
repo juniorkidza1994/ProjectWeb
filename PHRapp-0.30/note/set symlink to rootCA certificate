@@ -1,0 +1,1 @@
+sudo ln -s $(pwd)/rootCA_cert.pem /etc/ssl/certs/`openssl x509 -noout -hash -in rootCA_cert.pem`

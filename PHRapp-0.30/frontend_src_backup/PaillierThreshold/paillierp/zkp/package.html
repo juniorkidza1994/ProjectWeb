@@ -1,0 +1,33 @@
+<html>
+<body bgcolor="white">
+Provides the structures and methods to produce non-interactive Zero Knowledge
+Proofs of encryption, decryption, and multiplication in the generalized
+Paillier Encryption scheme.  These Zero Knowledge Proofs use the Fiat-Shamir 
+heuristic and a hash function to make the protocol non-interactive.  The
+Zero Knowledge Proofs provided are
+<ul>
+  <li><b>Encryption</b> of a message <i>m</i> and random number <i>r</i>.</li>
+  <li><b>Multiplication</b> of the message <i>m</i> in an encryption
+      <i>E</i>(<i>m, r</i>) by a constant &alpha; to produce
+      <i>E</i>(<i>&alpha;m, r'</i>).</li>
+  <li><b>Partial Decryption</b> of a ciphertext <i>c</i> to the partial
+      decryption <i>c<sub>i</sub></i>. (Threshold scheme, only.)</li>
+</ul>
+
+<h2>Primary Papers</h2>
+
+<ul>
+  <li><i><a href="http://www.brics.dk/RS/00/45/">
+      A Generalization of Paillier's Public-Key System with Applications to
+      Electronic Voting</a></i> by Damg&aring;rd, Jurik, and Nielsen, 2000.
+      This was used for the partial decryption proof.</li>
+  <li><i><a href="http://www.brics.dk/RS/00/14/">
+      Multiparty Computation from Threshold Homomorphic Encryption</a></i> by
+      Cramer, Damg&aring;rd, and Nielsen, 2000.  This was used for the
+      multiplication and encryption proofs.</li>
+</ul>
+
+<!-- Put @see and @since tags down here. -->
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+<html>
+<body bgcolor="white">
+Provides the structures and methods to encrypt data with the Paillier
+encryption scheme with thresholding.  This package a simplified
+implementation of what is specified in the paper
+<i>A Generalization of Paillier's Public-Key System with Applications to
+Electronic Voting</i> by Damg&aring;rd et al.  Within this paper, the
+authors generalize the Paillier encryption scheme to permit computations
+modulo <i>n</i><sup><i>s</i>+1</sup>, allowing block length for encryption
+to be chosen freely.  In addition to this undertaking, Damg&aring;rd et al.
+also constructed a threshold variant of the scheme.
+
+<p>
+
+This package provides
+the following features of the paper
+<ul>
+  <li>The degree of <i>n</i> is fixed to 1.</li>
+  <li>A fully functional simple Paillier encryption scheme with separate
+      key classes for easy keysharing.</li>
+  <li>Proper Thresholding for an arbitrary number of decryption servers
+      and threshold needed to decrypt.</li>
+  <li>Non-interactive zero knowledge proofs to ensure proper encryption
+      and decryption.</li>
+</ul>
+
+<p>
+
+Of particular note, this implementation is simple as <b><i>s</i> is fixed
+to be 1</b>.  This allows for simplicity at this stage of the design.  Further,
+we hope to have added methods which would make the actual use of this package
+to be easy and flexible.
+
+<p>
+
+Future features would include support for encrypting arbitrary length
+strings/byte arrays to avoid padding issues. 
+
+<h2>Primary Papers</h2>
+
+<ul>
+  <li><i><a href="http://www.brics.dk/RS/00/45/">
+      A Generalization of Paillier's Public-Key System with Applications to
+      Electronic Voting</a></i> by Damg&aring;rd, Jurik, and Nielsen, 2000.
+      This is the primary implementation
+      design for this package.
+      <p>
+      <b>Notice of typo:</b> There is a typo in the calculation of
+      &lambda;<sub>0,<i>i</i></sub> on both pages 17 and 19.  The correct
+      calculation of the Lagrange coefficient for interpolating the value of a
+      polynomial is<br>
+      &lambda<i><sup>S</sup><sub>j,i</sub></i>=&Delta;
+       &Pi;<sub><i>i</i>'&isin;<i>S</i>\<i>i</i></sub>
+        (<i>j</i>-<i>i</i><b>'</b>)/(<i>i</i>-<i>i</i>').<br>
+      The error is that the numerator of the fraction is <i>j</i>-<i>i</i>' not
+      <i>j</i>-<i>i</i>.  The corresponding calculation of
+      &lambda;<sup><i>S</i></sup><sub>0,<i>i</i></sub> must be corrected
+      accordingly.</li>
+  <li><i><a href="http://www.brics.dk/RS/00/14/">
+      Multiparty Computation from Threshold Homomorphic Encryption</a></i> by
+      Cramer, Damg&aring;rd, and Nielsen, 2000.  This is a secondary source for 
+      understanding threshold encryption and its requirements.</li>
+</ul>
+
+<h2>Related Papers</h2>
+
+<ul>
+  <li><a href="http://www.brics.dk/RS/00/5/"><i>Efficient
+      Protocols based on Probabilistic Encryption using Composite
+      Degree Residue Classes</i></a> by Damg&aring;rd and Jurik, 2000.  This is
+      an earlier version of <i>A Generalization of Paillier</i>...</li>
+  <li><a href="http://www.di.ens.fr/~stern/data/St85.pdf"><i>Sharing Decryption
+      in the Context of Voting or Lotteries</i></a> by
+      Fouque, Poupard, and Stern, 2000.</li>
+  <li><a href="http://www.shoup.net/papers/thsig.pdf"><i>Practical threshold
+      signatures</i></a> by Shoup, 2000.  The original
+      threshold protocol, but applied to RSA.  This has the best mathematical
+      explanation of how it works.</li>
+</ul>
+
+<!-- Put @see and @since tags down here. -->
+
+</body>
+</html>
