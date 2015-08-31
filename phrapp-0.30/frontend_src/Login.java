@@ -151,48 +151,9 @@ public class Login extends JFrame  implements ConstantVars
 	}
 */
 
-	public void login_main(String user_auth_ip_addr, String username, String passwd, String user_type)
+	public Object login(String user_auth_ip_addr, String username, String passwd, String user_type)
 	{
-		int testVar;
-		// Set an event for close button
-		//setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		//addWindowListener(new WindowAdapter()
-		//{
-            	//	@Override
-            	//	public void windowClosing(final WindowEvent e)
-		//	{
-				// We could not use tryLock() becuase the SwingUtilities the same thread even if
-				// we call it manay times.Note that, the tryLock() could not detect the same thead
-		//		if(!working_lock.isLocked())
-		//		{
-		//			working_lock.lock();
-		//		}
-		//		else
-		//		{
-		//			JOptionPane.showMessageDialog(main_panel, "Some task is working, please wait until the task is done");
-		//			return;
-		//		}
-
-				// Call to C function
-		//		uninit_backend();
-
-				// Terminate the application
-		//		System.exit(0);
-            	//	}
-        	//});
-
-		// Login button
-		//login_button.addActionListener(new ActionListener()
-		//{
-		//	public void actionPerformed(ActionEvent ae)
-		//	{
-		//		user_auth_ip_addr_textfield.setEnabled(false);
-		//		username_textfield.setEnabled(false);
-		//		passwd_textfield.setEnabled(false);
-		//		user_type_radio_buttons[0].setEnabled(false);
-		//		user_type_radio_buttons[1].setEnabled(false);
-		//		login_button.setEnabled(false);
-
+				Object result_login = null;
 				// We could not use tryLock() becuase the SwingUtilities the same thread even if
 				// we call it manay times.Note that, the tryLock() could not detect the same thead
 				if(!working_lock.isLocked())
@@ -201,72 +162,45 @@ public class Login extends JFrame  implements ConstantVars
 				}
 				else
 				{
-		//			JOptionPane.showMessageDialog(main_panel, "Some task is working, please wait until the task is done");
-		//			user_auth_ip_addr_textfield.setEnabled(true);
-		//			username_textfield.setEnabled(true);
-		//			passwd_textfield.setEnabled(true);
-		//			user_type_radio_buttons[0].setEnabled(true);
-		//			user_type_radio_buttons[1].setEnabled(true);
-		//			login_button.setEnabled(true);
-					return;
+					return result_login;
 				}		
-
-		//		String user_auth_ip_addr = user_auth_ip_addr_textfield.getText();
-		//		String username          = username_textfield.getText();
-		//		String passwd            = new String(passwd_textfield.getPassword());
-
+				
 				// Validate User Authority's IP address, username and password
 				if(!validate_inputs(user_auth_ip_addr, username, passwd))
 				{
 					working_lock.unlock();
-
-		//			user_auth_ip_addr_textfield.setEnabled(true);
-		//			username_textfield.setEnabled(true);
-		//			passwd_textfield.setEnabled(true);
-		//			user_type_radio_buttons[0].setEnabled(true);
-		//			user_type_radio_buttons[1].setEnabled(true);
-		//			login_button.setEnabled(true);
-					return;
+					return result_login;
 				}
 
 				// Check for existence of a user authority's public key if it does not exist then load it
 				if(!load_user_authority_pub_key_main(user_auth_ip_addr))  // Call to backend (C function)
 				{
 					working_lock.unlock();
-
-		//			user_auth_ip_addr_textfield.setEnabled(true);
-		//			username_textfield.setEnabled(true);
-		//			passwd_textfield.setEnabled(true);
-		//			user_type_radio_buttons[0].setEnabled(true);
-		//			user_type_radio_buttons[1].setEnabled(true);
-		//			login_button.setEnabled(true);
-					return;
+					return result_login;
 				}
 
-		//		String user_type = user_type_group.getSelection().getActionCommand();
 				if(user_type.equals(login_as_user))
 				{  
 					// Call to backend (C function)
 					if(user_login_main(user_auth_ip_addr, username, passwd))
 					{
-						// Invisible Login frame and destroy it
-		//				setVisible(false);
-		//				dispose();
 
 						System.out.println("LOGIN SUCCESSFULL !!!!!");
 
 						System.out.println("Create User Class !!!!!");
-						
+							
 						// Call UserMain object
 						UserMain user_main = new UserMain(username, passwd, email_address, authority_name, user_auth_ip_addr, 
 							audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr, ssl_cert_hash, cpabe_priv_key_hash);
 
-						user_main.setVisible(true);
+				//		user_main.setVisible(true);
+						
+						result_login = user_main;
 					}
 					else
 					{
+						result_login = null;
 						System.out.println("Can't login User");
-		//				user_auth_ip_addr_textfield.requestFocus();
 					}
 				}
 				else if(user_type.equals(login_as_admin))
@@ -274,9 +208,6 @@ public class Login extends JFrame  implements ConstantVars
 					// Call to backend (C function)
 					if(admin_login_main(user_auth_ip_addr, username, passwd))
 					{
-						// Invisible Login frame and destroy it
-		//				setVisible(false);
-		//				dispose();
 
 						System.out.println("LOGIN SUCCESSFULL !!!!!");
 
@@ -287,25 +218,20 @@ public class Login extends JFrame  implements ConstantVars
 							audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr, mail_server_url, 
 							authority_email_address, authority_email_passwd, ssl_cert_hash);
 						
-					//	admin_main.setVisible(true);
+						admin_main.setVisible(true);
+						
+						result_login = admin_main;
+						
 					}
 					else
 					{
+						result_login = null;
 						System.out.println("Can't login Admin");
 		//				user_auth_ip_addr_textfield.requestFocus();
 					}
 				}
 
 				working_lock.unlock();
-
-		//		user_auth_ip_addr_textfield.setEnabled(true);
-		//		username_textfield.setEnabled(true);
-		//		passwd_textfield.setEnabled(true);
-		//		user_type_radio_buttons[0].setEnabled(true);
-		//		user_type_radio_buttons[1].setEnabled(true);
-		//		login_button.setEnabled(true);
-		//	}
-	//	});
 
 /*
 		// Forget passwd button
@@ -337,7 +263,7 @@ public class Login extends JFrame  implements ConstantVars
 			}
 		});
 */
-
+				return result_login;
 	}
 
 

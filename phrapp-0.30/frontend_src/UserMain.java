@@ -344,7 +344,17 @@ public class UserMain extends JFrame implements ConstantVars
 		setResizable(false);
 		setVisible(true);
 	}
-
+	
+	public Object[][] getTableData () {
+	    DefaultTableModel dtm = (DefaultTableModel) user_attribute_table.getModel();
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+	
 	private final void create_info_page()
 	{
 		// Authority name
