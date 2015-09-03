@@ -72,7 +72,6 @@ public class Login extends JFrame  implements ConstantVars
 		JLabel user_auth_ip_addr_label = new JLabel("IP address: ", JLabel.RIGHT);
 		JLabel username_label          = new JLabel("Username: ", JLabel.RIGHT);
 		JLabel passwd_label            = new JLabel("Password: ", JLabel.RIGHT);
-
 		JPanel upper_inner_panel = new JPanel(new SpringLayout());
 		upper_inner_panel.add(user_auth_ip_addr_label);
 		upper_inner_panel.add(user_auth_ip_addr_textfield);
@@ -80,27 +79,21 @@ public class Login extends JFrame  implements ConstantVars
 		upper_inner_panel.add(username_textfield);
 		upper_inner_panel.add(passwd_label);
 		upper_inner_panel.add(passwd_textfield);
-
 		SpringUtilities.makeCompactGrid(upper_inner_panel, 3, 2, 5, 10, 10, 10);
-
 		JPanel upper_outer_panel = new JPanel();
 		upper_outer_panel.setLayout(new BoxLayout(upper_outer_panel, BoxLayout.X_AXIS));
 		upper_outer_panel.setPreferredSize(new Dimension(300, 120));
 		upper_outer_panel.setMaximumSize(new Dimension(300, 120));
 		upper_outer_panel.setAlignmentX(0.5f);
 		upper_outer_panel.add(upper_inner_panel);
-
 		// User type
         	user_type_radio_buttons[0] = new JRadioButton(login_as_user);
         	user_type_radio_buttons[0].setActionCommand(login_as_user);
-
         	user_type_radio_buttons[1] = new JRadioButton(login_as_admin);
         	user_type_radio_buttons[1].setActionCommand(login_as_admin);
-
 		user_type_radio_buttons[0].setSelected(true);
             	user_type_group.add(user_type_radio_buttons[0]);
 		user_type_group.add(user_type_radio_buttons[1]);
-
 		// User type panel
 		JPanel user_type_inner_panel = new JPanel();
 		user_type_inner_panel.setLayout(new BoxLayout(user_type_inner_panel, BoxLayout.Y_AXIS));
@@ -110,27 +103,23 @@ public class Login extends JFrame  implements ConstantVars
 		user_type_inner_panel.setAlignmentX(0.0f);
 		user_type_inner_panel.add(user_type_radio_buttons[0]);
 		user_type_inner_panel.add(user_type_radio_buttons[1]);
-
 		JPanel user_type_outer_panel = new JPanel(new GridLayout(0, 1));
 		user_type_outer_panel.setLayout(new BoxLayout(user_type_outer_panel, BoxLayout.Y_AXIS));
     		user_type_outer_panel.setBorder(BorderFactory.createTitledBorder("Login as:"));
 		user_type_outer_panel.setAlignmentX(0.5f);
 		user_type_outer_panel.add(user_type_inner_panel);
-
 		// Login button
 		JPanel login_button_panel = new JPanel();
 		login_button_panel.setPreferredSize(new Dimension(250, 30));
 		login_button_panel.setMaximumSize(new Dimension(250, 30));
 		login_button_panel.setAlignmentX(0.5f);
 		login_button_panel.add(login_button);
-
 		// Forget passwd button
 		JPanel forget_passwd_button_panel = new JPanel();
 		forget_passwd_button_panel.setPreferredSize(new Dimension(250, 30));
 		forget_passwd_button_panel.setMaximumSize(new Dimension(250, 30));
 		forget_passwd_button_panel.setAlignmentX(0.5f);
 		forget_passwd_button_panel.add(forget_passwd_button);
-
 		// Main panel
 		main_panel.setLayout(new BoxLayout(main_panel, BoxLayout.Y_AXIS));
 		main_panel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
@@ -141,9 +130,7 @@ public class Login extends JFrame  implements ConstantVars
 		main_panel.add(login_button_panel);
 		main_panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		main_panel.add(forget_passwd_button_panel);
-
 		add(main_panel);
-
 		setSize(350, 370);
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -240,7 +227,6 @@ public class Login extends JFrame  implements ConstantVars
 			public void actionPerformed(ActionEvent ae)
 			{
 				forget_passwd_button.setEnabled(false);
-
 				// We could not use tryLock() becuase the SwingUtilities the same thread even if
 				// we call it manay times.Note that, the tryLock() could not detect the same thead
 				if(!working_lock.isLocked())
@@ -253,11 +239,9 @@ public class Login extends JFrame  implements ConstantVars
 					forget_passwd_button.setEnabled(true);
 					return;
 				}	
-
 				// Call forget password object
 				ForgetPassword forget_password_dialog = new ForgetPassword(main_panel);
 				forget_password_dialog.setVisible(true);
-
 				working_lock.unlock();
 				forget_passwd_button.setEnabled(true);
 			}
@@ -378,6 +362,3 @@ public class Login extends JFrame  implements ConstantVars
         	});*/
 	}
 }
-
-
-

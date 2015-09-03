@@ -35,7 +35,9 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 
 	private boolean        is_admin_flag;
 	private String         current_email_address;
+	private String		   new_email_address;
 	private String         current_passwd;
+	private String		   confirm_passwd;
 
 	// Return variable
 	private boolean        result_flag;
@@ -46,135 +48,39 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 		this.is_admin_flag         = is_admin_flag;
 		this.current_email_address = current_email_address;
 		this.current_passwd        = current_passwd;
-
-		init_ui(parent);
-		init_email_address_textfield(current_email_address);
-		setup_actions();
 	}
 
-	private final void init_ui(Component parent)
-	{
-		setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
-
-		JLabel email_address_label = new JLabel("E-mail address: ", JLabel.RIGHT);
-		JLabel passwd_label        = new JLabel((is_admin_flag) ? "Admin's password: " : "User's passwd: ", JLabel.RIGHT);
-
-		JPanel upper_inner_panel = new JPanel(new SpringLayout());
-		upper_inner_panel.add(email_address_label);
-		upper_inner_panel.add(email_address_textfield);
-		upper_inner_panel.add(passwd_label);
-		upper_inner_panel.add(passwd_textfield);
-
-		SpringUtilities.makeCompactGrid(upper_inner_panel, 2, 2, 5, 10, 10, 10);
-
-		JPanel upper_outer_panel = new JPanel();
-		upper_outer_panel.setLayout(new BoxLayout(upper_outer_panel, BoxLayout.X_AXIS));
-		upper_outer_panel.setPreferredSize(new Dimension(400, 80));
-		upper_outer_panel.setMaximumSize(new Dimension(400, 80));
-		upper_outer_panel.setAlignmentX(0.0f);
-		upper_outer_panel.add(upper_inner_panel);
-
-		// Buttons
-		change_button.setAlignmentX(0.5f);
-		cancel_button.setAlignmentX(0.5f);
-
-		JPanel buttons_panel = new JPanel();
-		buttons_panel.setPreferredSize(new Dimension(400, 30));
-		buttons_panel.setMaximumSize(new Dimension(400, 30));
-		buttons_panel.setAlignmentX(0.0f);
-		buttons_panel.add(change_button);
-		buttons_panel.add(cancel_button);
-
-		// Main panel
-		main_panel.setLayout(new BoxLayout(main_panel, BoxLayout.Y_AXIS));
-		main_panel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
-
-		main_panel.add(upper_outer_panel);
-		main_panel.add(Box.createRigidArea(new Dimension(0, 10)));
-		main_panel.add(buttons_panel);
-
-		setModalityType(ModalityType.APPLICATION_MODAL);
-		add(main_panel);
-
-		setTitle("E-mail Address Changing");
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		pack();
-		setLocationRelativeTo(parent);
-		setResizable(false);
+	public String getCurrentEmail(){
+		return current_email_address;
 	}
 
-	private final void setup_actions()
+	public final void change_email(String new_email_address, String confirm_passwd)
 	{
-		// Change button
-		change_button.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent event)
+		this.confirm_passwd = confirm_passwd;
+		this.new_email_address = new_email_address;
+		if(validate_input())
 			{
-				SwingUtilities.invokeLater(new Runnable()
-				{
-		    			public void run()
-					{
-						change_button.setEnabled(false);
-						cancel_button.setEnabled(false);
-
-						if(validate_input())
-						{
-							String email_address = email_address_textfield.getText();
-
 							// Call to C function
-							if(is_admin_flag && change_admin_email_address_main(email_address))
-							{
-								result_flag = true;
-								dispose();
-							}
-							else if(!is_admin_flag && change_user_email_address_main(email_address))
-							{
-								result_flag = true;
-								dispose();
-							}
-						}
-
-						change_button.setEnabled(true);
-						cancel_button.setEnabled(true);
-		    			}
-				});
-			}
-		});
-
-		// Cancel button
-		cancel_button.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent event)
+			if(is_admin_flag && change_admin_email_address_main(new_email_address))
 			{
-				SwingUtilities.invokeLater(new Runnable()
-				{
-		    			public void run()
-					{
-						change_button.setEnabled(false);
-						cancel_button.setEnabled(false);
-		        			dispose();
-					}
-				});
-		    	}
-		});
-	}
-
-	private void init_email_address_textfield(String email_address)
-	{
-		email_address_textfield.setText(email_address);
+				result_flag = true;
+			}
+			else if(!is_admin_flag && change_user_email_address_main(new_email_address))
+			{
+				System.out.println("CHANGE EMAIL SUCCESSFULL");
+				result_flag = true;
+			}
+		}
 	}
 
 	private boolean validate_input()
 	{
 		Pattern p;
 		Matcher m;
-		String  email_address = email_address_textfield.getText();
-		String  passwd        = new String(passwd_textfield.getPassword());
-
 		// Validate e-mail address
 		p = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 
-		m = p.matcher(email_address);
+		m = p.matcher(new_email_address);
 		if(!m.matches())
 		{
 			JOptionPane.showMessageDialog(this, "Please input correct format for the e-mail address");
@@ -182,7 +88,7 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 		}
 
 		// Validate passwd
-		if(!(passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
+		if(!(confirm_passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && confirm_passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
 		{
 			JOptionPane.showMessageDialog(this, "Please input the password's length between " + 
 				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
@@ -191,7 +97,7 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 		}
 
 		p = Pattern.compile("^[^-]*[a-zA-Z0-9\\_&$%#@*+-/]+");
-		m = p.matcher(passwd);
+		m = p.matcher(confirm_passwd);
 		if(m.matches() == false)
 		{
 			JOptionPane.showMessageDialog(this, "Please input correct format for the password");
@@ -199,14 +105,14 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 		}
 
 		// Do a password match with a current password?
-		if(!passwd.equals(current_passwd))
+		if(!confirm_passwd.equals(current_passwd))
 		{
 			JOptionPane.showMessageDialog(this, "Invalid the password");
 			return false;
 		}
 
 		// Check update
-		if(email_address.equals(current_email_address))
+		if(new_email_address.equals(current_email_address))
 		{
 			JOptionPane.showMessageDialog(this, "No any update");
 			return false;

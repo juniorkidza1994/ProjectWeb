@@ -354,6 +354,37 @@ public class UserMain extends JFrame implements ConstantVars
 	            tableData[i][j] = dtm.getValueAt(i,j);
 	    return tableData;
 	}
+
+	public String getAuthorityName(){
+		return authority_name;
+	}
+
+	public String getUsername(){
+		return username;
+	}
+
+	public String getemailAddress(){
+		return email_address;
+	}
+
+	public Object getChangePasswdClass(){
+		NewPasswordChanging new_passwd_changing_class = new NewPasswordChanging(main_panel, false, passwd);
+		return new_passwd_changing_class;
+	}
+
+	public void updateNewPasswd(String passwd){
+		this.passwd = passwd;
+	}
+
+	public Object getChangeEmailClass(){
+		EmailAddressChanging email_address_changing_class = new EmailAddressChanging(main_panel, false, email_address, passwd);
+		return email_address_changing_class;
+	}
+
+	public void updateNewEmail(String email_address){
+		this.email_address = email_address;
+		System.out.println(this.email_address);
+	}
 	
 	private final void create_info_page()
 	{
@@ -4927,6 +4958,4 @@ public class UserMain extends JFrame implements ConstantVars
 		});
 	}
 }
-
-
 
