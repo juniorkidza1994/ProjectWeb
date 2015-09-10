@@ -1,54 +1,39 @@
-<!DOCTYPE html>
-<html lang="en" ng-app="loginApp">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="../../favicon.ico">
 
-    <title>Signin Template for Bootstrap</title>
+    <div class="jumbotron text-center">
 
-    <!-- Bootstrap core CSS -->
-    <link href="lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- AngularJS -->
-    <script type="text/javascript" src="lib/angular/angular.js"></script>
-    <script type="text/javascript" src="js/login.js"></script>
-
-    <!-- Custom styles for this template -->
-    <link href="css/signin.css" rel="stylesheet">
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
-
-  <body ng-controller="mainCtrl" >
-
-    <div class="container">
-
-      <form class="form-signin" method="post">
-        <h2 class="form-signin-heading">Please sign in</h2>
-        <label for="inputEmail" class="sr-only">Email address</label>
-        <input type="text" id="inputEmail" class="form-control" placeholder="Username" required autofocus ng-model="account.user">
-        <label for="inputPassword" class="sr-only">Password</label>
-        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required ng-model="account.pass">
-
-        <div class="checkbox">
-          <label>
-            <input type="radio" value="Admin" ng-model="account.type"> Admin
-            <input type="radio" value="User" ng-model="account.type"> User
-          </label>
-        </div>
-        <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click ="login()">Sign in</button>
-      </form>
-
+      <h1>LOGIN</h2>
     </div> <!-- /container -->
 
-  </body>
-</html>
+      <form method="post" class="form-horizontal">
+        
+        <div class="form-group">
+
+            <label for="inputUsername" class="col-sm-2 col-centered control-label center-block">Username</label>
+            <div class="col-sm-10 col-centered center-block">
+                <input type="text" id="inputUsername" class="form-control" placeholder="Username" required autofocus ng-model="user.username">
+            </div>
+        </div>
+
+           <div class="form-group">
+            <label for="inputPassword" class="col-sm-2 control-label">Password</label>
+            <div class="col-sm-10">
+                <input type="password" id="inputPassword" class="form-control" placeholder="Password" required ng-model="user.password">
+            </div>
+          </div>
+
+           <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <div class="checkbox">
+                <label>
+                  <input type="radio" value="Admin" ng-model="user.type">Admin
+                </label>
+               <br />
+                <label>
+                  <input type="radio" value="User" ng-model="user.type">User
+                </label>
+              </div>
+              <br />
+              <button class="btn btn-lg btn-primary" type="submit" ng-click ="login()">Sign in</button>
+            </div>
+         </div>
+      </form>

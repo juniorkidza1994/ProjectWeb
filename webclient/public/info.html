@@ -1,0 +1,16 @@
+<!-- home.html -->
+	<div class="jumbotron text-center">
+		<h1>Home Page</h1>
+
+		<p>{{ info.username }}</p>
+		<p>{{ info.authorityName }}</p>
+		<p>{{ info.email_address }}</p>
+		<div class="table-responsive">
+			<table class="table">
+				Attribute Name
+				<tr ng-repeat="x in info.result_table">
+					<td>{{x[0]}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>

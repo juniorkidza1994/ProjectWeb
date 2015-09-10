@@ -1,11 +1,21 @@
 var java = require('java');
 var path = require('path');
 var express = require('express');
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+
 
 var app = express();
 
+
+
 var bodyParser = require('body-parser');
 
+app.use(require('cookie-parser')());
+app.use(require('body-parser').urlencoded({ extended: true }));
+app.use(require('express-session')({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname,'..','webclient/public')));
@@ -24,10 +34,52 @@ var m_instance = java.newInstanceSync("Login");
 var boolean_true = true;
 var boolean_false = false;
 
-// Get from login class
+// result boolean from login class
 var m_result_login;
 
+// result calss from login class
+var m_main_class;
 
+app.get('/checklogin',function(req,res){
+  if(req.user){
+    res.send(true);
+  }
+  else
+    res.send(false);
+});
+
+app.post('/login',
+  passport.authenticate('local', {
+    successRedirect: '/content/info',
+    failureRedirect: '/'
+  }));
+
+passport.serializeUser(function(user,done){
+  done(null,user);
+});
+
+passport.deserializeUser(function(user,done){
+  done(null,user);
+});
+
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    console.log("USERNAME : " + username);
+    console.log("PASSWORD : " + password);
+    console.log("DONE : " + done);
+    
+    var bool = m_instance.loginSync("127.0.0.1",username,password,"User");
+
+    console.log(bool);
+
+    if (bool){ // stupid example
+      m_main_class = m_instance.getMainClassSync();
+      return done(null, {name: "admin"});
+    }
+
+    return done(null, false, { message: 'Incorrect username.' });
+  }
+));
 
 app.get('/admin', function (req, res) {
   java.callMethodSync(instancm_instancee, "login_main", "127.0.0.1","admin","bright23","Admin");
@@ -35,47 +87,63 @@ app.get('/admin', function (req, res) {
 });
 
 app.get('/user', function (req, res) {
-  java.callMethodSync(m_instance, "login_main", "127.0.0.1","alice","kL8Um9d0","User");
+  java.callMethodSync(m_instance, "login_main", "127.0.0.1","alice","1jQClb1m","User");
   console.log("user");
 });
 
-app.post('/login', function (req, res) {
+app.post('/logins', function (req, res) {
 
-    var user = req.body.user;
-    var pass = req.body.pass;
+    var username = req.body.username;
+    var password = req.body.password;
     var type = req.body.type;
     
-    console.log("USER : " + user);
-    console.log("PASS : " + pass);
+    console.log("USER : " + username);
+    console.log("PASS : " + password);
     console.log("TYPE : " + type);
 
     // Login and get account class (Admin, User)
-    m_result_login = m_instance.loginSync("127.0.0.1",user,pass,type);
+    m_result_login = m_instance.loginSync("127.0.0.1",username,password,type);
 
-    console.log("CLASS : " + m_result_login);
-
+    if(m_result_login){
+      console.log("NODE JS : LOGIN SUCCESS");
+      m_main_class = m_instance.getMainClassSync();
+      console.log("CLASS : " + m_main_class);
+    }
     
 
 });
 
+var userinfo = {};
+
 app.get('/userinfo', function (req, res) {
 
-    // Get table
-    var result_table = m_result_login.getTableDataSync();
-    var authorityName = m_result_login.getAuthorityNameSync();
-    var username = m_result_login.getUsernameSync();
-    var email_address = m_result_login.getemailAddressSync();
-    console.log("------------- USER INFO -------------------");
-    console.log("Authority Name : " + authorityName);
-    console.log("Username : " + username);
-    console.log("Email Address : " + email_address);
+    if(Object.keys(userinfo).length == 0)
+    {
+      // Get table
+      var result_table = m_main_class.getTableDataSync();
+      var authorityName = m_main_class.getAuthorityNameSync();
+      var username = m_main_class.getUsernameSync();
+      var email_address = m_main_class.getemailAddressSync();
+      console.log("------------- USER INFO -------------------");
+      console.log("Authority Name : " + authorityName);
+      console.log("Username : " + username);
+      console.log("Email Address : " + email_address);
 
-    console.log("TABLE : " + result_table);
-    console.log("Attribute Table : ");
-    // Show value in table
-    for (var i in result_table){
-      console.log("I : " + result_table[i]);
+      console.log("TABLE : " + result_table);
+      console.log("Attribute Table : ");
+      // Show value in table
+      for (var i in result_table){
+        console.log("I : " + result_table[i]);
+      }
+
+      
+      userinfo.username = username;
+      userinfo.authorityName = authorityName;
+      userinfo.email_address = email_address;
+      userinfo.result_table = result_table;
     }
+    else
+      res.send(userinfo);
 });
 
 app.post('/changepwd', function (req, res) {
@@ -128,9 +196,9 @@ app.post('/change_email', function (req, res) {
   }
 });
 
-app.get('/', function (req, res) {
-
-    res.send('Hello World!');
+app.get('*', function(req, res) {
+    console.log("ERROR");
+    res.redirect('/#error');
 });
 
   var server = app.listen(3000, function () {

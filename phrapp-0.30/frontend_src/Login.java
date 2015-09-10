@@ -48,6 +48,8 @@ public class Login extends JFrame  implements ConstantVars
 	private String         ssl_cert_hash;
 	private String         cpabe_priv_key_hash;
 
+	private Object 			main_class;
+
 	public Login()
 	{
 		super("PHR system: Login Authentication");
@@ -59,7 +61,7 @@ public class Login extends JFrame  implements ConstantVars
 
 		// Call to C function
 		init_backend();
-
+		main_class = null;
 	//	init_ui();
 	//	login_main("127.0.0.1","admin","bright23","Admin");
 
@@ -138,9 +140,9 @@ public class Login extends JFrame  implements ConstantVars
 	}
 */
 
-	public Object login(String user_auth_ip_addr, String username, String passwd, String user_type)
+	public boolean login(String user_auth_ip_addr, String username, String passwd, String user_type)
 	{
-				Object result_login = null;
+				boolean result = false;
 				// We could not use tryLock() becuase the SwingUtilities the same thread even if
 				// we call it manay times.Note that, the tryLock() could not detect the same thead
 				if(!working_lock.isLocked())
@@ -149,21 +151,21 @@ public class Login extends JFrame  implements ConstantVars
 				}
 				else
 				{
-					return result_login;
+					return result;
 				}		
 				
 				// Validate User Authority's IP address, username and password
 				if(!validate_inputs(user_auth_ip_addr, username, passwd))
 				{
 					working_lock.unlock();
-					return result_login;
+					return result;
 				}
 
 				// Check for existence of a user authority's public key if it does not exist then load it
 				if(!load_user_authority_pub_key_main(user_auth_ip_addr))  // Call to backend (C function)
 				{
 					working_lock.unlock();
-					return result_login;
+					return result;
 				}
 
 				if(user_type.equals(login_as_user))
@@ -182,11 +184,14 @@ public class Login extends JFrame  implements ConstantVars
 
 				//		user_main.setVisible(true);
 						
-						result_login = user_main;
+						main_class = user_main;
+						
+						result = true;
 					}
 					else
 					{
-						result_login = null;
+						main_class = null;
+						result = false;
 						System.out.println("Can't login User");
 					}
 				}
@@ -207,13 +212,15 @@ public class Login extends JFrame  implements ConstantVars
 						
 						admin_main.setVisible(true);
 						
-						result_login = admin_main;
+						main_class = admin_main;
 						
+						result = true;
 					}
 					else
 					{
-						result_login = null;
+						main_class = null;
 						System.out.println("Can't login Admin");
+						result = false;
 		//				user_auth_ip_addr_textfield.requestFocus();
 					}
 				}
@@ -247,9 +254,12 @@ public class Login extends JFrame  implements ConstantVars
 			}
 		});
 */
-				return result_login;
+				return result;
 	}
 
+	public Object getMainClass(){
+		return main_class;
+	}
 
 	private boolean validate_inputs(String user_auth_ip_addr, String username, String passwd)
 	{
