@@ -3,7 +3,7 @@ var path = require('path');
 var express = require('express');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-
+var methodOverride = require('method-override');
 
 var app = express();
 
@@ -11,6 +11,7 @@ var app = express();
 
 var bodyParser = require('body-parser');
 
+app.use(methodOverride());
 app.use(require('cookie-parser')());
 app.use(require('body-parser').urlencoded({ extended: true }));
 app.use(require('express-session')({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
@@ -40,26 +41,22 @@ var m_result_login;
 // result calss from login class
 var m_main_class;
 
-app.get('/checklogin',function(req,res){
-  if(req.user){
-    res.send(true);
-  }
-  else
-    res.send(false);
+// Serialized and deserialized methods when got from session
+passport.serializeUser(function(user, done) {
+    done(null, user);
 });
 
-app.post('/login',
-  passport.authenticate('local', {
-    successRedirect: '/content/info',
-    failureRedirect: '/'
-  }));
-
-passport.serializeUser(function(user,done){
-  done(null,user);
+passport.deserializeUser(function(user, done) {
+    done(null, user);
 });
 
-passport.deserializeUser(function(user,done){
-  done(null,user);
+// route to test if the user is logged in or not
+app.get('/loggedin', function(req, res) {
+  res.send(req.isAuthenticated() ? req.user : '0');
+});
+
+app.post('/login', passport.authenticate('local'), function(req, res) {
+  res.send(req.user);
 });
 
 passport.use(new LocalStrategy(
@@ -196,10 +193,12 @@ app.post('/change_email', function (req, res) {
   }
 });
 
-app.get('*', function(req, res) {
-    console.log("ERROR");
-    res.redirect('/#error');
+app.use(function(req, res, next){
+  res.status(404);
+  
+  res.redirect('/#error');
 });
+
 
   var server = app.listen(3000, function () {
   var host = "192.168.174.138";
