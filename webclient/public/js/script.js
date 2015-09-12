@@ -15,7 +15,8 @@
       // Make an AJAX call to check if the user is logged in
       $http.get('/loggedin').success(function(user){
         // Authenticated
-        if (user !== '0')
+        if (user !== '0'){
+          console.log("LOGIN");
           /*$timeout(deferred.resolve, 0);*/
           if($location.path() != '/')
             deferred.resolve();
@@ -23,13 +24,17 @@
             deferred.reject();
             $location.url('/info');
           }
-
+        }
         // Not Authenticated
-        else {
+        else if($location.path() != '/'){
+          console.log("NO LOGIN");
           //$timeout(function(){deferred.reject();}, 0);
           deferred.reject();
           $location.url('/');
         }
+        else 
+          deferred.resolve();
+
       });
 
       return deferred.promise;
