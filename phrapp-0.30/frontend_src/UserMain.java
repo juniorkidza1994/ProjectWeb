@@ -272,6 +272,10 @@ public class UserMain extends JFrame implements ConstantVars
 	private String phr_server_ip_addr;
 	private String emergency_server_ip_addr;
 
+	// Class variable for web
+	private String m_phr_owner_name;
+	private int m_index_list_download;
+
 	public UserMain(String username, String passwd, String email_address, String authority_name, String user_auth_ip_addr, String audit_server_ip_addr, 
 		String phr_server_ip_addr, String emergency_server_ip_addr, String ssl_cert_hash, String cpabe_priv_key_hash)
 	{
@@ -343,47 +347,6 @@ public class UserMain extends JFrame implements ConstantVars
 		setLocationRelativeTo(null);
 		setResizable(false);
 		setVisible(true);
-	}
-	
-	public Object[][] getTableData () {
-	    DefaultTableModel dtm = (DefaultTableModel) user_attribute_table.getModel();
-	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
-	    Object[][] tableData = new Object[nRow][nCol];
-	    for (int i = 0 ; i < nRow ; i++)
-	        for (int j = 0 ; j < nCol ; j++)
-	            tableData[i][j] = dtm.getValueAt(i,j);
-	    return tableData;
-	}
-
-	public String getAuthorityName(){
-		return authority_name;
-	}
-
-	public String getUsername(){
-		return username;
-	}
-
-	public String getemailAddress(){
-		return email_address;
-	}
-
-	public Object getChangePasswdClass(){
-		NewPasswordChanging new_passwd_changing_class = new NewPasswordChanging(main_panel, false, passwd);
-		return new_passwd_changing_class;
-	}
-
-	public void updateNewPasswd(String passwd){
-		this.passwd = passwd;
-	}
-
-	public Object getChangeEmailClass(){
-		EmailAddressChanging email_address_changing_class = new EmailAddressChanging(main_panel, false, email_address, passwd);
-		return email_address_changing_class;
-	}
-
-	public void updateNewEmail(String email_address){
-		this.email_address = email_address;
-		System.out.println(this.email_address);
 	}
 	
 	private final void create_info_page()
@@ -1413,11 +1376,11 @@ public class UserMain extends JFrame implements ConstantVars
 							return;
 						}
 
-						if(validate_phr_owner_search_input()) 
+						if(validate_phr_owner_search_input(phr_owner_authority_name_combobox.getSelectedIndex(), username)) 
 						{
 							int    index                    = phr_owner_authority_name_combobox.getSelectedIndex();
-							String phr_owner_authority_name = authority_name_list.get(index);
-							String phr_owner_name           = phr_owner_name_textfield.getText();
+							String phr_owner_authority_name = authority_name;
+							String phr_owner_name           = username;
 							String transaction_type         = transaction_type_group.getSelection().getActionCommand();
 
 							// Call to C function
@@ -1459,7 +1422,7 @@ public class UserMain extends JFrame implements ConstantVars
 						}
 
 						search_phr_owner_button.setEnabled(true);
-		    			}
+		    		}
 				});
 			}
 		});
@@ -2011,14 +1974,14 @@ public class UserMain extends JFrame implements ConstantVars
 		phr_owner_authority_name_combobox.setSelectedIndex(-1);
 	}
 
-	private boolean validate_phr_owner_search_input()
+	private boolean validate_phr_owner_search_input(int index, String phr_owner_name)
 	{
 		Pattern p;
 		Matcher m;
-		int     index;
+		// int     index;
 
 		// Validate PHR owner authority name
-		index = phr_owner_authority_name_combobox.getSelectedIndex();
+		// index = phr_owner_authority_name_combobox.getSelectedIndex();
 		if(index == -1)
 		{
 			JOptionPane.showMessageDialog(this, "Please select the authority name");
@@ -2028,7 +1991,7 @@ public class UserMain extends JFrame implements ConstantVars
 		// Validate PHR owner name
 		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
 
-		m = p.matcher(phr_owner_name_textfield.getText());
+		m = p.matcher(phr_owner_name);
 		if(!m.matches())
 		{
 			JOptionPane.showMessageDialog(this, "Please input correct format for the PHR ownername");
@@ -3801,8 +3764,10 @@ public class UserMain extends JFrame implements ConstantVars
 						if(validate_phr_downloading_input())
 						{
 							int    index                    = phr_owner_authority_name_combobox.getSelectedIndex();
-							String phr_owner_authority_name = authority_name_list.get(index);
-							String phr_owner_name           = phr_owner_name_textfield.getText();
+							// String phr_owner_authority_name = authority_name_list.get(index);
+							String phr_owner_authority_name = authority_name;
+							// String phr_owner_name           = phr_owner_name_textfield.getText();
+							String phr_owner_name           = username;
 
 							int    row                      = phr_downloading_table.getSelectedRow();
 							String data_description         = phr_downloading_table.getModel().getValueAt(row, 0).toString();
@@ -4107,8 +4072,8 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			public void run()
 			{
-				phr_decrypting_progressbar.setIndeterminate(true);
-				phr_decrypting_progressbar.setStringPainted(false);
+				// phr_decrypting_progressbar.setIndeterminate(true);
+				// phr_decrypting_progressbar.setStringPainted(false);
 			}
 		});
 	}
@@ -4120,9 +4085,9 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			public void run()
 			{
-				phr_decrypting_progressbar.setValue(percent);
-				phr_decrypting_progressbar.setStringPainted(true);
-				phr_decrypting_progressbar.setIndeterminate(false);
+				// phr_decrypting_progressbar.setValue(percent);
+				// phr_decrypting_progressbar.setStringPainted(true);
+				// phr_decrypting_progressbar.setIndeterminate(false);
 			}
 		});
 	}
@@ -4141,11 +4106,11 @@ public class UserMain extends JFrame implements ConstantVars
 				{
 		    			public void run()
 					{
-						uninit_ui_for_phr_downloading_transaction_mode();
+/*						uninit_ui_for_phr_downloading_transaction_mode();
 						release_actions_for_phr_downloading_transaction_mode();
-						create_phr_management_page();
+						create_phr_management_page();*/
 
-						working_lock.unlock();
+					//	working_lock.unlock();
 					}
 				});
 			}
@@ -4477,7 +4442,7 @@ public class UserMain extends JFrame implements ConstantVars
 			return;					
 		}
 
-		remove_selected_row_from_phr_deletion_table();
+	/**/	remove_selected_row_from_phr_deletion_table();
 
 		// Call to C function
 		record_phr_deletion_transaction_log_main(phr_owner_name, phr_owner_authority_name, data_description, true);
@@ -4871,7 +4836,7 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			public void run()
 			{
-		        	phr_downloading_progressbar.setValue(percent);
+		        	//phr_downloading_progressbar.setValue(percent);
 			}
 		});
 	}
@@ -4957,5 +4922,216 @@ public class UserMain extends JFrame implements ConstantVars
 			}
 		});
 	}
+
+	// WEB
+
+	public String getAuthorityName(){
+		return authority_name;
+	}
+
+	public String getUsername(){
+		return username;
+	}
+
+	public String getemailAddress(){
+		return email_address;
+	}
+
+	public Object getChangePasswdClass(){
+		NewPasswordChanging new_passwd_changing_class = new NewPasswordChanging(main_panel, false, passwd);
+		return new_passwd_changing_class;
+	}
+
+	public void updateNewPasswd(String passwd){
+		this.passwd = passwd;
+	}
+
+	public Object getChangeEmailClass(){
+		EmailAddressChanging email_address_changing_class = new EmailAddressChanging(main_panel, false, email_address, passwd);
+		return email_address_changing_class;
+	}
+
+	public void updateNewEmail(String email_address){
+		this.email_address = email_address;
+		System.out.println(this.email_address);
+	}
+
+	public String[] getAuthorityNameList(){
+		String[] authority_name_list_array = new String[authority_name_list.size()];
+		authority_name_list.toArray(authority_name_list_array);
+		return authority_name_list_array;
+	}
+
+	public Object[][] getTableAttribute () {
+	    DefaultTableModel dtm = (DefaultTableModel) user_attribute_table.getModel();
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+	
+
+	public boolean initDownloadSelfPHR(){
+		boolean result =false;
+
+		String phr_owner_authority_name = authority_name;
+		String phr_owner_name           = username;
+			
+		if(verify_download_permission_main(phr_owner_name, phr_owner_authority_name))
+		{
+			System.out.println("ENTER DOWNLOAD MODE");
+			initTableDownloadPHR();
+		//	setup_actions_for_phr_downloading_mode();
+			
+			result = true;
+
+			// Call to C function
+			load_downloading_authorized_phr_list_main(phr_owner_name, phr_owner_authority_name);
+		}
+
+		return result;
+	}
+
+	public Object[][] getTableDownloadPHR() {
+
+	    DefaultTableModel dtm = phr_downloading_table_model;
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+
+	    System.out.println("ROW : " + nRow);
+
+	    System.out.println("Col : " + nCol);
+
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++){
+	            tableData[i][j] = phr_downloading_table_model.getValueAt(i,j);
+	            System.out.println(tableData[i][j]);
+	        }
+
+	    System.out.println(tableData);
+	    return tableData;
+	}
+
+	private final void initTableDownloadPHR()
+	{		
+		// PHR downloading table
+
+		phr_downloading_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    	phr_downloading_table_model.setDataVector(null, new Object[] {"Data description", "Size", "Confidentiality level", "PHR id"});
+    	phr_downloading_table = new JTable(phr_downloading_table_model);
+		phr_downloading_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		phr_downloading_table.removeColumn(phr_downloading_table.getColumnModel().getColumn(3));
+
+	}
+
+	public boolean downloadPHR(String data_description, int phr_id, String phr_download_to_path){
+		// if(validate_phr_downloading_input())
+		// {
+			int    index                    = phr_owner_authority_name_combobox.getSelectedIndex();
+			// String phr_owner_authority_name = authority_name_list.get(index);
+			String phr_owner_authority_name = authority_name;
+			// String phr_owner_name           = phr_owner_name_textfield.getText();
+			String phr_owner_name           = username;
+
+			int    row                      = phr_downloading_table.getSelectedRow();
+/*			String data_description         = phr_downloading_table.getModel().getValueAt(row, 0).toString();
+			int    phr_id                   = Integer.parseInt(phr_downloading_table.getModel().getValueAt(row, 3).toString());
+
+			String phr_download_to_path     = phr_download_to_path_textfield.getText();*/
+
+		//	init_ui_for_phr_downloading_transaction_mode();
+		//	setup_actions_for_phr_downloading_transaction_mode();
+
+			// Run background tasks
+			run_phr_downloading_background_task(phr_owner_name, phr_owner_authority_name, 
+			data_description, phr_id, phr_download_to_path);
+		// }
+			return true;
+	}
+
+
+	// Delete
+	public boolean initDeleteSelfPHR(){
+		boolean result =false;
+
+		String phr_owner_authority_name = authority_name;
+		String phr_owner_name           = username;
+			
+		if(verify_delete_permission_main(phr_owner_name, phr_owner_authority_name))
+		{
+			System.out.println("DELETE MODE");
+
+			result = true;
+
+			initTableDeletePHR();
+
+			// Call to C function
+			load_deletion_authorized_phr_list_main(phr_owner_name, phr_owner_authority_name);
+		}
+
+		return result;
+	}
+
+	public Object[][] getTableDeletePHR() {
+
+	    DefaultTableModel dtm = (DefaultTableModel) phr_deletion_table.getModel();
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
+	private final void initTableDeletePHR()
+	{		
+		phr_deletion_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    	phr_deletion_table_model.setDataVector(null, new Object[] {"Data description", "Size", "Confidentiality level", "PHR id"});
+    	phr_deletion_table = new JTable(phr_deletion_table_model);
+		phr_deletion_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		phr_deletion_table.removeColumn(phr_deletion_table.getColumnModel().getColumn(3));
+	}
+
+	public boolean deletePHR(String data_description, int phr_id, String restricted_level_phr_flag){
+
+		//if(validate_phr_deletion_input())
+		//{
+			int     index                    = phr_owner_authority_name_combobox.getSelectedIndex();
+			String  phr_owner_authority_name = authority_name;
+			String  phr_owner_name           = username;
+
+			boolean is_restricted_level_phr_flag = restricted_level_phr_flag.equals("restricted");
+
+			perform_phr_deletion_transaction(phr_owner_name, phr_owner_authority_name, 
+			data_description, phr_id, is_restricted_level_phr_flag);
+
+		//	uninit_ui_for_phr_deletion_mode();
+		//	release_actions_for_phr_deletion_mode();
+			
+			return true;
+	}
 }
+
 

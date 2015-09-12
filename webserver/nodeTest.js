@@ -41,6 +41,8 @@ var m_result_login;
 // result calss from login class
 var m_main_class;
 
+var m_authority_name_list = null;
+
 // Serialized and deserialized methods when got from session
 passport.serializeUser(function(user, done) {
     done(null, user);
@@ -117,7 +119,7 @@ app.get('/userinfo', function (req, res) {
     if(Object.keys(userinfo).length == 0)
     {
       // Get table
-      var result_table = m_main_class.getTableDataSync();
+      var attribute_list = m_main_class.getTableAttributeSync();
       var authorityName = m_main_class.getAuthorityNameSync();
       var username = m_main_class.getUsernameSync();
       var email_address = m_main_class.getemailAddressSync();
@@ -126,28 +128,30 @@ app.get('/userinfo', function (req, res) {
       console.log("Username : " + username);
       console.log("Email Address : " + email_address);
 
-      console.log("TABLE : " + result_table);
+      console.log("TABLE : " + attribute_list);
       console.log("Attribute Table : ");
       // Show value in table
-      for (var i in result_table){
-        console.log("I : " + result_table[i]);
+      for (var i in attribute_list){
+        console.log("I : " + attribute_list[i]);
       }
 
       
       userinfo.username = username;
       userinfo.authorityName = authorityName;
       userinfo.email_address = email_address;
-      userinfo.result_table = result_table;
+      userinfo.attribute_list = attribute_list;
+
     }
-    else
-      res.send(userinfo);
+    
+    res.send(userinfo);
+
 });
 
 app.post('/changepwd', function (req, res) {
 
   console.log("----------- CHANGE PASSWORD -------------");
 
-  var objChangePwd = m_result_login.getChangePasswdClassSync();   
+  var objChangePwd = m_main_class.getChangePasswdClassSync();   
 
   console.log("CLASS CHANGE PASSWORD : " + objChangePwd);
 
@@ -164,22 +168,27 @@ app.post('/changepwd', function (req, res) {
   // Change Password
   objChangePwd.change_passwdSync(current_passwd, new_passwd, confirm_new_passwd, send_new_passwd_flag);
 
+  result = objChangePwd.getResulFlagSync();
   // Update Password
-  if(objChangePwd.getResulFlagSync()){
+  if(result){
     console.log("UPDATE PASSWORD");
-    m_result_login.updateNewPasswdSync(new_passwd);
+    m_main_class.updateNewPasswdSync(new_passwd);
+
+    res.send(req.result);
   }
 });
+
+var objChangeEmail ;
 
 app.post('/change_email', function (req, res) {
 
   console.log("----------- CHANGE Email Address -------------");
 
-  var objChangeEmail = m_result_login.getChangeEmailClassSync();   
+  var objChangeEmail = m_main_class.getChangeEmailClassSync();   
 
   console.log("CLASS CHANGE EMAIL ADDRESS : " + objChangeEmail);
 
-  var new_email_address  = req.body.new_email_address;
+  var new_email_address  = req.body.email;
   var confirm_new_passwd = req.body.confirm_new_passwd;
 
   console.log("NEW EMAIL ADDDRESS : " + new_email_address);
@@ -187,11 +196,99 @@ app.post('/change_email', function (req, res) {
 
   objChangeEmail.change_emailSync(new_email_address, confirm_new_passwd);
 
-  if(objChangeEmail.get_resultSync()){
+  var result = objChangeEmail.get_resultSync();
+
+  if(result){
     console.log("UPDATE EMAIL");
-    m_result_login.updateNewEmailSync(new_email_address);
+    m_main_class.updateNewEmailSync(new_email_address);
+    userinfo.email_address = m_main_class.getemailAddressSync();
+    res.send(result);
   }
 });
+
+app.get('/authority_name_list', function (req, res) {
+
+  if(authority_name_list == null)
+    authority_name_list = m_main_class.getAuthorityNameListSync();
+
+  console.log(authority_name_list);
+
+  res.send(authority_name_list);
+});
+
+//------------DOWNLOAD PHR-----------------------//
+
+var download_phr_list = null;
+
+app.post('/download_self_phr_list', function (req, res) {
+
+  m_main_class.initDownloadSelfPHR(function(err,result){
+    if(!err) {
+      m_main_class.getTableDownloadPHR(function(err,result){
+        if(!err){
+          download_phr_list = result;
+          res.send(download_phr_list);
+        }
+      });
+    }
+  });
+
+  console.log("DONWLOAD LIST : " + download_phr_list);
+
+});
+
+app.post('/downloadPHR', function (req, res) {
+
+  var index = req.body.index;
+
+  console.log("INDEX : " + index);
+  if(download_phr_list.legth != 0){
+    var data_description = download_phr_list[index][0];
+    var phr_id = parseInt(download_phr_list[index][3],10);
+
+    var result = m_main_class.downloadPHRSync(data_description, phr_id, "/home/bright/Desktop");
+    console.log("RESULT FROM DOWNLOAD : " + result);
+  }
+
+});
+
+//---------------------- DELETE PHR -----------------------//+
+
+var delete_phr_list = null;
+
+app.post('/delete_self_phr_list', function (req, res) {
+
+  m_main_class.initDeleteSelfPHR(function(err,result){
+    if(!err) {
+      m_main_class.getTableDeletePHR(function(err,result){
+        if(!err){
+          delete_phr_list = result;
+          res.send(delete_phr_list);
+        }
+      });
+    }
+  });
+
+  console.log("Delete LIST : " + delete_phr_list);
+});
+
+app.post('/deletePHR', function (req, res) {
+
+  var index = req.body.index;
+
+  console.log("INDEX : " + index);
+
+  if(delete_phr_list.legth != 0){
+    var data_description = delete_phr_list[index][0];
+    var phr_id = parseInt(delete_phr_list[index][3],10);
+    var restricted_level_phr_flag  =  delete_phr_list[index][2] + "";
+
+    var result = m_main_class.deletePHRSync(data_description, phr_id, restricted_level_phr_flag);
+    console.log("RESULT FROM DOWNLOAD : " + result);
+  }
+
+});
+
 
 app.use(function(req, res, next){
   res.status(404);

@@ -74,6 +74,38 @@
         }
       })
 
+      .when('/downloadSelfPHR', {
+        templateUrl : 'downloadSelfPHR.html',
+        controller: 'downloadController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/deleteSelfPHR', {
+        templateUrl : 'deleteSelfPHR.html',
+        controller: 'deleteController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/changepwd', {
+        templateUrl : 'changepassword.html',
+        controller: 'changePwdController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/changeEmail', {
+        templateUrl : 'changeEmail.html',
+        controller: 'changeEmailController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
       .when('/error',{
         templateUrl : 'error.html',
         controller  : 'errorController'
@@ -86,6 +118,7 @@
           loggedin: checkLoggedin
         }
       })
+
       .otherwise({
         redirectTo: '/error'
 
@@ -105,42 +138,6 @@
     };
   });
 
-    // configure our routes
-    /*scotchApp.config(function($routeProvider, $locationProvider){
-    		$routeProvider
-
-    		.when('/info',{
-    			templateUrl : 'info.html',
-    			controller  : 'infoController'
-    		})
-
-    		.when('/about',{
-    			templateUrl : 'about.html',
-    			controller  : 'aboutController'
-    		})
-
-    		.when('/contact',{
-    			templateUrl : 'contact.html',
-    			controller  : 'contactController'
-    		})
-
-            .when('/error',{
-                templateUrl : 'error.html',
-                controller  : 'errorController'
-            })
-
-    		.when('/',{
-                templateUrl : 'login.html',
-                controller  : 'loginController'
-            })
-
-            .otherwise({
-                redirectTo: '/error'
-            })
-
-            $locationProvider.html5Mode(true);
-    });
-*/
     // create the controller and inject Angular's $scope
     scotchApp.controller('infoController', function($scope, $http, $location) {
         $scope.info = {};
@@ -148,21 +145,56 @@
         $http.get('/userinfo')
         .success(function(res){
             $scope.info  = res;
-            console.log("INFO " + $scope.info.result_table);
+            console.log("INFO " + $scope.info.attribute_list);
         })
     });
 
-    scotchApp.controller('aboutController', function($scope, $http, $location) {
-        $scope.bool = "";
-        $http.get('/checklogin')
+    scotchApp.controller('changePwdController', function($scope, $http, $location) {
+        $scope.password = {};
+        $scope.submit = function(){
+            $http.post('/changepwd', {
+              current_passwd        : $scope.password.curr_passwd,
+              new_passwd            : $scope.password.new_passwd,
+              confirm_new_passwd    : $scope.password.confirm_passwd,
+              send_new_passwd_flag  : $scope.password.flag
+            })
+            .success(function(user){
+              // No error: authentication OK
+              console.log("SUCCESS");
+              $location.path('/info');
+            })
+        };
+
+        $scope.cancle = function(){
+          $location.path('/info');
+        }
+    });
+
+    scotchApp.controller('changeEmailController', function($scope, $http, $location) {
+        $scope.data = {};
+        $scope.info = {};
+
+        $http.get('/userinfo')
         .success(function(res){
-            $scope.bool = res;
-            if($scope.bool == true){
-                 $scope.message = 'Look! I am an about page';
-            }
-            else if($scope.bool == false)
-                $location.path('/')
+            $scope.info  = res;
+            $scope.data.email = $scope.info.email_address;
         })
+
+        $scope.submit = function(){
+            $http.post('/change_email', {
+              email                  : $scope.data.email,
+              confirm_new_passwd     : $scope.data.password,
+            })
+            .success(function(user){
+              // No error: authentication OK
+              console.log("SUCCESS");
+              $location.path('/info');
+            })
+        };
+
+        $scope.cancle = function(){
+          $location.path('/info');
+        }
     });
 
     scotchApp.controller('contactController', function($scope, $http, $location) {
@@ -176,6 +208,49 @@
             else if($scope.bool == false)
                 $location.path('/')
         })
+
+    });
+
+    scotchApp.controller('downloadController', function($scope, $http, $location) {
+        $scope.phr_list = {};
+        $scope.selectedRow = null;
+
+        $http.post('/download_self_phr_list')
+        .success(function(res){
+            $scope.phr_list = res;
+            console.log(res);
+        })
+
+        $scope.setClickedRow = function(index){
+            $scope.selectedRow = index;
+        }
+
+        $scope.download = function(){
+          $http.post('/downloadPHR', {
+            index: $scope.selectedRow
+         })
+        }
+    });
+
+    scotchApp.controller('deleteController', function($scope, $http, $location) {
+        $scope.phr_list = {};
+        $scope.selectedRow = null;
+
+        $http.post('/delete_self_phr_list')
+        .success(function(res){
+            $scope.phr_list = res;
+            console.log("DELETE LIST : " + res);
+        })
+
+        $scope.setClickedRow = function(index){
+            $scope.selectedRow = index;
+        }
+
+        $scope.download = function(){
+          $http.post('/deletePHR', {
+            index: $scope.selectedRow
+         })
+        }
     });
 
     scotchApp.controller('loginController', function($scope,$http,$location){
@@ -197,28 +272,6 @@
           $location.path('/');
         });
       };
-/*        $scope.user = {};
-        $scope.bool = "";
-        
-        $http.get('/checklogin')
-        .success(function(res){
-            $scope.bool = res;
-            if($scope.bool == true){
-                 $location.path('/info')
-            }
-            else if($scope.bool == false){
-                $scope.login = function(){
-                $http.post('/login', {
-                  username: $scope.user.username,
-                  password: $scope.user.password,
-                  type    : $scope.user.type
-                })
-                .success(function(res){
-                  //$location.path('/info')
-                })
-              };
-            }
-        })*/
     });
 
     scotchApp.controller('errorController', function($scope) {

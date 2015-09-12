@@ -1,0 +1,36 @@
+<!-- about.html -->
+<style>
+.selected{
+	background-color: black;
+	color: white;
+	font-weight: bold;
+}
+</style>
+	<div class="jumbotron text-center">
+		<h1>Download Your PHR Page</h1>
+	</div>
+
+	<form method="post" class="form-horizontal">
+        
+ 		<table class="table table-bordered" >
+			<tr>
+				<th>Data description</th>
+				<th>Size</th>
+				<th>Confidentiality level</th>
+			</tr>
+			<tr ng-repeat="item in phr_list" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)">
+				<td>{{item[0]}}</td>
+				<td>{{item[1]}}</td>
+				<td>{{item[2]}}</td>
+			</tr>
+		</table>
+
+           <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <br />
+              <button class="btn btn-lg btn-primary" type="submit" ng-click ="download()">Download</button>
+            </div>
+         </div>
+    </form>
+
+

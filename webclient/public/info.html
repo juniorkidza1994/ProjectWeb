@@ -1,16 +1,36 @@
 <!-- home.html -->
 	<div class="jumbotron text-center">
 		<h1>Home Page</h1>
+	</div>
 
-		<p>{{ info.username }}</p>
-		<p>{{ info.authorityName }}</p>
-		<p>{{ info.email_address }}</p>
+	<div class="container-fluid">
+		<div class="table-responsive">
+			<table class="table">
+				<tr>
+					<td>USERNAME : </td>
+					<td>{{ info.username }}</td>
+				</tr>
+				<tr>
+					<td>Authority Name : </td>
+					<td>{{ info.authorityName }}</td>
+				</tr>
+				<tr>
+					<td>Email Address : </td>
+					<td>{{ info.email_address }}</td>
+				</tr>
+			</table>
+		</div>
 		<div class="table-responsive">
 			<table class="table">
 				Attribute Name
-				<tr ng-repeat="x in info.result_table">
+				<tr ng-repeat="x in info.attribute_list">
 					<td>{{x[0]}}</td>
 				</tr>
 			</table>
 		</div>
+
+		<a href="/changepwd" class="btn btn-info" role="button"> Change Password</a>
+		<a href="/changeEmail" class="btn btn-success" role="button"> Change Email Address</a>
+
 	</div>
+	
