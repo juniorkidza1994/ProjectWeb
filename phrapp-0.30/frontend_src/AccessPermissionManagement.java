@@ -92,6 +92,92 @@ class AccessPermissionManagement extends JDialog implements ConstantVars
 		setup_actions();
 	}
 
+	public AccessPermissionManagement(String phr_owner_authority_name, String phr_owner_name, ArrayList<String> authority_name_list)  // Assigning mode
+	{
+		is_assigning_mode_flag        = true;
+		result_flag                   = false;
+		this.phr_owner_authority_name = phr_owner_authority_name;
+		this.phr_owner_name           = phr_owner_name;
+		this.authority_name_list      = authority_name_list;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_User_JNI");
+
+	}
+
+	public AccessPermissionManagement(String assigned_user_authority_name, String assigned_username, boolean current_upload_permission_flag, 
+		boolean current_download_permission_flag, boolean current_delete_permission_flag)  // Editing mode
+	{
+		is_assigning_mode_flag                = false;
+		result_flag                           = false;
+		this.assigned_user_authority_name     = assigned_user_authority_name;
+		this.assigned_username                = assigned_username;
+		this.current_upload_permission_flag   = current_upload_permission_flag;
+		this.current_download_permission_flag = current_download_permission_flag;
+		this.current_delete_permission_flag   = current_delete_permission_flag;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_User_JNI");
+			
+		System.out.println("CREATE CLASS ACCESS PERMISSION");	
+	}
+
+	public String getAuthorityName(){
+
+		return assigned_user_authority_name;
+	}
+
+	public String getUsername(){
+
+		return assigned_username;
+	}
+
+	public boolean getUploadFlag(){
+		return current_upload_permission_flag;
+	}
+
+	public boolean getDownloadFlag(){
+		return current_download_permission_flag;
+	}
+
+	public boolean getDeleteFlag(){
+		return current_delete_permission_flag;
+	}
+
+	public boolean assignAccessPermission(String authority_name, String username, Boolean up, Boolean down, Boolean del){
+
+		boolean upload_permission_flag = up.booleanValue();
+		boolean download_permission_flag = down.booleanValue();
+		boolean delete_permission_flag = del.booleanValue();
+								// Call to C function
+		if(assign_access_permission_main(authority_name, username, 
+		upload_permission_flag, download_permission_flag, delete_permission_flag))
+		{
+			System.out.println("ASSIGN SUCCESS");
+			return true;
+		        				
+		}
+		System.out.println("ASSIGN FAILL");
+
+		return false;
+	}
+
+	public boolean editAccessPermission(String up, String down, String del){
+
+		boolean upload_permission_flag = Boolean.parseBoolean(up);
+		boolean download_permission_flag = Boolean.parseBoolean(down);
+		boolean delete_permission_flag = Boolean.parseBoolean(del);
+								// Call to C function
+		if(edit_access_permission_main(assigned_user_authority_name, assigned_username, 
+		upload_permission_flag, download_permission_flag, delete_permission_flag))
+		{
+			return true;
+
+		}
+
+		return false;
+	}
+
 	private final void init_ui(Component parent)
 	{
 		setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));

@@ -1,0 +1,40 @@
+<style>
+.selected{
+	background-color: gray;
+	color: black;
+	font-weight: bold;
+}
+</style>
+
+	<div class="jumbotron text-center">
+		<h1>Access Permission Management</h1>
+	</div>
+
+	<form method="post" class="form-horizontal">
+        
+ 		<table class="table table-bordered" >
+			<tr>
+				<th>Name</th>
+				<th>Upload Permission</th>
+				<th>Download Permission</th>
+				<th>Delete Permission</th>
+			</tr>
+			<tr ng-repeat="item in access_permission_list" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)">
+				<td>{{item[0]}}</td>
+				<td> <input type="checkbox" ng-model="item[1]"  ng-true-value="'true'" ng-false-value="'false'"></td>
+				<td> <input type="checkbox" ng-model="item[2]"  ng-true-value="'true'" ng-false-value="'false'"></td>
+				<td> <input type="checkbox" ng-model="item[3]"  ng-true-value="'true'" ng-false-value="'false'"></td>
+			</tr>
+		</table>
+
+           <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <br />
+              <button class="btn btn-lg btn-primary" type="submit" ng-click ="assign()">Assign Permissions</button>
+              <button class="btn btn-lg btn-primary" type="submit" ng-click ="edit()">Edit Permissions</button>
+              <button class="btn btn-lg btn-primary" type="submit" ng-click ="">Delete</button>
+            </div>	
+         </div>
+    </form>
+
+

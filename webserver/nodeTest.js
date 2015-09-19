@@ -73,7 +73,7 @@ passport.use(new LocalStrategy(
 
     if (bool){ // stupid example
       m_main_class = m_instance.getMainClassSync();
-      return done(null, {name: "admin"});
+      return done(null, {name: "user"});
     }
 
     return done(null, false, { message: 'Incorrect username.' });
@@ -81,7 +81,7 @@ passport.use(new LocalStrategy(
 ));
 
 app.get('/admin', function (req, res) {
-  java.callMethodSync(instancm_instancee, "login_main", "127.0.0.1","admin","bright23","Admin");
+  java.callMethodSync(m_instance, "login", "127.0.0.1","admin","bright23","Admin");
   console.log("TESTTT");
 });
 
@@ -178,8 +178,6 @@ app.post('/changepwd', function (req, res) {
   }
 });
 
-var objChangeEmail ;
-
 app.post('/change_email', function (req, res) {
 
   console.log("----------- CHANGE Email Address -------------");
@@ -206,14 +204,14 @@ app.post('/change_email', function (req, res) {
   }
 });
 
-app.get('/authority_name_list', function (req, res) {
+app.post('/authority_name_list', function (req, res) {
 
-  if(authority_name_list == null)
-    authority_name_list = m_main_class.getAuthorityNameListSync();
+  if(m_authority_name_list == null)
+    m_authority_name_list = m_main_class.getAuthorityNameListSync();
 
-  console.log(authority_name_list);
+  console.log(m_authority_name_list);
 
-  res.send(authority_name_list);
+  res.send(m_authority_name_list);
 });
 
 //------------DOWNLOAD PHR-----------------------//
@@ -289,6 +287,64 @@ app.post('/deletePHR', function (req, res) {
 
 });
 
+//------------------ ACCESS PERMISSION MANAGER ------------------
+
+var access_permission_list;
+
+app.post('/access_permission_management_list', function (req, res) {
+
+  m_main_class.getTableAccessPermissionPHR(function(err,result){
+    if(!err){
+      access_permission_list = result;
+      res.send(access_permission_list);
+    }
+  });
+
+});
+
+app.post('/edit_access_permission', function (req, res) {
+
+      m_main_class.getClassAccessPermissionManagementEdit(req.body.row,function(err,result){  
+      if(!err){
+        var access_permission_management_class = result;
+
+        access_permission_management_class.editAccessPermission(req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
+        if(!err){
+            var result_flag = result;
+            m_main_class.update_assigned_access_permission_list(function(err,result){
+              if(!err){
+                  res.send(result_flag);
+              }
+            });
+          }
+        else
+          console.log(err);
+        });
+      }
+  });
+});
+
+app.post('/assign_access_permission', function (req, res) {
+
+    m_main_class.getClassAccessPermissionManagementAssign(function(err,result){  
+      if(!err){
+        var access_permission_management_class = result;
+
+        access_permission_management_class.assignAccessPermission(req.body.authority, req.body.username ,req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
+        if(!err){
+            var result_flag = result;
+            m_main_class.update_assigned_access_permission_list(function(err,result){
+              if(!err){
+                  res.send(result_flag);
+              }
+            });
+          }
+        else
+          console.log(err);
+        });
+      }
+    });
+});
 
 app.use(function(req, res, next){
   res.status(404);
@@ -302,4 +358,4 @@ app.use(function(req, res, next){
   var port = server.address().port;
 
   console.log('Example app listening at http://%s:%s', host, port);
-});
+  });

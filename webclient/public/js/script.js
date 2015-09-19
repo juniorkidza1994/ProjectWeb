@@ -82,6 +82,14 @@
         }
       })
 
+      .when('/accessPermissionManagement', {
+        templateUrl : 'accessPermisManage.html',
+        controller: 'accessPermisController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
       .when('/deleteSelfPHR', {
         templateUrl : 'deleteSelfPHR.html',
         controller: 'deleteController',
@@ -93,6 +101,14 @@
       .when('/changepwd', {
         templateUrl : 'changepassword.html',
         controller: 'changePwdController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/assignPermission', {
+        templateUrl : 'assignAccessPermission.html',
+        controller: 'assignAccessPermissionController',
         resolve: {
           loggedin: checkLoggedin
         }
@@ -151,6 +167,8 @@
 
     scotchApp.controller('changePwdController', function($scope, $http, $location) {
         $scope.password = {};
+        $scope.password.flag = false;
+
         $scope.submit = function(){
             $http.post('/changepwd', {
               current_passwd        : $scope.password.curr_passwd,
@@ -211,6 +229,86 @@
 
     });
 
+
+    scotchApp.controller('accessPermisController', function($scope, $http, $location) {
+        $scope.access_permission_list = {};
+        $scope.selectedRow = null;
+        $scope.checked = {};
+
+        $http.post('/access_permission_management_list')
+        .success(function(res){
+            $scope.access_permission_list = res;
+            console.log(res);
+        })
+
+        $scope.setClickedRow = function(index){
+            $scope.selectedRow = index;
+        }
+
+        $scope.assign = function(){
+          $location.path('/assignPermission');
+        }
+
+        $scope.edit = function(){
+          console.log($scope.selectedRow);
+          if($scope.selectedRow != null ){
+            console.log("EDIT " + $scope.access_permission_list[$scope.selectedRow]);
+            $http.post('/edit_access_permission', {
+              row             : $scope.selectedRow,
+              uploadflag      : $scope.access_permission_list[$scope.selectedRow][1],
+              downloadflag    : $scope.access_permission_list[$scope.selectedRow][2],
+              deleteflag      : $scope.access_permission_list[$scope.selectedRow][3]
+            })
+            .success(function(res){
+              if(res == true){
+                console.log("EDIT SUCCESS");
+                $location.path('/accessPermissionManagement');
+              }
+            })
+          }
+        }
+    });
+
+    scotchApp.controller('assignAccessPermissionController', function($scope, $http, $location) {
+        $scope.authorityList = {};
+        $scope.assign = {};
+        $scope.assign.uploadflag = false;
+        $scope.assign.downloadflag = false;
+        $scope.assign.deleteflag = false;
+
+        $http.post('/authority_name_list')
+        .success(function(res){
+            $scope.authorityList = res;
+        })
+
+      //  $scope.selectedAuthority = $scope.authorityList[0];
+
+        $scope.submit = function(index){
+          if($scope.assign.uploadflag || $scope.assign.downloadflag || $scope.assign.deleteflag){
+            console.log("SUCCESS");
+            $http.post('/assign_access_permission', {
+                authority : $scope.selectedAuthority,
+                username : $scope.assign.username,
+                uploadflag : $scope.assign.uploadflag,
+                downloadflag : $scope.assign.downloadflag,
+                deleteflag : $scope.assign.deleteflag,
+            })
+            .success(function(res){
+              if(res == true){
+                console.log("Assign SUCCESS");
+                $location.path('/accessPermissionManagement');
+              }
+            })
+          }
+          else
+            console.log("FAIL");
+        }
+
+         $scope.check = function(){
+           return ($scope.assign.uploadflag || $scope.assign.downloadflag || $scope.assign.deleteflag);
+         }
+    });
+
     scotchApp.controller('downloadController', function($scope, $http, $location) {
         $scope.phr_list = {};
         $scope.selectedRow = null;
@@ -255,22 +353,32 @@
 
     scotchApp.controller('loginController', function($scope,$http,$location){
         $scope.user = {};
+        $scope.check = 0;
+
         $scope.login = function(){
-        $http.post('/login', {
-          username: $scope.user.username,
-          password: $scope.user.password,
-          type    : $scope.user.type
-        })
-        .success(function(user){
-          // No error: authentication OK
-          console.log("SUCCESS");
-          $location.path('/info');
-        })
-        .error(function(){
-          // Error: authentication failed
-          console.log("ERROR");
-          $location.path('/');
-        });
+          if($scope.check == 0){
+            console.log("GO LOGIN");
+            $scope.check = 1;
+            $http.post('/login', {
+              username: $scope.user.username,
+              password: $scope.user.password,
+              type    : $scope.user.type
+            })
+            .success(function(user){
+              // No error: authentication OK
+              console.log("SUCCESS");
+              console.log(user);
+              $location.path('/info');
+            })
+            .error(function(){
+              // Error: authentication failed
+              console.log("ERROR");
+              $location.path('/');
+            });
+          }
+          else{
+            console.log("WAIT LOGIN");
+          }
       };
     });
 

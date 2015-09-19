@@ -69,11 +69,11 @@ class NewPasswordChanging extends JDialog implements ConstantVars
 		{
 
 			// Call to C function
-			if(is_admin_flag && change_admin_passwd_main(new_passwd, send_new_passwd_flag))
+			if(is_admin_flag && change_admin_passwd_main(new_passwd, send_new_passwd_flag.booleanValue()))
 			{
 				result_flag = true;
 			}
-			else if(!is_admin_flag && change_user_passwd_main(new_passwd, send_new_passwd_flag))
+			else if(!is_admin_flag && change_user_passwd_main(new_passwd, send_new_passwd_flag.booleanValue()))
 			{
 				System.out.println("CHANGE PASS SUCCESS!!");
 				result_flag = true;

@@ -472,10 +472,10 @@ public class UserMain extends JFrame implements ConstantVars
     			}
 		};
 
-    		access_permission_table_model.setDataVector(null, new Object[] {"Name", "Upload Permission?", 
+    	access_permission_table_model.setDataVector(null, new Object[] {"Name", "Upload Permission?", 
 			"Download Permission?", "Delete Permission?"});
 
-    		access_permission_table = new JTable(access_permission_table_model);
+    	access_permission_table = new JTable(access_permission_table_model);
 		access_permission_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		JScrollPane access_permission_table_panel = new JScrollPane();
@@ -5033,26 +5033,19 @@ public class UserMain extends JFrame implements ConstantVars
     	phr_downloading_table = new JTable(phr_downloading_table_model);
 		phr_downloading_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		phr_downloading_table.removeColumn(phr_downloading_table.getColumnModel().getColumn(3));
-
 	}
 
 	public boolean downloadPHR(String data_description, int phr_id, String phr_download_to_path){
+		
 		// if(validate_phr_downloading_input())
 		// {
 			int    index                    = phr_owner_authority_name_combobox.getSelectedIndex();
-			// String phr_owner_authority_name = authority_name_list.get(index);
+
 			String phr_owner_authority_name = authority_name;
-			// String phr_owner_name           = phr_owner_name_textfield.getText();
+
 			String phr_owner_name           = username;
 
 			int    row                      = phr_downloading_table.getSelectedRow();
-/*			String data_description         = phr_downloading_table.getModel().getValueAt(row, 0).toString();
-			int    phr_id                   = Integer.parseInt(phr_downloading_table.getModel().getValueAt(row, 3).toString());
-
-			String phr_download_to_path     = phr_download_to_path_textfield.getText();*/
-
-		//	init_ui_for_phr_downloading_transaction_mode();
-		//	setup_actions_for_phr_downloading_transaction_mode();
 
 			// Run background tasks
 			run_phr_downloading_background_task(phr_owner_name, phr_owner_authority_name, 
@@ -5086,7 +5079,7 @@ public class UserMain extends JFrame implements ConstantVars
 
 	public Object[][] getTableDeletePHR() {
 
-	    DefaultTableModel dtm = (DefaultTableModel) phr_deletion_table.getModel();
+	    DefaultTableModel dtm = phr_deletion_table_model;
 	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
 	    Object[][] tableData = new Object[nRow][nCol];
 	    for (int i = 0 ; i < nRow ; i++)
@@ -5131,6 +5124,73 @@ public class UserMain extends JFrame implements ConstantVars
 		//	release_actions_for_phr_deletion_mode();
 			
 			return true;
+
+	}
+
+	public boolean initTableAccessPermissionPHR()
+	{		
+
+		update_authority_list_main();
+
+		access_permission_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    	access_permission_table_model.setDataVector(null, new Object[] {"Name", "Upload Permission?", 
+			"Download Permission?", "Delete Permission?"});
+
+    	access_permission_table = new JTable(access_permission_table_model);
+
+    	update_assigned_access_permission_list_main();
+
+    	return true;
+    	
+	}
+
+	public Object[][] getTableAccessPermissionPHR() {
+
+	    DefaultTableModel dtm = access_permission_table_model;
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
+	public Object getClassAccessPermissionManagementEdit(int row){
+		String  full_username            = access_permission_table.getModel().getValueAt(row, 0).toString();
+		boolean upload_permission_flag   = access_permission_table.getModel().getValueAt(row, 1).toString().equals("true");
+		boolean download_permission_flag = access_permission_table.getModel().getValueAt(row, 2).toString().equals("true");
+		boolean delete_permission_flag   = access_permission_table.getModel().getValueAt(row, 3).toString().equals("true");
+
+		String  authority_name           = full_username.substring(0, full_username.indexOf("."));
+		String  username                 = full_username.substring(full_username.indexOf(".") + 1);
+
+		System.out.println("Full_username : " + full_username);	
+
+
+		AccessPermissionManagement access_permission_editing = new AccessPermissionManagement(authority_name, username, 
+							upload_permission_flag, download_permission_flag, delete_permission_flag);
+
+		return access_permission_editing;
+	}
+
+	public void update_assigned_access_permission_list(){
+		update_assigned_access_permission_list_main();
+	}
+
+	public Object getClassAccessPermissionManagementAssign(){
+		AccessPermissionManagement access_permission_assignment_dialog;
+		access_permission_assignment_dialog = new AccessPermissionManagement(authority_name, username, authority_name_list);
+		return access_permission_assignment_dialog;
 	}
 }
 
