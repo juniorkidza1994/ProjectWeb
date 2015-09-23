@@ -239,7 +239,7 @@
         .success(function(res){
             $scope.access_permission_list = res;
             console.log(res);
-        })
+        })     
 
         $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
@@ -262,6 +262,27 @@
             .success(function(res){
               if(res == true){
                 console.log("EDIT SUCCESS");
+                $location.path('/accessPermissionManagement');
+              }
+            })
+          }
+        }
+
+        $scope.delete = function(){
+          console.log($scope.selectedRow);
+          if($scope.selectedRow != null ){
+            console.log("Delete " + $scope.access_permission_list[$scope.selectedRow]);
+            $http.post('/delete_access_permission', {
+              delete_user      : $scope.access_permission_list[$scope.selectedRow][0],
+            })
+            .success(function(res){
+              if(res == true){
+                console.log("Delete SUCCESS");
+                 $http.post('/access_permission_management_list')
+                 .success(function(res){
+                     $scope.access_permission_list = res;
+                     console.log(res);
+                 })   
                 $location.path('/accessPermissionManagement');
               }
             })

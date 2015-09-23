@@ -1313,7 +1313,7 @@ public class UserMain extends JFrame implements ConstantVars
 						}
 					}
 				});
-            		}
+            	}
         	});
 
 		// Access permission page refresh info button
@@ -5191,6 +5191,14 @@ public class UserMain extends JFrame implements ConstantVars
 		AccessPermissionManagement access_permission_assignment_dialog;
 		access_permission_assignment_dialog = new AccessPermissionManagement(authority_name, username, authority_name_list);
 		return access_permission_assignment_dialog;
+	}
+
+	public boolean removeAccessPermission(String full_username){
+		String authority_name = full_username.substring(0, full_username.indexOf("."));
+		String username       = full_username.substring(full_username.indexOf(".") + 1);
+		remove_access_permission_main(authority_name, username);
+
+		return true;
 	}
 }
 

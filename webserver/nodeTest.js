@@ -325,7 +325,6 @@ app.post('/edit_access_permission', function (req, res) {
 });
 
 app.post('/assign_access_permission', function (req, res) {
-
     m_main_class.getClassAccessPermissionManagementAssign(function(err,result){  
       if(!err){
         var access_permission_management_class = result;
@@ -345,6 +344,24 @@ app.post('/assign_access_permission', function (req, res) {
       }
     });
 });
+
+app.post('/delete_access_permission', function (req, res) {
+    m_main_class.removeAccessPermission(req.body.delete_user, function(err,result){
+      if(!err){
+        var result_flag = result;
+          if(result_flag){
+            m_main_class.update_assigned_access_permission_list(function(err,result){
+              if(!err){
+                  res.send(result_flag);
+              }
+            });
+          }
+      }
+      else
+        console.log(err);
+    });
+});
+
 
 app.use(function(req, res, next){
   res.status(404);
