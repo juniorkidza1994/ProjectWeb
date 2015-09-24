@@ -4119,7 +4119,7 @@ public class UserMain extends JFrame implements ConstantVars
 		thread.start();
 	}
 
-	private void perform_phr_downloading_transaction(String phr_owner_name, String phr_owner_authority_name, String data_description, 
+	private boolean perform_phr_downloading_transaction(String phr_owner_name, String phr_owner_authority_name, String data_description, 
 		int phr_id, String phr_download_to_path)
 	{
 		set_cancel_phr_downloading(false);
@@ -4131,7 +4131,7 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			// Call to C function
 			record_phr_downloading_transaction_log_main(phr_owner_name, phr_owner_authority_name, data_description, false);
-			return;
+			return false;
 		}
 
 		set_phr_downloading_state(true);
@@ -4149,7 +4149,7 @@ public class UserMain extends JFrame implements ConstantVars
 				JOptionPane.showMessageDialog(main_panel, "Downloading the PHR was aborted by a user");
 			}
 
-			return;
+			return false;
 		}
 
 		set_phr_downloading_state(false);
@@ -4175,7 +4175,7 @@ public class UserMain extends JFrame implements ConstantVars
 				JOptionPane.showMessageDialog(main_panel, "Decrypting the PHR was aborted by a user");
 			}
 
-			return;
+			return false;
 		}
 
 		set_phr_decrypting_state(false);
@@ -4184,6 +4184,8 @@ public class UserMain extends JFrame implements ConstantVars
 		// Call to C function
 		record_phr_decrypting_transaction_log_main(phr_owner_name, phr_owner_authority_name, data_description, true);
 		JOptionPane.showMessageDialog(main_panel, "Downloading the PHR succeeded");
+
+		return true;
 	}
 
 	private final void init_ui_for_phr_deletion_mode()
@@ -5048,7 +5050,7 @@ public class UserMain extends JFrame implements ConstantVars
 			int    row                      = phr_downloading_table.getSelectedRow();
 
 			// Run background tasks
-			run_phr_downloading_background_task(phr_owner_name, phr_owner_authority_name, 
+			perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, 
 			data_description, phr_id, phr_download_to_path);
 		// }
 			return true;

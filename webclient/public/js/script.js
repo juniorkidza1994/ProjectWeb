@@ -330,7 +330,7 @@
          }
     });
 
-    scotchApp.controller('downloadController', function($scope, $http, $location) {
+    scotchApp.controller('downloadController', function($scope, $http, $location, $window) {
         $scope.phr_list = {};
         $scope.selectedRow = null;
 
@@ -347,7 +347,13 @@
         $scope.download = function(){
           $http.post('/downloadPHR', {
             index: $scope.selectedRow
-         })
+          })
+          .success(function(res){
+                if(res){
+                  console.log("DOWNLOAD FILESS !!!");
+                  $window.open('/downloadPHR');
+                }
+          })
         }
     });
 

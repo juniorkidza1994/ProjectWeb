@@ -4,6 +4,7 @@ var express = require('express');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var methodOverride = require('method-override');
+var fs = require('fs');
 
 var app = express();
 
@@ -235,20 +236,64 @@ app.post('/download_self_phr_list', function (req, res) {
 
 });
 
+var m_path_files;
+var m_files;
+var m_can_download = false;
+
 app.post('/downloadPHR', function (req, res) {
 
-  var index = req.body.index;
+  m_path_files = '/home/bright/Desktop/Project/webserver/Download/' + userinfo.username + '/';
 
-  console.log("INDEX : " + index);
-  if(download_phr_list.legth != 0){
-    var data_description = download_phr_list[index][0];
-    var phr_id = parseInt(download_phr_list[index][3],10);
+  fs.stat(m_path_files, function (err, stats) {
+     if (err) {
+         fs.mkdir(m_path_files,function(err){
+           if (err) {
+               return console.error(err);
+           }
+           console.log("Directory created successfully!");
+         });
+     }
+    var index = req.body.index;
 
-    var result = m_main_class.downloadPHRSync(data_description, phr_id, "/home/bright/Desktop");
-    console.log("RESULT FROM DOWNLOAD : " + result);
-  }
+    console.log("INDEX : " + index);
+    if(download_phr_list.legth != 0){
+      var data_description = download_phr_list[index][0];
+      var phr_id = parseInt(download_phr_list[index][3],10);
 
+      m_main_class.downloadPHR(data_description, phr_id, m_path_files, function(err, files){
+        if(!err){
+          fs.readdir(m_path_files,function(err, files){
+             if (err) {
+                 return console.error(err);
+             }
+
+             console.log("FILE NAMES !!");
+
+             console.log( files[0] );
+
+             m_files = files[0];
+
+             m_can_download = true;
+
+             res.send(true);
+          });
+        }
+        else {
+          console.log("ERROR " + err);
+          res.send(false);
+        }
+      });
+    }
+  });
 });
+
+app.get('/downloadPHR', function (req, res) {
+  console.log("Download Files !!");
+  res.download(m_path_files + m_files);
+  console.log("ENDDDD");
+});
+
+
 
 //---------------------- DELETE PHR -----------------------//+
 
