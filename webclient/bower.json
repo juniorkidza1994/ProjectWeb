@@ -13,9 +13,11 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "angularjs#~1.4.4",
+    "angular": "~1.4.7",
     "angular-cookies": "~1.4.5",
     "angular-resource": "~1.4.5",
-    "bootstrap": "~3.3.5"
+    "bootstrap": "~3.3.5",
+    "ng-file-upload": "~9.0.9",
+    "angular-ui-tree": "~2.9.0"
   }
 }

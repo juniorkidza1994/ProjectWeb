@@ -1,13 +1,62 @@
 var java = require('java');
 var path = require('path');
 var express = require('express');
+var multer  = require('multer');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var methodOverride = require('method-override');
+var Type = require('type-of-is');
+
+// USE TO OPEN FILES
 var fs = require('fs');
+
+// DELETE DIRECTORY THAT IS NOT EMPTY
+
+var deleteFolderRecursive = function(path) {
+  if( fs.existsSync(path) ) {
+    fs.readdirSync(path).forEach(function(file,index){
+      var curPath = path + "/" + file;
+      if(fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
+  }
+};
 
 var app = express();
 
+var storage = multer.diskStorage({
+
+
+  destination: function (req, file, cb) {
+  var path_files = '/home/bright/Desktop/Project/webserver/Upload/' + userinfo.username + '/';
+
+  fs.stat(path_files, function (err, stats) {
+     if (err) {
+         fs.mkdir(path_files,function(err){
+           if (err) {
+               return console.error(err);
+           }
+           else
+            cb(null, path_files) 
+         });
+     }
+     else
+        cb(null, path_files) 
+
+  });
+    
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  }
+})
+
+// USE TO UPLOAD FILES
+var upload = multer({  storage: storage })
 
 
 var bodyParser = require('body-parser');
@@ -26,6 +75,8 @@ java.classpath.push("../phrapp-0.30/bin/");
 java.classpath.push("../phrapp-0.30/bin/commons-lang3-3.1.jar");
 java.classpath.push("../phrapp-0.30/bin/paillier.jar");
 java.classpath.push("../phrapp-0.30/bin/swingx-all-1.6.3.jar");
+java.classpath.push("../phrapp-0.30/bin/paillier.jar");
+java.classpath.push("../phrapp-0.30/bin/org-json.jar");
 
 java.options.push('-Djava.library.path=../phrapp-0.30/bin/ -classpath *:../phrapp-0.30/bin/');
 
@@ -74,6 +125,8 @@ passport.use(new LocalStrategy(
 
     if (bool){ // stupid example
       m_main_class = m_instance.getMainClassSync();
+      deleteFolderRecursive('Download/' + username);
+      deleteFolderRecursive('Upload/' + username);
       return done(null, {name: "user"});
     }
 
@@ -120,7 +173,7 @@ app.get('/userinfo', function (req, res) {
     if(Object.keys(userinfo).length == 0)
     {
       // Get table
-      var attribute_list = m_main_class.getTableAttributeSync();
+      var attribute_list = m_main_class.getTableUserAttributeSync();
       var authorityName = m_main_class.getAuthorityNameSync();
       var username = m_main_class.getUsernameSync();
       var email_address = m_main_class.getemailAddressSync();
@@ -289,8 +342,11 @@ app.post('/downloadPHR', function (req, res) {
 
 app.get('/downloadPHR', function (req, res) {
   console.log("Download Files !!");
-  res.download(m_path_files + m_files);
-  console.log("ENDDDD");
+  res.download(m_path_files + m_files,function(err){
+    if(!err){
+      console.log("ENDDDD");
+    }
+  });
 });
 
 
@@ -331,6 +387,13 @@ app.post('/deletePHR', function (req, res) {
   }
 
 });
+
+//------------------ UPLOAD PHR FILES -----------------------------
+
+app.post('/uploadPHR', upload.single('file'), function (req, res, next) {
+  console.log("UPLOAD FILES !!!");
+})
+
 
 //------------------ ACCESS PERMISSION MANAGER ------------------
 
@@ -390,6 +453,24 @@ app.post('/assign_access_permission', function (req, res) {
     });
 });
 
+var attribute_table;
+
+app.post('/attribute_table', function (req, res) {
+
+  m_main_class.initTableAttributePHR(userinfo.authorityName, function(err,result){
+    if(result) {
+      m_main_class.getTableAttribute(function(err,result){
+        if(result){
+          attribute_table = result;
+          console.log("Attribute TABLE : " + result);
+          res.send(attribute_table);
+        }
+      });
+    }
+  });
+
+});
+
 app.post('/delete_access_permission', function (req, res) {
     m_main_class.removeAccessPermission(req.body.delete_user, function(err,result){
       if(!err){
@@ -407,6 +488,24 @@ app.post('/delete_access_permission', function (req, res) {
     });
 });
 
+app.post('/check_user_exist', function (req, res) {
+    m_main_class.checkUserExist(req.body.authority_name, req.body.username, function(err,result){
+      if(!err){
+        res.send(result);
+      }
+      else
+        console.log(err);
+    });
+});
+
+app.post('/set_upload', function (req, res) {
+    m_main_class.arrayStringToTree(req.body.tree, function(err,result){
+        console.log(req.body.tree);
+        console.log("ERROR : " + err);
+        console.log("RESULT : " + result);
+    });
+
+});
 
 app.use(function(req, res, next){
   res.status(404);

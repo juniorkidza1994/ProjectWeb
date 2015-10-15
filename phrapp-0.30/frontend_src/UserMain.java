@@ -7,6 +7,8 @@ import javax.swing.tree.*;
 import java.util.regex.*;
 import javax.swing.border.*;
 
+import java.util.Arrays;
+
 import java.io.*;
 
 import java.util.*;
@@ -68,6 +70,9 @@ public class UserMain extends JFrame implements ConstantVars
 	private native void remove_all_threshold_parameters_in_cache_main(int no_trusted_users);
 	private native boolean approve_restricted_phr_access_request_main(String phr_ownername, String phr_owner_authority_name, int phr_id, String phr_description, 
 		String emergency_staff_name, String emergency_unit_name);
+
+	// Variables get from node
+	private String 			  m_authority_name_node_js;
 
 	// Variables
 	private JPanel            main_panel                                                = new JPanel();
@@ -2590,6 +2595,8 @@ public class UserMain extends JFrame implements ConstantVars
 						int    index          = attribute_authority_name_combobox.getSelectedIndex();
 						String authority_name = authority_name_list.get(index);
 
+						System.out.println("AUTHORITY NAME" + authority_name);
+
 						// Call to C function
 						update_attribute_list_main(authority_name);
 
@@ -2721,8 +2728,13 @@ public class UserMain extends JFrame implements ConstantVars
 							String confidentiality_level    = (is_phr_uploaded_by_its_owner) ? confidentiality_level_group.
 								getSelection().getActionCommand() : phr_exclusive_level;
 
+							System.out.println("ACCESS POLICY 1 : " + access_policy);
+
 							// Add the PHR owner's attribute identity into an access policy so that the PHR owner can decrypt the encrypted PHR
 							access_policy = add_phr_owner_attribute_to_access_policy(access_policy, phr_owner_name, phr_owner_authority_name);
+
+							System.out.println("ACCESS POLICY 2 : " + access_policy);
+
 
 							uninit_ui_for_phr_uploading_mode();
 							release_actions_for_phr_uploading_mode();
@@ -4781,8 +4793,8 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			public void run()
 			{
-				int    index          = attribute_authority_name_combobox.getSelectedIndex();
-				String authority_name = authority_name_list.get(index);
+
+				String authority_name = m_authority_name_node_js;
 	
 				attribute_table_model.insertRow(attribute_table.getRowCount(), new Object[] {authority_name + 
 					"." + attribute_name, (is_numerical_attribute_flag) ? "true" : "false"});
@@ -4964,8 +4976,44 @@ public class UserMain extends JFrame implements ConstantVars
 		return authority_name_list_array;
 	}
 
-	public Object[][] getTableAttribute () {
+	public Object[][] getTableUserAttribute () {
 	    DefaultTableModel dtm = (DefaultTableModel) user_attribute_table.getModel();
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
+
+	public boolean initTableAttributePHR(String authority_name)
+	{		
+
+		m_authority_name_node_js = authority_name;
+
+		attribute_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    		attribute_table_model.setDataVector(null, new Object[] {"Attribute name", "Numerical attribute?"});
+    		attribute_table = new JTable(attribute_table_model);
+
+    		update_attribute_list_main(authority_name);
+
+    	return true;
+    	
+	}
+
+	public Object[][] getTableAttribute () {
+	    DefaultTableModel dtm = (DefaultTableModel) attribute_table.getModel();
 	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
 	    Object[][] tableData = new Object[nRow][nCol];
 	    for (int i = 0 ; i < nRow ; i++)
@@ -5201,6 +5249,16 @@ public class UserMain extends JFrame implements ConstantVars
 		remove_access_permission_main(authority_name, username);
 
 		return true;
+	}
+
+	public boolean checkUserExist(String authority_name, String username){
+		return check_user_existence_main(authority_name, username);
+	}
+
+	public void arrayStringToTree(Object[] string_tree){
+		System.out.println("OBJECT");
+		System.out.println("LENGTH : " + string_tree.length);
+		System.out.println("ARRAY : " + Arrays.deepToString(string_tree));
 	}
 }
 

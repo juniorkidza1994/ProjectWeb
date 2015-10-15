@@ -1,0 +1,163 @@
+<!-- home.html -->
+<style>
+.selected{
+	background-color: black;
+	color: white;
+	font-weight: bold;
+}
+.selectedNode{
+    border: 1px solid #dae2ea;
+    background-color: #D0DEFF;
+    color: #0073B6;
+	font-weight: bold;
+	padding: 10px;
+    margin-right: 10px;
+}
+</style>
+
+	<div class="jumbotron text-center">
+		<h1>Upload Page</h1>
+	</div>
+
+	<div class="container-fluid">
+			<form name="form" class="form-horizontol">
+					<div class="form-group row">
+						<label for="inputEmail3" class="col-sm-3 control-label">Authority Name : </label>
+						<div class="col-sm-9">
+							<p class="form-control-static">PERSONAL</p>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-3 control-label">PHR ownername : </label>
+						<div class="col-sm-9">
+							<p class="form-control-static">Dream</p>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-3 control-label"> PHR FILES : </label>
+						
+							<input class="col-sm-9"type="file" ngf-select ng-model="file" name="file" >
+										
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-3 control-label">Data description : </label>
+						<div class="col-sm-9"> 
+							<textarea class="form-control"  style="resize:none" name="desc" cols=60 rows=3></textarea>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-3 control-label">PHR confidentiality level : </label>
+						<div class="col-sm-9 radio">
+							<label >
+								<input type="radio" name="con_level" value="exclusive" ng-model="con_level" checked> Exclusive level
+							</label>
+
+						</div>
+						<div class="col-sm-offset-3 col-sm-9 radio">
+							<label>
+									<input type="radio" name="con_level" ng-model="con_level" value="Secure" > Secure level
+							</label>		
+						</div>
+						<div class="col-sm-offset-3 col-sm-9 radio">
+							<label>
+								<input type="radio" name="con_level" ng-model="con_level" value="restricted"> Restricted level
+							</label>
+							
+						</div>
+
+					</div>
+					<div class="form-group row">
+						<div ng-show="con_level == 'restricted'">
+							<label class="col-sm-offset-4 col-sm-2 control-label">Threshold Value : </label>
+								<div class="col-sm-6">
+									<input class="form-control" type='number' name="threshold" >
+								</div>
+							<label class="col-sm-offset-4 col-sm-2 control-label">No. of trusted users : </label>
+								<div class="col-sm-6">
+									<input class="form-control" type='number' name="trusted_users" >
+								</div>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-3 control-label">Access Policy : </label>
+						<div class="col-sm-9">
+							<p class="form-control-static">Root of access policy</p>
+						</div>
+						<div class="col-sm-offset-3 col-sm-9"> 
+							<script type="text/ng-template" id="nodes_renderer.html">
+							 <div click-Off="clickedSomewhereElse()" ng-click="setClickedNode(this)" ui-tree-handle data-nodrag class="tree-node tree-node-content">
+							 	<div ng-class="{'selectedNode':node.id == selectedNode_ID}">
+							    <a class="btn btn-success btn-xs" ng-if="node.nodes && node.nodes.length > 0" data-nodrag ng-click="toggle(this)"><span
+							        class="glyphicon"
+							        ng-class="{
+							          'glyphicon-chevron-right': collapsed,
+							          'glyphicon-chevron-down': !collapsed
+							        }"></span></a>
+							    {{node.full}}
+							    <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span
+							        class="glyphicon glyphicon-remove"></span></a>
+							
+							  </div>
+							</div>
+							  <ol ui-tree-nodes="" ng-model="node.nodes" ng-class="{hidden: collapsed}">
+							    <li ng-repeat="node in node.nodes" ui-tree-node ng-include="'nodes_renderer.html'">
+							    </li>
+							  </ol>
+							</script>
+							<div ui-tree>
+							  <ol ui-tree-nodes="" ng-model="tree" id="tree-root">
+							    <li ng-repeat="node in tree" ui-tree-node ng-include="'nodes_renderer.html'" ></li>
+							  </ol>
+							</div>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-3 control-label">Attributes : </label>
+						<div class="col-sm-9 table-responsive"> 
+							<table class="table table-bordered" >
+								<tr>
+									<th>Attribute name</th>
+									<th>Numerical attribute</th>
+								</tr>
+								<tr ng-repeat="item in attribute_all" ng-class="{'selected':$index == selectedRow}" click-Off="clickedSomewhereElse()" ng-click="setClickedRow($index)">
+									<td>{{item[0]}}</td>
+									<td>{{item[1]}}</td>
+								</tr>
+							</table>
+						</div>
+						 <div class="col-sm-offset-5 col-sm-3">
+						 	<button type="button" class="btn btn-info" click-Off="clickedSomewhereElse()" ng-click="addAttribToTree()">Add</button>
+						 </div>
+					</div>
+					<div class="form-group row">
+						<label class="col-sm-3 control-label">User : </label>
+								
+							<p class="col-sm-2 form-control-static">Authority :</p>
+								
+								<div class="col-sm-7"> 
+									<select class="form-control" ng-model="selectedAuthority" ng-options="authority for authority in authorityList" required></select> 
+								</div>							
+					</div>
+					<div class="form-group row">
+								
+							<p class="col-sm-offset-3 col-sm-2 form-control-static">Username :</p>
+								
+								<div class="col-sm-7"> 
+									<input type="text" id="Username" class="form-control" placeholder="Username" required ng-model="username">
+								</div>				
+
+								<div class="col-sm-offset-5 col-sm-3"> 
+									<button class="btn btn-info" type="submit" ng-click="addUserToTree()" click-Off="clickedSomewhereElse()">  </button>
+								</div>				
+			
+					</div>
+
+					<div class="form-group">
+						<div class="col-sm-offset-1 col-sm-10">
+							<button class="btn btn-success" type="submit" ng-click="submit()">submit</button>
+						</div>
+					</div>
+
+			</form>
+	</div>
+	

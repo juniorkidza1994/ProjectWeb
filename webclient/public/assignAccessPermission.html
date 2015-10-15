@@ -1,7 +1,7 @@
 
     <div class="jumbotron text-center">
 
-      <h1>Change Password</h2>
+      <h1>Assign access permission</h2>
       </div> <!-- /container -->
 
       <div class="container">
@@ -9,14 +9,14 @@
           
           
             <div class="form-group">
-              <label for="inputPassword" class="col-sm-2 control-label">Authority</label>
+              <label  class="col-sm-2 control-label">Authority</label>
               <div class="col-sm-2">
-                 <select ng-model="selectedAuthority" ng-options="authority for authority in authorityList"></select>
+                 <select ng-model="selectedAuthority" ng-options="authority for authority in authorityList" required></select>
               </div>
             </div>
 
-             <div class="form-group">
-              <label for="inputPassword" class="col-sm-2 control-label">Username</label>
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">Username</label>
               <div class="col-sm-10">
                   <input type="text" id="Username" class="form-control" placeholder="Username" required ng-model="assign.username">
               </div>
@@ -32,7 +32,7 @@
               <div class="col-sm-offset-2 col-sm-10">
                 <br />
                   <button class="btn btn-lg btn-primary" type="submit" ng-click ="submit()">Submit</button>
-                  <button class="btn btn-lg btn-primary" type="submit" ng-click ="cancle()">Cancle</button>
+                  <button class="btn btn-lg btn-primary" type="button" ng-click ="cancle()">Cancle</button>
               </div>
            </div>
         </form>

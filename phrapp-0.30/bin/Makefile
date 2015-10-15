@@ -1348,7 +1348,7 @@ client_frontend: \
 
 admin_main:
 	@$(JC) -sourcepath '../frontend_src/' -d '.' \
-	-cp '../frontend_src/swingx-all-1.6.3.jar:../frontend_src/commons-lang3-3.1.jar:../frontend_src/paillier.jar' \
+	-cp '../frontend_src/swingx-all-1.6.3.jar:../frontend_src/commons-lang3-3.1.jar:../frontend_src/org-json.jar:../frontend_src/paillier.jar' \
 	'../frontend_src/AdminMain.java' '../frontend_src/AttributeRegistration.java' \
 	'../frontend_src/UserManagement.java' '../frontend_src/UserTreeTable.java' \
 	'../frontend_src/UserTreeTableModel.java' '../frontend_src/UserTreeTableNode.java' \
@@ -1361,7 +1361,7 @@ admin_main:
 
 user_main:
 	@$(JC) -sourcepath '../frontend_src/' -d '.' \
-	-cp '../frontend_src/swingx-all-1.6.3.jar:../frontend_src/commons-lang3-3.1.jar:../frontend_src/paillier.jar' \
+	-cp '../frontend_src/swingx-all-1.6.3.jar:../frontend_src/commons-lang3-3.1.jar:../frontend_src/org-json.jar:../frontend_src/paillier.jar' \
 	'../frontend_src/UserMain.java' '../frontend_src/ShutdownHook.java' \
 	'../frontend_src/AccessPermissionManagement.java' '../frontend_src/AccessPolicyTree.java' \
 	'../frontend_src/ComparisonOperation.java' '../frontend_src/NumericalAttributeInformationEntry.java' \
@@ -1372,7 +1372,7 @@ user_main:
 
 login_main:
 	@$(JC) -sourcepath '../frontend_src/' -d '.' \
-	-cp '../frontend_src/swingx-all-1.6.3.jar:../frontend_src/commons-lang3-3.1.jar:../frontend_src/paillier.jar' \
+	-cp '../frontend_src/swingx-all-1.6.3.jar:../frontend_src/commons-lang3-3.1.jar:../frontend_src/org-json.jar:../frontend_src/paillier.jar' \
 	'../frontend_src/Login.java' '../frontend_src/ForgetPassword.java' \
 	'../frontend_src/ConstantVars.java' '../frontend_src/SpringUtilities.java' -Xlint
 
