@@ -28,27 +28,16 @@ var deleteFolderRecursive = function(path) {
 
 var app = express();
 
+var path_files_upload_temp;
+
 var storage = multer.diskStorage({
 
 
   destination: function (req, file, cb) {
-  var path_files = '/home/bright/Desktop/Project/webserver/Upload/' + userinfo.username + '/';
 
-  fs.stat(path_files, function (err, stats) {
-     if (err) {
-         fs.mkdir(path_files,function(err){
-           if (err) {
-               return console.error(err);
-           }
-           else
-            cb(null, path_files) 
-         });
-     }
-     else
-        cb(null, path_files) 
-
-  });
-    
+    path_files_upload_temp = '/home/bright/Desktop/Project/webserver/Upload/' + "temp" + '/';
+    cb(null, path_files_upload_temp) 
+   
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname)
@@ -95,6 +84,21 @@ var m_main_class;
 
 var m_authority_name_list = null;
 
+// DELTE ALL FILE IN DIRECTORY
+var rmDir = function(dirPath) {
+      try { var files = fs.readdirSync(dirPath); }
+      catch(e) { return; }
+      if (files.length > 0)
+        for (var i = 0; i < files.length; i++) {
+          var filePath = dirPath + '/' + files[i];
+          if (fs.statSync(filePath).isFile())
+            fs.unlinkSync(filePath);
+          else
+            rmDir(filePath);
+        }
+      return true;
+};
+
 // Serialized and deserialized methods when got from session
 passport.serializeUser(function(user, done) {
     done(null, user);
@@ -124,7 +128,13 @@ passport.use(new LocalStrategy(
     console.log(bool);
 
     if (bool){ // stupid example
+
+      console.log("OLD MAIN CLASS : " + m_main_class);
+
       m_main_class = m_instance.getMainClassSync();
+
+      console.log("NEW MAIN CLASS : " + m_main_class);
+
       deleteFolderRecursive('Download/' + username);
       deleteFolderRecursive('Upload/' + username);
       return done(null, {name: "user"});
@@ -133,6 +143,10 @@ passport.use(new LocalStrategy(
     return done(null, false, { message: 'Incorrect username.' });
   }
 ));
+
+app.post('/get_class', function(req, res){
+  res.send(m_main_class);
+})
 
 app.get('/admin', function (req, res) {
   java.callMethodSync(m_instance, "login", "127.0.0.1","admin","bright23","Admin");
@@ -166,9 +180,11 @@ app.post('/logins', function (req, res) {
 
 });
 
-var userinfo = {};
+
 
 app.get('/userinfo', function (req, res) {
+
+    var userinfo = {};
 
     if(Object.keys(userinfo).length == 0)
     {
@@ -253,7 +269,6 @@ app.post('/change_email', function (req, res) {
   if(result){
     console.log("UPDATE EMAIL");
     m_main_class.updateNewEmailSync(new_email_address);
-    userinfo.email_address = m_main_class.getemailAddressSync();
     res.send(result);
   }
 });
@@ -285,59 +300,121 @@ app.post('/download_self_phr_list', function (req, res) {
     }
   });
 
-  console.log("DONWLOAD LIST : " + download_phr_list);
-
 });
 
 var m_path_files;
 var m_files;
 var m_can_download = false;
 
+// DOWNLOAD FILES
+var downloadfile = function(data_description, phr_id, m_path_files, callback){
+
+    m_main_class.downloadPHR(data_description, phr_id, m_path_files, function(err, result){    
+      if(result){
+
+          console.log("RESSULT DOWNLOAD : " + result);
+
+          console.log("PATH FILES: " + m_path_files);
+          
+          var files = [];
+          // process.nextTick(function() 
+
+            fs.readdir(m_path_files,function(err, result){
+                if (err) {
+                      return console.error(err);
+                } 
+
+                else {
+                  console.log("RESULT : " + result);
+
+                  files = result;
+
+                  console.log("result.length : " + files.length);
+
+                  if(files.length != 0){
+
+                      console.log("FILES : " + files);
+
+                      m_files = files[0];
+
+                      m_can_download = true;
+
+                      if (callback && typeof(callback) === "function") {
+                          callback(true);
+                      }
+
+            
+                  }
+
+                  else {
+                      //if(files.length == 0)
+                      console.log("LOOP");
+                      // process.nextTick(arguments.callee);  
+                  }
+                }
+
+                // files = result;
+
+              });         
+      }
+      else {
+          console.log("ERROR " + err);
+          
+            if (callback && typeof(callback) === "function") {
+                callback(false);
+            }
+      }
+
+    });
+
+}
+
 app.post('/downloadPHR', function (req, res) {
 
-  m_path_files = '/home/bright/Desktop/Project/webserver/Download/' + userinfo.username + '/';
+  var username = m_main_class.getUsernameSync();
 
-  fs.stat(m_path_files, function (err, stats) {
-     if (err) {
+  m_path_files = '/home/bright/Desktop/Project/webserver/Download/' + username + '/';
+
+  console.log("m_path_files : " + m_path_files);
+
+  var index = req.body.index;
+
+  var data_description = download_phr_list[index][0];
+  var phr_id = parseInt(download_phr_list[index][3],10);
+
+  console.log("DATA : " + data_description);
+
+  console.log("ID : " + phr_id);
+
+  fs.stat(m_path_files, function(err,stat){
+    if(err == null){
+
+          if(rmDir(m_path_files)){
+              downloadfile(data_description, phr_id, m_path_files, function(result){
+              res.send(result);
+              });
+          }
+    }
+
+    else if(err.code == 'ENOENT'){
          fs.mkdir(m_path_files,function(err){
            if (err) {
                return console.error(err);
            }
-           console.log("Directory created successfully!");
+           
+           else {
+             console.log("Directory created successfully!");
+             downloadfile(data_description, phr_id, m_path_files, function(result){
+                res.send(result);
+             });
+           }
+
          });
-     }
-    var index = req.body.index;
-
-    console.log("INDEX : " + index);
-    if(download_phr_list.legth != 0){
-      var data_description = download_phr_list[index][0];
-      var phr_id = parseInt(download_phr_list[index][3],10);
-
-      m_main_class.downloadPHR(data_description, phr_id, m_path_files, function(err, files){
-        if(!err){
-          fs.readdir(m_path_files,function(err, files){
-             if (err) {
-                 return console.error(err);
-             }
-
-             console.log("FILE NAMES !!");
-
-             console.log( files[0] );
-
-             m_files = files[0];
-
-             m_can_download = true;
-
-             res.send(true);
-          });
-        }
-        else {
-          console.log("ERROR " + err);
-          res.send(false);
-        }
-      });
     }
   });
+
+  
+
 });
 
 app.get('/downloadPHR', function (req, res) {
@@ -390,9 +467,59 @@ app.post('/deletePHR', function (req, res) {
 
 //------------------ UPLOAD PHR FILES -----------------------------
 
+var username_upload = "";
+
+var savefile = function(old_path_file, path_files_upload, phr_owner_name, phr_owner_authority_name, 
+             data_description, confidentiality_level, access_policy)
+{
+    fs.rename(old_path_file, path_files_upload, function(error){
+    
+    if(error) throw error;
+              
+    fs.unlink(old_path_file, function(){
+      if(error) throw error;
+      else {
+        m_main_class.uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+              path_files_upload, data_description, confidentiality_level, 
+              access_policy, function(err,result){
+              if(!err) {
+                  console.log("SUCCESS !!! : " + result);     
+              }
+
+        });
+      }
+
+    });
+              
+  }); 
+}
+
 app.post('/uploadPHR', upload.single('file'), function (req, res, next) {
-  console.log("UPLOAD FILES !!!");
-})
+  console.log(req.body);
+  console.log(req.file);
+
+  var path_files_upload = '/home/bright/Desktop/Project/webserver/Upload/' + req.body.phr_owner_name + '/';
+
+  if(!fs.existsSync(path_files_upload)){
+        fs.mkdir(path_files_upload,function(err){
+          if (err) {
+               return console.error(err);
+          }
+          else {
+
+            // save file
+            savefile(req.file.path, path_files_upload + req.file.originalname, req.body.phr_owner_name, req.body.phr_owner_authority_name, 
+              req.body.data_description, req.body.confidentiality_level, req.body.access_policy);   
+          }
+        });
+    }
+    else {
+      savefile(req.file.path, path_files_upload + req.file.originalname, req.body.phr_owner_name, req.body.phr_owner_authority_name, 
+              req.body.data_description, req.body.confidentiality_level, req.body.access_policy);
+    }
+
+
+});
 
 
 //------------------ ACCESS PERMISSION MANAGER ------------------
@@ -457,7 +584,9 @@ var attribute_table;
 
 app.post('/attribute_table', function (req, res) {
 
-  m_main_class.initTableAttributePHR(userinfo.authorityName, function(err,result){
+  var authorityName = m_main_class.getAuthorityNameSync();
+
+  m_main_class.initTableAttributePHR(authorityName, function(err,result){
     if(result) {
       m_main_class.getTableAttribute(function(err,result){
         if(result){
@@ -496,15 +625,6 @@ app.post('/check_user_exist', function (req, res) {
       else
         console.log(err);
     });
-});
-
-app.post('/set_upload', function (req, res) {
-    m_main_class.arrayStringToTree(req.body.tree, function(err,result){
-        console.log(req.body.tree);
-        console.log("ERROR : " + err);
-        console.log("RESULT : " + result);
-    });
-
 });
 
 app.use(function(req, res, next){

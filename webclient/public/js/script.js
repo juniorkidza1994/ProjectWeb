@@ -2,6 +2,9 @@
 
     // create the module and name it scotchApp
     	// also include ngRoute for all our routing needs
+
+    var myClass;
+
     var scotchApp = angular.module('scotchApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree'])
 
   .config(function($routeProvider, $locationProvider, $httpProvider) {
@@ -200,12 +203,22 @@
         $scope.authorityList = {};
         $scope.attribute_all = {};
         $scope.id_node = 1;
+        $scope.userinfo = {} ;
+        $scope.description = "";
+        $scope.con_level = "";
+        $scope.threshold = -1;
+        $scope.truted_users = -1;
 
         $scope.tree_string = "";
 
         $http.post('/authority_name_list')
         .success(function(res){
             $scope.authorityList = res;
+        })
+
+        $http.get('/userinfo')
+        .success(function(res){
+            $scope.userinfo = res;
         })
 
         $http.post('/attribute_table')
@@ -221,25 +234,21 @@
 
           console.log("TREE STRING" + $scope.tree_string);
 
-          /*$http.post('/set_upload', {
-            tree      : $scope.tree
-          })
-          .success(function(result){
-            if(result){
-              $scope.addToNode("User", $scope.username);
-            }
-            else {
-              console.log("NOT HAVE USER");
-            }
-          })*/
+          if(!($scope.tree.length != 0 &&  $scope.description != "" && $scope.con_level != "") && 
+            !($scope.con_level == "Restricted level" && $scope.threshold > 0 && $scope.truted_users > 0)){
+            console.log("TREE EMPTY");
+          }
+          else if ($scope.form.file.$valid && $scope.file && !$scope.file.$error) {
 
-    /*      if ($scope.form.file.$valid && $scope.file && !$scope.file.$error) {
+            $scope.tree_string += " or (UsernameNode__SUB__" + $scope.userinfo.authorityName + "__SUB__" + $scope.userinfo.username + ')';
+            console.log("UPLOAD");
             console.log($scope.file);
             $scope.upload($scope.file);
+            $scope.tree_string = "";
           }
           else {
             console.log($scope.form.file.$valid);
-          }*/
+          }
         };
 
       $scope.parent = ""; 
@@ -255,23 +264,43 @@
        //         console.log($scope.parent);
             }
 
+            var temp_name = value['name'];
+
+            console.log("TEMP NAME BEFORE : " + temp_name);
+
+            var temp_type = "";
+
+            if(value['type'] == "Username"){
+                  temp_type = "UsernameNode__SUB__";
+            }      
+            else if(value['type'] == "Attribute"){
+                  temp_type = "AttributeNode__SUB__";
+            }
+
+            temp_name = temp_type  + temp_name.replace(".","__SUB__");
+
+            console.log("TEMP NAME AFTER : " + temp_name);
+
+            // REPLACE STRING 
             if(value['nodes'].length != 0){
-          //    console.log(value['nodes']);           
-              $scope.parent = $scope.parent + value['name'] + "+"; 
+
+          //    console.log(value['nodes']);     
+              $scope.parent += temp_name + " and "; 
          //     console.log($scope.parent);
               $scope.dfs(value['nodes']);
+              var lastIndex = $scope.parent.lastIndexOf(temp_name);
+              $scope.parent = $scope.parent.substring(0,lastIndex);
             }
             else {
+              // REPLACE STRING
 
               if($scope.tree_string != "")
                 $scope.tree_string += " or ";
-              $scope.tree_string +=  $scope.parent + value['name'] + ")";
+              $scope.tree_string +=  $scope.parent + temp_name + ")";
             //  console.log($scope.tree_string);
             }
             
-          });
-
-          $scope.parent = "";          
+          });        
         }
       };
 
@@ -279,7 +308,11 @@
         $scope.upload = function (file) {
             Upload.upload({
                 url: 'uploadPHR',
-                data: {file: file, 'username': $scope.username}
+                data: {file: file, 'phr_owner_authority_name': $scope.userinfo.authorityName, 
+                'phr_owner_name': $scope.userinfo.username, 'data_description': $scope.description,
+                'confidentiality_level': $scope.con_level, 'access_policy': $scope.tree_string
+              }
+
             }).then(function (resp) {
                 console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);
             }, function (resp) {
@@ -336,7 +369,7 @@
           })
           .success(function(result){
             if(result){
-              $scope.addToNode("Username", $scope.username);
+              $scope.addToNode("Username", $scope.selectedAuthority +  "." + $scope.username);
             }
             else {
               console.log("NOT HAVE USER");
@@ -363,6 +396,9 @@
             if(type == "Username"){
               title = "User";
             }
+            else if(type = "Attribute"){
+              title = "Attribute";
+            }
             else
               title = type;
             nodeData.nodes.push({
@@ -370,7 +406,7 @@
               title: title,
               type: type,
               name: scope,
-              full: type + ": " + scope,
+              full: title + ": " + scope,
               nodes: []
             });
           }
@@ -379,9 +415,9 @@
             $scope.tree.push({
               id: $scope.id_node,
               title: title,
-
+              type: type,
               name: scope,
-              full: type + ": " + scope,
+              full: title + ": " + scope,
               nodes: []
             });
             console.log($scope.tree);
@@ -626,9 +662,11 @@
 
         $scope.download = function(){
           $http.post('/downloadPHR', {
-            index: $scope.selectedRow
+            index: $scope.selectedRow,
+            myClass: myClass
           })
           .success(function(res){
+            console.log("RESULT : " + res);
                 if(res){
                   console.log("DOWNLOAD FILESS !!!");
                   $window.open('/downloadPHR');
@@ -676,6 +714,13 @@
               console.log("SUCCESS");
               console.log(user);
               $location.path('/info');
+
+              $http.post('/get_class')
+              .success(function(res){
+                myClass = res;
+                console.log("MYCLASS " + myClass);
+              })
+
             })
             .error(function(){
               // Error: authentication failed

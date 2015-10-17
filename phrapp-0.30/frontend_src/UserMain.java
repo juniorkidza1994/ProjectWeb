@@ -280,11 +280,17 @@ public class UserMain extends JFrame implements ConstantVars
 	// Class variable for web
 	private String m_phr_owner_name;
 	private int m_index_list_download;
+	private String m_threshold_value  ;
+	private String m_no_trusted_users ;
+
 
 	public UserMain(String username, String passwd, String email_address, String authority_name, String user_auth_ip_addr, String audit_server_ip_addr, 
 		String phr_server_ip_addr, String emergency_server_ip_addr, String ssl_cert_hash, String cpabe_priv_key_hash)
 	{
 		super("PHR system: User Main");
+
+		System.out.println("OLD USERNAME: " + this.username);
+		System.out.println("NEW USERNAME: " + username);
 
 		this.username                 = username;
 		this.email_address            = email_address;
@@ -3249,9 +3255,9 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			public void run()
 			{
-				phr_encrypting_progressbar.setValue(percent);
+/*				phr_encrypting_progressbar.setValue(percent);
 				phr_encrypting_progressbar.setStringPainted(true);
-				phr_encrypting_progressbar.setIndeterminate(false);
+				phr_encrypting_progressbar.setIndeterminate(false);*/
 			}
 		});
 	}
@@ -3374,11 +3380,11 @@ public class UserMain extends JFrame implements ConstantVars
 				{
 		    			public void run()
 					{
-						uninit_ui_for_phr_uploading_transaction_mode();
+						/*uninit_ui_for_phr_uploading_transaction_mode();
 						release_actions_for_phr_uploading_transaction_mode();
-						create_phr_management_page();
+						create_phr_management_page();*/
 
-						working_lock.unlock();
+					//	working_lock.unlock();
 					}
 				});
 			}
@@ -3394,6 +3400,14 @@ public class UserMain extends JFrame implements ConstantVars
 		set_phr_encrypting_state(false);
 		set_phr_uploading_state(false);
 
+		System.out.println("JAVA phr_owner_name: "+ phr_owner_name);
+		System.out.println("JAVA phr_owner_authority_name: "+ phr_owner_authority_name);
+		System.out.println("JAVA phr_upload_from_path: "+ phr_upload_from_path);
+		System.out.println("JAVA data_description: "+ data_description);
+		System.out.println("JAVA confidentiality_level: "+ confidentiality_level);
+		System.out.println("JAVA access_policy: "+ access_policy);
+
+
 		if(confidentiality_level.equals(phr_secure_level))
 		{
 			// Add the Emergency Server's attribute identity into an access policy so that the Emergency Server can decrypt the secure-level encrypted PHR
@@ -3408,8 +3422,11 @@ public class UserMain extends JFrame implements ConstantVars
 			Paillier   threshold_encryptor;
 			String[]   ea_trusted_user_list;
 
-			threshold_value  = Integer.parseInt(threshold_value_textfield.getText());
-			no_trusted_users = Integer.parseInt(no_trusted_users_textfield.getText());
+			/*threshold_value  = Integer.parseInt(threshold_value_textfield.getText());
+			no_trusted_users = Integer.parseInt(no_trusted_users_textfield.getText());*/
+
+			threshold_value  = Integer.parseInt(m_threshold_value);
+			no_trusted_users = Integer.parseInt(m_no_trusted_users);
 
 			// Generate the unique emergency attribute identity for the unique emergency key and password for encrypting the unique emergency key
 			unique_emergency_key_attribute = generate_random_unique_emergency_key_attribute(8);
@@ -4112,7 +4129,8 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			public void run()
 			{
-				perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, data_description, phr_id, phr_download_to_path);
+				boolean result ;
+				result = perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, data_description, phr_id, phr_download_to_path);
 
 				SwingUtilities.invokeLater(new Runnable()
 				{
@@ -4125,6 +4143,7 @@ public class UserMain extends JFrame implements ConstantVars
 					//	working_lock.unlock();
 					}
 				});
+
 			}
 		};
 
@@ -4196,6 +4215,8 @@ public class UserMain extends JFrame implements ConstantVars
 		// Call to C function
 		record_phr_decrypting_transaction_log_main(phr_owner_name, phr_owner_authority_name, data_description, true);
 		JOptionPane.showMessageDialog(main_panel, "Downloading the PHR succeeded");
+
+		m_isFinish = true;
 
 		return true;
 	}
@@ -4808,7 +4829,7 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			public void run()
 			{
-		        	phr_uploading_progressbar.setValue(percent);
+		        	// phr_uploading_progressbar.setValue(percent);
 			}
 		});
 	}
@@ -4986,6 +5007,7 @@ public class UserMain extends JFrame implements ConstantVars
 	    return tableData;
 	}
 
+	// UPLOAD WEB 
 
 	public boolean initTableAttributePHR(String authority_name)
 	{		
@@ -5021,7 +5043,25 @@ public class UserMain extends JFrame implements ConstantVars
 	            tableData[i][j] = dtm.getValueAt(i,j);
 	    return tableData;
 	}
-	
+
+	public void setThresholdValue(String threshold_value){
+		m_threshold_value = threshold_value;
+	}
+
+	public void setNoTrustedUsers(String no_trusted_users){
+		m_no_trusted_users = no_trusted_users;
+	}
+
+	public boolean uploadSelfPHR(String phr_owner_name, String phr_owner_authority_name, 
+		String phr_upload_from_path, String data_description, String confidentiality_level, String access_policy)
+	{
+		run_phr_uploading_background_task(phr_owner_name, phr_owner_authority_name, 
+								phr_upload_from_path, data_description, confidentiality_level, access_policy);
+		
+		return true;
+	}
+
+	// DOWNLOAD SELF WEB
 
 	public boolean initDownloadSelfPHR(){
 		boolean result =false;
@@ -5036,6 +5076,9 @@ public class UserMain extends JFrame implements ConstantVars
 		//	setup_actions_for_phr_downloading_mode();
 			
 			result = true;
+
+			System.out.println("USER IN DOWNLOAD : " + phr_owner_name);
+			System.out.println("Authority IN DOWNLOAD : " + phr_owner_authority_name);
 
 			// Call to C function
 			load_downloading_authorized_phr_list_main(phr_owner_name, phr_owner_authority_name);
@@ -5085,8 +5128,11 @@ public class UserMain extends JFrame implements ConstantVars
 		phr_downloading_table.removeColumn(phr_downloading_table.getColumnModel().getColumn(3));
 	}
 
+	private boolean m_isFinish ;
+
 	public boolean downloadPHR(String data_description, int phr_id, String phr_download_to_path){
 		
+			boolean isFinish = false;
 		// if(validate_phr_downloading_input())
 		// {
 			int    index                    = phr_owner_authority_name_combobox.getSelectedIndex();
@@ -5097,11 +5143,12 @@ public class UserMain extends JFrame implements ConstantVars
 
 			int    row                      = phr_downloading_table.getSelectedRow();
 
+			boolean result;
 			// Run background tasks
-			perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, 
+			isFinish = perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, 
 			data_description, phr_id, phr_download_to_path);
 		// }
-			return true;
+			return isFinish;
 	}
 
 
