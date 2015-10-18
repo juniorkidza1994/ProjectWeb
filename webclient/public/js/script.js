@@ -54,8 +54,10 @@
           return response;
         },
         responseError: function(response) {
-          if (response.status === 401)
+          if (response.status === 401){
+            console.log("ERRRRRRRR");
             $location.url('/');
+          }
           return $q.reject(response);
         }
       };
@@ -722,11 +724,12 @@
               })
 
             })
-            .error(function(){
+/*            .error(function(){
               // Error: authentication failed
               console.log("ERROR");
+              $scope.check = 0;
               $location.path('/');
-            });
+            });*/
           }
           else{
             console.log("WAIT LOGIN");
