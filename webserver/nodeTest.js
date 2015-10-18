@@ -80,9 +80,9 @@ var boolean_false = false;
 var m_result_login;
 
 // result calss from login class
-var m_main_class;
+var m_main_class= [];
 
-var m_authority_name_list = null;
+var m_authority_name_list = [];
 
 // DELTE ALL FILE IN DIRECTORY
 var rmDir = function(dirPath) {
@@ -114,6 +114,7 @@ app.get('/loggedin', function(req, res) {
 });
 
 app.post('/login', passport.authenticate('local'), function(req, res) {
+  console.log("REQ USER : " + req.user.name);
   res.send(req.user);
 });
 
@@ -129,15 +130,41 @@ passport.use(new LocalStrategy(
 
     if (bool){ // stupid example
 
-      console.log("OLD MAIN CLASS : " + m_main_class);
+/*      console.log("OLD MAIN CLASS : " + m_main_class);*/
 
-      m_main_class = m_instance.getMainClassSync();
+      var main_class;
 
+      main_class = m_instance.getMainClassSync();
+
+/*      console.log("CREATE MAIN CLASS : " + main_class);
+*/
+      var obj = {};
+
+/*      for(var index in m_test){
+        console.log("INDEX : " + index + " VALUE: " + m_test[index]);
+      }
+*/
+      obj[username] = main_class;
+
+      console.log("OBJ : " + obj);
+
+      console.log("IN OBJ2 : " + obj[username]);
+
+      m_main_class[username] = main_class;
+
+    //  m_main_class.push(obj);
+/*
       console.log("NEW MAIN CLASS : " + m_main_class);
+
+      console.log("MAIN CLASS");*/
+
+/*      for(var index in m_main_class){
+        console.log("INDEX : " + index + " VALUE: " + m_main_class[index]);
+      }*/
 
       deleteFolderRecursive('Download/' + username);
       deleteFolderRecursive('Upload/' + username);
-      return done(null, {name: "user"});
+      return done(null, {name: username});
     }
 
     return done(null, false, { message: 'Incorrect username.' });
@@ -173,8 +200,8 @@ app.post('/logins', function (req, res) {
 
     if(m_result_login){
       console.log("NODE JS : LOGIN SUCCESS");
-      m_main_class = m_instance.getMainClassSync();
-      console.log("CLASS : " + m_main_class);
+      m_main_class[req.user.name] = m_instance.getMainClassSync();
+      console.log("CLASS : " + m_main_class[req.user.name]);
     }
     
 
@@ -189,10 +216,10 @@ app.get('/userinfo', function (req, res) {
     if(Object.keys(userinfo).length == 0)
     {
       // Get table
-      var attribute_list = m_main_class.getTableUserAttributeSync();
-      var authorityName = m_main_class.getAuthorityNameSync();
-      var username = m_main_class.getUsernameSync();
-      var email_address = m_main_class.getemailAddressSync();
+      var attribute_list = m_main_class[req.user.name].getTableUserAttributeSync();
+      var authorityName = m_main_class[req.user.name].getAuthorityNameSync();
+      var username = m_main_class[req.user.name].getUsernameSync();
+      var email_address = m_main_class[req.user.name].getemailAddressSync();
       console.log("------------- USER INFO -------------------");
       console.log("Authority Name : " + authorityName);
       console.log("Username : " + username);
@@ -221,7 +248,7 @@ app.post('/changepwd', function (req, res) {
 
   console.log("----------- CHANGE PASSWORD -------------");
 
-  var objChangePwd = m_main_class.getChangePasswdClassSync();   
+  var objChangePwd = m_main_class[req.user.name].getChangePasswdClassSync();   
 
   console.log("CLASS CHANGE PASSWORD : " + objChangePwd);
 
@@ -242,7 +269,7 @@ app.post('/changepwd', function (req, res) {
   // Update Password
   if(result){
     console.log("UPDATE PASSWORD");
-    m_main_class.updateNewPasswdSync(new_passwd);
+    m_main_class[req.user.name].updateNewPasswdSync(new_passwd);
 
     res.send(req.result);
   }
@@ -252,7 +279,7 @@ app.post('/change_email', function (req, res) {
 
   console.log("----------- CHANGE Email Address -------------");
 
-  var objChangeEmail = m_main_class.getChangeEmailClassSync();   
+  var objChangeEmail = m_main_class[req.user.name].getChangeEmailClassSync();   
 
   console.log("CLASS CHANGE EMAIL ADDRESS : " + objChangeEmail);
 
@@ -268,33 +295,33 @@ app.post('/change_email', function (req, res) {
 
   if(result){
     console.log("UPDATE EMAIL");
-    m_main_class.updateNewEmailSync(new_email_address);
+    m_main_class[req.user.name].updateNewEmailSync(new_email_address);
     res.send(result);
   }
 });
 
 app.post('/authority_name_list', function (req, res) {
 
-  if(m_authority_name_list == null)
-    m_authority_name_list = m_main_class.getAuthorityNameListSync();
+  if(m_authority_name_list[req.user.name] == null)
+    m_authority_name_list[req.user.name]  = m_main_class[req.user.name].getAuthorityNameListSync();
 
-  console.log(m_authority_name_list);
+  console.log(m_authority_name_list[req.user.name]);
 
-  res.send(m_authority_name_list);
+  res.send(m_authority_name_list[req.user.name]);
 });
 
 //------------DOWNLOAD PHR-----------------------//
 
-var download_phr_list = null;
+var m_download_phr_list = [];
 
 app.post('/download_self_phr_list', function (req, res) {
 
-  m_main_class.initDownloadSelfPHR(function(err,result){
+  m_main_class[req.user.name].initDownloadSelfPHR(function(err,result){
     if(!err) {
-      m_main_class.getTableDownloadPHR(function(err,result){
+      m_main_class[req.user.name].getTableDownloadPHR(function(err,result){
         if(!err){
-          download_phr_list = result;
-          res.send(download_phr_list);
+          m_download_phr_list[req.user.name] = result;
+          res.send(m_download_phr_list[req.user.name]);
         }
       });
     }
@@ -302,24 +329,23 @@ app.post('/download_self_phr_list', function (req, res) {
 
 });
 
-var m_path_files;
-var m_files;
-var m_can_download = false;
+var m_path_files = [];
+var m_files = [];
 
 // DOWNLOAD FILES
-var downloadfile = function(data_description, phr_id, m_path_files, callback){
+var downloadfile = function(data_description, phr_id, path_files, username, callback){
 
-    m_main_class.downloadPHR(data_description, phr_id, m_path_files, function(err, result){    
+    m_main_class[username].downloadPHR(data_description, phr_id, path_files, function(err, result){    
       if(result){
 
           console.log("RESSULT DOWNLOAD : " + result);
 
-          console.log("PATH FILES: " + m_path_files);
+          console.log("PATH FILES: " + path_files);
           
           var files = [];
           // process.nextTick(function() 
 
-            fs.readdir(m_path_files,function(err, result){
+            fs.readdir(path_files,function(err, result){
                 if (err) {
                       return console.error(err);
                 } 
@@ -335,9 +361,7 @@ var downloadfile = function(data_description, phr_id, m_path_files, callback){
 
                       console.log("FILES : " + files);
 
-                      m_files = files[0];
-
-                      m_can_download = true;
+                      m_files[username] = files[0];
 
                       if (callback && typeof(callback) === "function") {
                           callback(true);
@@ -371,40 +395,40 @@ var downloadfile = function(data_description, phr_id, m_path_files, callback){
 
 app.post('/downloadPHR', function (req, res) {
 
-  var username = m_main_class.getUsernameSync();
+  var username = m_main_class[req.user.name].getUsernameSync();
 
-  m_path_files = '/home/bright/Desktop/Project/webserver/Download/' + username + '/';
+  m_path_files[username] = '/home/bright/Desktop/Project/webserver/Download/' + username + '/';
 
-  console.log("m_path_files : " + m_path_files);
+  console.log("m_path_files : " +  m_path_files[username]);
 
   var index = req.body.index;
 
-  var data_description = download_phr_list[index][0];
-  var phr_id = parseInt(download_phr_list[index][3],10);
+  var data_description = m_download_phr_list[req.user.name][index][0];
+  var phr_id = parseInt(m_download_phr_list[req.user.name][index][3],10);
 
   console.log("DATA : " + data_description);
 
   console.log("ID : " + phr_id);
 
-  fs.stat(m_path_files, function(err,stat){
+  fs.stat( m_path_files[username], function(err,stat){
     if(err == null){
 
-          if(rmDir(m_path_files)){
-              downloadfile(data_description, phr_id, m_path_files, function(result){
+          if(rmDir( m_path_files[username])){
+              downloadfile(data_description, phr_id,  m_path_files[username], username, function(result){
               res.send(result);
               });
           }
     }
 
     else if(err.code == 'ENOENT'){
-         fs.mkdir(m_path_files,function(err){
+         fs.mkdir( m_path_files[username],function(err){
            if (err) {
                return console.error(err);
            }
            
            else {
              console.log("Directory created successfully!");
-             downloadfile(data_description, phr_id, m_path_files, function(result){
+             downloadfile(data_description, phr_id,  m_path_files[username], username, function(result){
                 res.send(result);
              });
            }
@@ -419,7 +443,7 @@ app.post('/downloadPHR', function (req, res) {
 
 app.get('/downloadPHR', function (req, res) {
   console.log("Download Files !!");
-  res.download(m_path_files + m_files,function(err){
+  res.download( m_path_files[req.user.name] + m_files[req.user.name],function(err){
     if(!err){
       console.log("ENDDDD");
     }
@@ -434,9 +458,9 @@ var delete_phr_list = null;
 
 app.post('/delete_self_phr_list', function (req, res) {
 
-  m_main_class.initDeleteSelfPHR(function(err,result){
+  m_main_class[req.user.name].initDeleteSelfPHR(function(err,result){
     if(!err) {
-      m_main_class.getTableDeletePHR(function(err,result){
+      m_main_class[req.user.name].getTableDeletePHR(function(err,result){
         if(!err){
           delete_phr_list = result;
           res.send(delete_phr_list);
@@ -459,7 +483,7 @@ app.post('/deletePHR', function (req, res) {
     var phr_id = parseInt(delete_phr_list[index][3],10);
     var restricted_level_phr_flag  =  delete_phr_list[index][2] + "";
 
-    var result = m_main_class.deletePHRSync(data_description, phr_id, restricted_level_phr_flag);
+    var result = m_main_class[req.user.name].deletePHRSync(data_description, phr_id, restricted_level_phr_flag);
     console.log("RESULT FROM DOWNLOAD : " + result);
   }
 
@@ -467,10 +491,8 @@ app.post('/deletePHR', function (req, res) {
 
 //------------------ UPLOAD PHR FILES -----------------------------
 
-var username_upload = "";
-
 var savefile = function(old_path_file, path_files_upload, phr_owner_name, phr_owner_authority_name, 
-             data_description, confidentiality_level, access_policy)
+             data_description, confidentiality_level, access_policy, username)
 {
     fs.rename(old_path_file, path_files_upload, function(error){
     
@@ -479,7 +501,7 @@ var savefile = function(old_path_file, path_files_upload, phr_owner_name, phr_ow
     fs.unlink(old_path_file, function(){
       if(error) throw error;
       else {
-        m_main_class.uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+        m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
               path_files_upload, data_description, confidentiality_level, 
               access_policy, function(err,result){
               if(!err) {
@@ -509,13 +531,13 @@ app.post('/uploadPHR', upload.single('file'), function (req, res, next) {
 
             // save file
             savefile(req.file.path, path_files_upload + req.file.originalname, req.body.phr_owner_name, req.body.phr_owner_authority_name, 
-              req.body.data_description, req.body.confidentiality_level, req.body.access_policy);   
+              req.body.data_description, req.body.confidentiality_level, req.body.access_policy, req.user.name);   
           }
         });
     }
     else {
       savefile(req.file.path, path_files_upload + req.file.originalname, req.body.phr_owner_name, req.body.phr_owner_authority_name, 
-              req.body.data_description, req.body.confidentiality_level, req.body.access_policy);
+              req.body.data_description, req.body.confidentiality_level, req.body.access_policy, req.user.name);
     }
 
 
@@ -524,14 +546,16 @@ app.post('/uploadPHR', upload.single('file'), function (req, res, next) {
 
 //------------------ ACCESS PERMISSION MANAGER ------------------
 
-var access_permission_list;
+
 
 app.post('/access_permission_management_list', function (req, res) {
 
-  m_main_class.getTableAccessPermissionPHR(function(err,result){
+  var access_permission_list ;
+
+  m_main_class[req.user.name].getTableAccessPermissionPHR(function(err,result){
     if(!err){
       access_permission_list = result;
-      res.send(access_permission_list);
+      res.send(access_permission_list );
     }
   });
 
@@ -539,14 +563,14 @@ app.post('/access_permission_management_list', function (req, res) {
 
 app.post('/edit_access_permission', function (req, res) {
 
-      m_main_class.getClassAccessPermissionManagementEdit(req.body.row,function(err,result){  
+      m_main_class[req.user.name].getClassAccessPermissionManagementEdit(req.body.row,function(err,result){  
       if(!err){
         var access_permission_management_class = result;
 
         access_permission_management_class.editAccessPermission(req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
         if(!err){
             var result_flag = result;
-            m_main_class.update_assigned_access_permission_list(function(err,result){
+            m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
               if(!err){
                   res.send(result_flag);
               }
@@ -560,14 +584,14 @@ app.post('/edit_access_permission', function (req, res) {
 });
 
 app.post('/assign_access_permission', function (req, res) {
-    m_main_class.getClassAccessPermissionManagementAssign(function(err,result){  
+    m_main_class[req.user.name].getClassAccessPermissionManagementAssign(function(err,result){  
       if(!err){
         var access_permission_management_class = result;
 
         access_permission_management_class.assignAccessPermission(req.body.authority, req.body.username ,req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
         if(!err){
             var result_flag = result;
-            m_main_class.update_assigned_access_permission_list(function(err,result){
+            m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
               if(!err){
                   res.send(result_flag);
               }
@@ -580,15 +604,17 @@ app.post('/assign_access_permission', function (req, res) {
     });
 });
 
-var attribute_table;
+
 
 app.post('/attribute_table', function (req, res) {
 
-  var authorityName = m_main_class.getAuthorityNameSync();
+  var attribute_table = null;
 
-  m_main_class.initTableAttributePHR(authorityName, function(err,result){
+  var authorityName = m_main_class[req.user.name].getAuthorityNameSync();
+
+  m_main_class[req.user.name].initTableAttributePHR(authorityName, function(err,result){
     if(result) {
-      m_main_class.getTableAttribute(function(err,result){
+      m_main_class[req.user.name].getTableAttribute(function(err,result){
         if(result){
           attribute_table = result;
           console.log("Attribute TABLE : " + result);
@@ -601,11 +627,11 @@ app.post('/attribute_table', function (req, res) {
 });
 
 app.post('/delete_access_permission', function (req, res) {
-    m_main_class.removeAccessPermission(req.body.delete_user, function(err,result){
+    m_main_class[req.user.name].removeAccessPermission(req.body.delete_user, function(err,result){
       if(!err){
         var result_flag = result;
           if(result_flag){
-            m_main_class.update_assigned_access_permission_list(function(err,result){
+            m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
               if(!err){
                   res.send(result_flag);
               }
@@ -618,7 +644,7 @@ app.post('/delete_access_permission', function (req, res) {
 });
 
 app.post('/check_user_exist', function (req, res) {
-    m_main_class.checkUserExist(req.body.authority_name, req.body.username, function(err,result){
+    m_main_class[req.user.name].checkUserExist(req.body.authority_name, req.body.username, function(err,result){
       if(!err){
         res.send(result);
       }
