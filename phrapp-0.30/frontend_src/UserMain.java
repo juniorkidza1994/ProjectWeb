@@ -282,6 +282,7 @@ public class UserMain extends JFrame implements ConstantVars
 	private int m_index_list_download;
 	private String m_threshold_value  ;
 	private String m_no_trusted_users ;
+	private boolean m_isFinish ;
 
 
 	public UserMain(String username, String passwd, String email_address, String authority_name, String user_auth_ip_addr, String audit_server_ip_addr, 
@@ -3366,7 +3367,7 @@ public class UserMain extends JFrame implements ConstantVars
 	}
 
 	// Run background tasks on another thread
-	private void run_phr_uploading_background_task(final String phr_owner_name, final String phr_owner_authority_name, 
+	private boolean run_phr_uploading_background_task(final String phr_owner_name, final String phr_owner_authority_name, 
 		final String phr_upload_from_path, final String data_description, final String confidentiality_level, final String access_policy)
 	{
 		Thread thread = new Thread()
@@ -3391,6 +3392,15 @@ public class UserMain extends JFrame implements ConstantVars
 		};
 
 		thread.start();
+
+		try{
+			thread.join();
+		}catch(InterruptedException e){
+
+		}
+		System.out.println("Finsih RUN UPLOAD");
+
+		return true;
 	}
 
 	private void perform_phr_uploading_transaction(String phr_owner_name, String phr_owner_authority_name, 
@@ -3612,7 +3622,9 @@ public class UserMain extends JFrame implements ConstantVars
 			remove_all_threshold_parameters_in_cache_main(Integer.parseInt(no_trusted_users_textfield.getText()));
 		}
 
-		JOptionPane.showMessageDialog(main_panel, "Uploading the PHR succeeded");
+		//JOptionPane.showMessageDialog(main_panel, "Uploading the PHR succeeded");
+
+		System.out.println("FROM CLASS UPLOAD SUCCESS");
 	}
 
 	private final void init_ui_for_phr_downloading_mode()
@@ -4122,7 +4134,7 @@ public class UserMain extends JFrame implements ConstantVars
 	}
 
 	// Run background tasks on another thread
-	private void run_phr_downloading_background_task(final String phr_owner_name, final String phr_owner_authority_name, 
+	private boolean run_phr_downloading_background_task(final String phr_owner_name, final String phr_owner_authority_name, 
 		final String data_description, final int phr_id, final String phr_download_to_path)
 	{
 		Thread thread = new Thread()
@@ -4130,7 +4142,7 @@ public class UserMain extends JFrame implements ConstantVars
 			public void run()
 			{
 				boolean result ;
-				result = perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, data_description, phr_id, phr_download_to_path);
+				perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, data_description, phr_id, phr_download_to_path);
 
 				SwingUtilities.invokeLater(new Runnable()
 				{
@@ -4144,13 +4156,22 @@ public class UserMain extends JFrame implements ConstantVars
 					}
 				});
 
+				System.out.println("FINSHI Thread");
 			}
 		};
 
 		thread.start();
+		try{
+			thread.join();
+		}catch(InterruptedException e){
+
+		}
+		System.out.println("Finsih RUN DOWNLOAD");
+
+		return true;
 	}
 
-	private boolean perform_phr_downloading_transaction(String phr_owner_name, String phr_owner_authority_name, String data_description, 
+	private void perform_phr_downloading_transaction(String phr_owner_name, String phr_owner_authority_name, String data_description, 
 		int phr_id, String phr_download_to_path)
 	{
 		set_cancel_phr_downloading(false);
@@ -4162,7 +4183,7 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			// Call to C function
 			record_phr_downloading_transaction_log_main(phr_owner_name, phr_owner_authority_name, data_description, false);
-			return false;
+			return ;
 		}
 
 		set_phr_downloading_state(true);
@@ -4180,7 +4201,7 @@ public class UserMain extends JFrame implements ConstantVars
 				JOptionPane.showMessageDialog(main_panel, "Downloading the PHR was aborted by a user");
 			}
 
-			return false;
+			return ;
 		}
 
 		set_phr_downloading_state(false);
@@ -4206,7 +4227,7 @@ public class UserMain extends JFrame implements ConstantVars
 				JOptionPane.showMessageDialog(main_panel, "Decrypting the PHR was aborted by a user");
 			}
 
-			return false;
+			return ;
 		}
 
 		set_phr_decrypting_state(false);
@@ -4214,11 +4235,13 @@ public class UserMain extends JFrame implements ConstantVars
 
 		// Call to C function
 		record_phr_decrypting_transaction_log_main(phr_owner_name, phr_owner_authority_name, data_description, true);
-		JOptionPane.showMessageDialog(main_panel, "Downloading the PHR succeeded");
+		
+		//JOptionPane.showMessageDialog(main_panel, "Downloading the PHR succeeded");
+		System.out.println("FROM CLASS DOWNLOAD SUCCESS");
 
-		m_isFinish = true;
+/*		m_isFinish = true;
 
-		return true;
+		return true;*/
 	}
 
 	private final void init_ui_for_phr_deletion_mode()
@@ -4958,7 +4981,7 @@ public class UserMain extends JFrame implements ConstantVars
 		});
 	}
 
-	// WEB
+	// -------------------------------- WEB FUNCTION --------------------------------
 
 	public String getAuthorityName(){
 		return authority_name;
@@ -5008,7 +5031,6 @@ public class UserMain extends JFrame implements ConstantVars
 	}
 
 	// UPLOAD WEB 
-
 	public boolean initTableAttributePHR(String authority_name)
 	{		
 
@@ -5055,19 +5077,38 @@ public class UserMain extends JFrame implements ConstantVars
 	public boolean uploadSelfPHR(String phr_owner_name, String phr_owner_authority_name, 
 		String phr_upload_from_path, String data_description, String confidentiality_level, String access_policy)
 	{
-		run_phr_uploading_background_task(phr_owner_name, phr_owner_authority_name, 
+		boolean res;
+
+		res = run_phr_uploading_background_task(phr_owner_name, phr_owner_authority_name, 
 								phr_upload_from_path, data_description, confidentiality_level, access_policy);
 		
-		return true;
+		return res;
+	}
+
+	public void verifyUploadPermissionMain(String phr_owner_name, String phr_owner_authority_name){
+		boolean res = false;
+
+		System.out.println("PHR OWNER NAME : " + phr_owner_name);
+		System.out.println("PHR OWNER Authority NAME : " + phr_owner_authority_name);
+
+
+		res  = verify_upload_permission_main(phr_owner_name, phr_owner_authority_name);
+		System.out.println("RESULT VERIFY : " + res);
+
+		//return res;
+	}
+
+	public boolean checkUserExist(String authority_name, String username){
+		return check_user_existence_main(authority_name, username);
 	}
 
 	// DOWNLOAD SELF WEB
 
-	public boolean initDownloadSelfPHR(){
+	public boolean initDownloadSelfPHR(String phr_owner_authority_name, String phr_owner_name){
 		boolean result =false;
 
-		String phr_owner_authority_name = authority_name;
-		String phr_owner_name           = username;
+		//String phr_owner_authority_name = authority_name;
+		//String phr_owner_name           = username;
 			
 		if(verify_download_permission_main(phr_owner_name, phr_owner_authority_name))
 		{
@@ -5128,24 +5169,22 @@ public class UserMain extends JFrame implements ConstantVars
 		phr_downloading_table.removeColumn(phr_downloading_table.getColumnModel().getColumn(3));
 	}
 
-	private boolean m_isFinish ;
-
-	public boolean downloadPHR(String data_description, int phr_id, String phr_download_to_path){
+	public boolean downloadPHR(String phr_owner_authority_name, String phr_owner_name, String data_description, int phr_id, String phr_download_to_path){
 		
 			boolean isFinish = false;
 		// if(validate_phr_downloading_input())
 		// {
 			int    index                    = phr_owner_authority_name_combobox.getSelectedIndex();
 
-			String phr_owner_authority_name = authority_name;
+			// String phr_owner_authority_name = authority_name;
 
-			String phr_owner_name           = username;
+			// String phr_owner_name           = username;
 
 			int    row                      = phr_downloading_table.getSelectedRow();
 
 			boolean result;
 			// Run background tasks
-			isFinish = perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, 
+			isFinish = run_phr_downloading_background_task(phr_owner_name, phr_owner_authority_name, 
 			data_description, phr_id, phr_download_to_path);
 		// }
 			return isFinish;
@@ -5224,6 +5263,8 @@ public class UserMain extends JFrame implements ConstantVars
 
 	}
 
+	// ACCESS PERMISSION MANAGER
+
 	public boolean initTableAccessPermissionPHR()
 	{		
 
@@ -5296,16 +5337,6 @@ public class UserMain extends JFrame implements ConstantVars
 		remove_access_permission_main(authority_name, username);
 
 		return true;
-	}
-
-	public boolean checkUserExist(String authority_name, String username){
-		return check_user_existence_main(authority_name, username);
-	}
-
-	public void arrayStringToTree(Object[] string_tree){
-		System.out.println("OBJECT");
-		System.out.println("LENGTH : " + string_tree.length);
-		System.out.println("ARRAY : " + Arrays.deepToString(string_tree));
 	}
 }
 

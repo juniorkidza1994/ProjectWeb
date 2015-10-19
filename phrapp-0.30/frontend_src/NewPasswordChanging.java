@@ -42,50 +42,19 @@ class NewPasswordChanging extends JDialog implements ConstantVars
 	private String  	   new_passwd;
 	private	String  	   confirm_new_passwd;
 	private	String  	   current_passwd;
+	private boolean 	   result_flag;
 
 	// Return variable
-	private boolean        result_flag;	
+	private boolean        m_result_flag;	
 
 	public NewPasswordChanging(Component parent, boolean is_admin_flag, String current_passwd_cmp)
 	{
 
-		result_flag             = false;
+		m_result_flag             = false;
+		result_flag 			= false;
 		this.is_admin_flag      = is_admin_flag;
 		this.current_passwd_cmp = current_passwd_cmp;
 
-	}
-
-	public void change_passwd(String  current_passwd,  String new_passwd, String  confirm_new_passwd, Boolean send_new_passwd_flag)
-	{
-		this.current_passwd = current_passwd;
-		this.new_passwd = new_passwd;
-		this.confirm_new_passwd = confirm_new_passwd;
-
-		System.out.println("CURRENT PASSWORD : " + this.current_passwd);
-		System.out.println("CURRENT PASSWORD : " + this.new_passwd);
-		System.out.println("CURRENT PASSWORD : " + this.confirm_new_passwd);
-
-		if(validate_input())
-		{
-
-			// Call to C function
-			if(is_admin_flag && change_admin_passwd_main(new_passwd, send_new_passwd_flag.booleanValue()))
-			{
-				result_flag = true;
-			}
-			else if(!is_admin_flag && change_user_passwd_main(new_passwd, send_new_passwd_flag.booleanValue()))
-			{
-				System.out.println("CHANGE PASS SUCCESS!!");
-				result_flag = true;
-			}
-		}
-
-
-	}
-
-	public boolean getResulFlag()
-	{
-		return result_flag;
 	}
 
 	private boolean validate_input()
@@ -168,16 +137,6 @@ class NewPasswordChanging extends JDialog implements ConstantVars
 		return true;
 	}
 
-	public boolean get_result()
-	{
-		return result_flag;
-	}
-
-	public String get_new_passwd()
-	{
-		return new String(new_passwd_textfield.getPassword());
-	}
-
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
@@ -192,6 +151,51 @@ class NewPasswordChanging extends JDialog implements ConstantVars
 		// Notify alert message to user and then terminate the application
 		JOptionPane.showMessageDialog(main_panel, alert_msg);
 		System.exit(1);
+	}
+
+	// WEB FUNCION
+	public boolean get_result()
+	{
+		return result_flag;
+	}
+
+	public String get_new_passwd()
+	{
+		return new String(new_passwd_textfield.getPassword());
+	}
+
+	public void change_passwd(String  current_passwd,  String new_passwd, String  confirm_new_passwd, Boolean send_new_passwd_flag)
+	{
+		this.current_passwd = current_passwd;
+		this.new_passwd = new_passwd;
+		this.confirm_new_passwd = confirm_new_passwd;
+
+		System.out.println("FROM CLASS");
+		System.out.println("CURRENT PASSWORD : " + this.current_passwd);
+		System.out.println("NEW PASSWORD : " + this.new_passwd);
+		System.out.println("CONFIRM PASSWORD : " + this.confirm_new_passwd);
+
+		if(validate_input())
+		{
+
+			// Call to C function
+			if(is_admin_flag && change_admin_passwd_main(new_passwd, send_new_passwd_flag.booleanValue()))
+			{
+				m_result_flag = true;
+				result_flag   = true;
+			}
+			else if(!is_admin_flag && change_user_passwd_main(new_passwd, send_new_passwd_flag.booleanValue()))
+			{
+				System.out.println("CHANGE PASS SUCCESS!!");
+				m_result_flag = true;
+				result_flag   = true;
+			}
+		}
+	}
+
+	public boolean getResulFlag()
+	{
+		return m_result_flag;
 	}
 }
 

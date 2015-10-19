@@ -16,10 +16,10 @@
       var deferred = $q.defer();
 
       // Make an AJAX call to check if the user is logged in
-      $http.get('/loggedin').success(function(user){
+      $http.get('/api/loggedin').success(function(user){
         // Authenticated
         if (user !== '0'){
-          console.log("LOGIN");
+          //console.log("LOGIN");
           /*$timeout(deferred.resolve, 0);*/
           if($location.path() != '/')
             deferred.resolve();
@@ -30,8 +30,9 @@
         }
         // Not Authenticated
         else if($location.path() != '/'){
-          console.log("NO LOGIN");
-          //$timeout(function(){deferred.reject();}, 0);
+          //console.log("NO LOGIN");
+        //  $timeout(function(){deferred.reject();}, 0);
+
           deferred.reject();
           $location.url('/');
         }
@@ -55,8 +56,8 @@
         },
         responseError: function(response) {
           if (response.status === 401){
-            console.log("ERRRRRRRR");
-            $location.url('/');
+            //console.log("ERRRRRRRR");
+            $location.path('/');
           }
           return $q.reject(response);
         }
@@ -150,11 +151,10 @@
 
       .otherwise({
         redirectTo: '/error'
-
       });
     //================================================
 
-    $locationProvider.html5Mode(true);
+ //   $locationProvider.html5Mode(true);
 
   }) // end of config()
   .run(function($rootScope, $http){
@@ -163,7 +163,7 @@
     // Logout function is available in any pages
     $rootScope.logout = function(){
       $rootScope.message = 'Logged out.';
-      $http.post('/logout');
+      $http.post('/api/logout');
     };
   });
 
@@ -171,19 +171,23 @@
     scotchApp.controller('infoController', function($scope, $http, $location) {
         $scope.info = {};
 
-        $http.get('/userinfo')
+        // get userinfo
+        $http.get('/api/userinfo')
         .success(function(res){
             $scope.info  = res;
-            console.log("INFO " + $scope.info.attribute_list);
+            //console.log("INFO " + $scope.info.attribute_list);
         })
     });
 
     scotchApp.controller('changePwdController', function($scope, $http, $location) {
         $scope.password = {};
         $scope.password.flag = false;
+        var isClick = false;
 
         $scope.submit = function(){
-            $http.post('/changepwd', {
+          if(!isClick){
+            isClick = true;
+            $http.post('/api/changepwd', {
               current_passwd        : $scope.password.curr_passwd,
               new_passwd            : $scope.password.new_passwd,
               confirm_new_passwd    : $scope.password.confirm_passwd,
@@ -191,9 +195,12 @@
             })
             .success(function(user){
               // No error: authentication OK
-              console.log("SUCCESS");
+              //console.log("SUCCESS");
+              isClick = false;
+              alert("CHANGE PASSWORD SUCCESS !!");
               $location.path('/info');
             })
+          }
         };
 
         $scope.cancle = function(){
@@ -201,7 +208,7 @@
         }
     });
 
-    scotchApp.controller('uploadPHRController', ['$scope', 'Upload' , '$http' , function ($scope, Upload, $http) {
+    scotchApp.controller('uploadPHRController', ['$scope', 'Upload' , '$http' , '$location' , function ($scope, Upload, $http, $location) {
         $scope.authorityList = {};
         $scope.attribute_all = {};
         $scope.id_node = 1;
@@ -210,57 +217,73 @@
         $scope.con_level = "";
         $scope.threshold = -1;
         $scope.truted_users = -1;
-
         $scope.tree_string = "";
+        $scope.parent = ""; 
+        $scope.canUpload = false;
+        $scope.search_selectedAuthority = "";
+        $scope.search_username  = "";
 
-        $http.post('/authority_name_list')
+        // get authority_name_list
+        $http.post('/api/authority_name_list')
         .success(function(res){
             $scope.authorityList = res;
         })
 
-        $http.get('/userinfo')
+        // get userinfo
+        $http.get('/api/userinfo')
         .success(function(res){
             $scope.userinfo = res;
         })
 
-        $http.post('/attribute_table')
+        // get attribute list
+        $http.post('/api/attribute_table')
         .success(function(res){
             $scope.attribute_all = res;
-            console.log($scope.attribute_all);
+            //console.log($scope.attribute_all);
         })
+
+        var isClick = false;
 
         // upload later on form submit or something similar
         $scope.submit = function() {
+          if(!isClick){
 
-          $scope.dfs($scope.tree);
+            isClick = true;
+          // call dfs function
+            $scope.dfs($scope.tree);
 
-          console.log("TREE STRING" + $scope.tree_string);
+           // console.log("TREE STRING" + $scope.tree_string);
 
-          if(!($scope.tree.length != 0 &&  $scope.description != "" && $scope.con_level != "") && 
-            !($scope.con_level == "Restricted level" && $scope.threshold > 0 && $scope.truted_users > 0)){
-            console.log("TREE EMPTY");
-          }
-          else if ($scope.form.file.$valid && $scope.file && !$scope.file.$error) {
+            // validation tree
+            if(!($scope.tree.length != 0 &&  $scope.description != "" && $scope.con_level != "") && 
+              !($scope.con_level == "Restricted level" && $scope.threshold > 0 && $scope.truted_users > 0)){
+                console.log("WRONG TREE");
+              isClick = false;
+            }
 
-            $scope.tree_string += " or (UsernameNode__SUB__" + $scope.userinfo.authorityName + "__SUB__" + $scope.userinfo.username + ')';
-            console.log("UPLOAD");
-            console.log($scope.file);
-            $scope.upload($scope.file);
-            $scope.tree_string = "";
-          }
-          else {
-            console.log($scope.form.file.$valid);
+            // vaildation file & form
+            else if ($scope.form.file.$valid && $scope.file && !$scope.file.$error) {
+
+              // add owner user to tree
+              $scope.tree_string += " or (UsernameNode__SUB__" + $scope.userinfo.authorityName + "__SUB__" + $scope.userinfo.username + ')';
+              console.log("UPLOAD");
+              console.log($scope.file);
+              $scope.upload($scope.file);
+              $scope.tree_string = "";
+              isClick = false;
+            }
+            // else {
+               //console.log($scope.form.file.$valid);
+            // }
           }
         };
 
-      $scope.parent = ""; 
-
+      // covert tree to string
       $scope.dfs = function (node) {
         if(node){
-          console.log("TEST");
           angular.forEach(node, function(value,key){
-            console.log("KEY : " + key );
-            console.log("Value : " + value['name'] );
+      //      console.log("KEY : " + key );
+      //     console.log("Value : " + value['name'] );
             if($scope.parent == ""){
                 $scope.parent = "(";
        //         console.log($scope.parent);
@@ -268,7 +291,7 @@
 
             var temp_name = value['name'];
 
-            console.log("TEMP NAME BEFORE : " + temp_name);
+      //      console.log("TEMP NAME BEFORE : " + temp_name);
 
             var temp_type = "";
 
@@ -281,7 +304,7 @@
 
             temp_name = temp_type  + temp_name.replace(".","__SUB__");
 
-            console.log("TEMP NAME AFTER : " + temp_name);
+      //      console.log("TEMP NAME AFTER : " + temp_name);
 
             // REPLACE STRING 
             if(value['nodes'].length != 0){
@@ -306,40 +329,78 @@
         }
       };
 
-        // upload on file select or drop
-        $scope.upload = function (file) {
+      var isClickSearch = false;
+
+      // verify user permission
+      $scope.search = function(){
+          if(!isClickSearch){
+            console.log("SEARCH UPLOAD");
+            console.log("SEARCH USERNAME : " + $scope.search_username);
+            console.log("SEARCH Authority : " + $scope.search_selectedAuthority);
+            isClickSearch =true;
+            $http.post('/api/verify_upload_permission_main',{
+                authorityName :  $scope.search_selectedAuthority,
+                username      :  $scope.search_username
+            })
+            .success(function(res){
+                isClickSearch = false;
+                $scope.canUpload = res;
+               // $location.path('/uploadPHR');
+            })
+          }
+      }
+
+      // upload on file select or drop
+      $scope.upload = function (file) {
+            var isSuccess = false;
+
             Upload.upload({
-                url: 'uploadPHR',
+                url: 'api/uploadPHR',
                 data: {file: file, 'phr_owner_authority_name': $scope.userinfo.authorityName, 
                 'phr_owner_name': $scope.userinfo.username, 'data_description': $scope.description,
-                'confidentiality_level': $scope.con_level, 'access_policy': $scope.tree_string
+                'confidentiality_level': $scope.con_level, 'access_policy': $scope.tree_string,
+                'threshold' : $scope.threshold, 'truted_users': $scope.truted_users
               }
 
             }).then(function (resp) {
                 console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);
+                isSuccess = true;
             }, function (resp) {
                 console.log('Error status: ' + resp.status);
             }, function (evt) {
                 var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
                 console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+            })
+            .finally(function(){
+              if(isSuccess){
+                alert("UPLOAD SUCCESS !!");
+
+                $scope.canUpload = false;
+                $scope.search_username = "";
+                $scope.search_selectedAuthority = "";
+
+                $location.path('/uploadPHR');
+              }
             });
+       
         };
 
         // CLICK ROW
         $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
-            console.log($scope.selectedRow);
+            //console.log($scope.selectedRow);
         }
 
         // CLICK NODE
         $scope.setClickedNode = function(node){
             $scope.selectedNode = node;
             $scope.selectedNode_ID = node.$modelValue.id;
-            console.log($scope.selectedNode);
+            //console.log($scope.selectedNode);
         }
 
+        // Click somewhere
         $scope.clickedSomewhereElse = function(){
-          console.log("HIT !!")
+        //  console.log("HIT !!")
           $scope.selectedNode = null;
           $scope.selectedRow = null;
           $scope.selectedNode_ID = null;
@@ -359,13 +420,14 @@
         $scope.data.splice(0, 0, a);
       };
 
-      // ADD USERNAME TO TREE
+      
       $scope.selectedAuthority = null;
       $scope.username = null;
 
+      // ADD USERNAME TO TREE
       $scope.addUserToTree = function(){
         if($scope.selectedAuthority != null && $scope.username != null){
-          $http.post('/check_user_exist', {
+          $http.post('/api/check_user_exist', {
             authority_name      : $scope.selectedAuthority,
             username            : $scope.username
           })
@@ -374,14 +436,13 @@
               $scope.addToNode("Username", $scope.selectedAuthority +  "." + $scope.username);
             }
             else {
-              console.log("NOT HAVE USER");
+              //console.log("NOT HAVE USER");
             }
           })
         }
       }
 
       // ADD ATTRIBUTE TO TREE
-
       $scope.addAttribToTree = function(){
         if($scope.selectedRow != null){
           $scope.addToNode("Attribute", $scope.attribute_all[$scope.selectedRow][0]);
@@ -393,7 +454,7 @@
           var title = "";
           if($scope.selectedNode != null){
 
-            console.log("ADD SUB NODE");
+            //console.log("ADD SUB NODE");
             var nodeData = $scope.selectedNode.$modelValue;
             if(type == "Username"){
               title = "User";
@@ -413,7 +474,7 @@
             });
           }
           else {
-            console.log("ADD NODE");
+            //console.log("ADD NODE");
             $scope.tree.push({
               id: $scope.id_node,
               title: title,
@@ -422,23 +483,10 @@
               full: title + ": " + scope,
               nodes: []
             });
-            console.log($scope.tree);
+            //console.log($scope.tree);
             $scope.id_node ++;
           }
       };
-
-      $scope.newSubItem = function (scope) {
-        var nodeData = scope.$modelValue;
-        nodeData.nodes.push({
-          id: nodeData.id * 10 + nodeData.nodes.length,
-          title: nodeData.title + '.' + (nodeData.nodes.length + 1),
-          full: id + ": " + title,
-          nodes: []
-        });
-      };
-
-
-
 
       $scope.collapseAll = function () {
         $scope.$broadcast('collapseAll');
@@ -450,77 +498,37 @@
       
       $scope.tree = [];
 
-      $scope.data = [{
-        'id': 1,
-        'title': 'node1',
-        'nodes': [
-          {
-            'id': 11,
-            'title': 'node1.1',
-            'nodes': [
-              {
-                'id': 111,
-                'title': 'node1.1.1',
-                'nodes': []
-              }
-            ]
-          },
-          {
-            'id': 12,
-            'title': 'node1.2',
-            'nodes': []
-          }
-        ]
-      }, {
-        'id': 2,
-        'title': 'node2',
-        'nodrop': true, // An arbitrary property to check in custom template for nodrop-enabled
-        'nodes': [
-          {
-            'id': 21,
-            'title': 'node2.1',
-            'nodes': []
-          },
-          {
-            'id': 22,
-            'title': 'node2.2',
-            'nodes': []
-          }
-        ]
-      }, {
-        'id': 3,
-        'title': 'node3',
-        'nodes': [
-          {
-            'id': 31,
-            'title': 'node3.1',
-            'nodes': []
-          }
-        ]
-      }];
-
     }]);
 
-    scotchApp.controller('changeEmailController', function($scope, $http, $location) {
+  
+    scotchApp.controller('changeEmailController', function($scope, $http, $location, $window) {
         $scope.data = {};
         $scope.info = {};
 
-        $http.get('/userinfo')
+        // get userinfo
+        $http.get('/api/userinfo')
         .success(function(res){
             $scope.info  = res;
             $scope.data.email = $scope.info.email_address;
         })
 
+        var isClick = false;
+
         $scope.submit = function(){
-            $http.post('/change_email', {
+          if(!isClick){
+            isClick = true;
+            $http.post('/api/change_email', {
               email                  : $scope.data.email,
               confirm_new_passwd     : $scope.data.password,
             })
             .success(function(user){
               // No error: authentication OK
-              console.log("SUCCESS");
+              //console.log("SUCCESS");
+              isClick = false;
+              $window.alert("CHANGE EMAIL SUCCESS !!")
               $location.path('/info');
             })
+          }
         };
 
         $scope.cancle = function(){
@@ -528,74 +536,75 @@
         }
     });
 
-    scotchApp.controller('contactController', function($scope, $http, $location) {
-        $scope.bool = "";
-        $http.get('/checklogin')
-        .success(function(res){
-            $scope.bool = res;
-            if($scope.bool == true){
-                $scope.message = 'Contact us! JK. This is just a demo';
-            }
-            else if($scope.bool == false)
-                $location.path('/')
-        })
-
-    });
-
-
-    scotchApp.controller('accessPermisController', function($scope, $http, $location) {
+    scotchApp.controller('accessPermisController', function($scope, $http, $location, $window) {
         $scope.access_permission_list = {};
         $scope.selectedRow = null;
         $scope.checked = {};
 
-        $http.post('/access_permission_management_list')
+        // get access permission list
+        $http.post('/api/access_permission_management_list')
         .success(function(res){
             $scope.access_permission_list = res;
-            console.log(res);
+            //console.log(res);
         })     
 
+        // set click row
         $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
         }
 
+        // change location to assign
         $scope.assign = function(){
           $location.path('/assignPermission');
         }
 
+        var isClick = false;
+
+        // edit permission
         $scope.edit = function(){
-          console.log($scope.selectedRow);
-          if($scope.selectedRow != null ){
-            console.log("EDIT " + $scope.access_permission_list[$scope.selectedRow]);
-            $http.post('/edit_access_permission', {
-              row             : $scope.selectedRow,
-              uploadflag      : $scope.access_permission_list[$scope.selectedRow][1],
-              downloadflag    : $scope.access_permission_list[$scope.selectedRow][2],
-              deleteflag      : $scope.access_permission_list[$scope.selectedRow][3]
-            })
-            .success(function(res){
-              if(res == true){
-                console.log("EDIT SUCCESS");
-                $location.path('/accessPermissionManagement');
-              }
-            })
+          //console.log($scope.selectedRow);
+          if(!isClick){
+            isClick = true;
+            if($scope.selectedRow != null ){
+              //console.log("EDIT " + $scope.access_permission_list[$scope.selectedRow]);
+              $http.post('/api/edit_access_permission', {
+                row             : $scope.selectedRow,
+                uploadflag      : $scope.access_permission_list[$scope.selectedRow][1],
+                downloadflag    : $scope.access_permission_list[$scope.selectedRow][2],
+                deleteflag      : $scope.access_permission_list[$scope.selectedRow][3]
+              })
+              .success(function(res){
+                if(res == true){
+                  //console.log("EDIT SUCCESS");
+                  isClick = false;
+                  $window.alert("EDIT PERMISSION SUCCESS !!")
+                  $location.path('/accessPermissionManagement');
+                }
+              })
+            }
           }
         }
 
+        // delete access permission
         $scope.delete = function(){
-          console.log($scope.selectedRow);
-          if($scope.selectedRow != null ){
-            console.log("Delete " + $scope.access_permission_list[$scope.selectedRow]);
-            $http.post('/delete_access_permission', {
+          //console.log($scope.selectedRow);
+          if($scope.selectedRow != null && !isClick){
+
+            isClick = true;
+            //console.log("Delete " + $scope.access_permission_list[$scope.selectedRow]);
+            $http.post('/api/delete_access_permission', {
               delete_user      : $scope.access_permission_list[$scope.selectedRow][0],
             })
             .success(function(res){
               if(res == true){
-                console.log("Delete SUCCESS");
-                 $http.post('/access_permission_management_list')
+                //console.log("Delete SUCCESS");
+                 $http.post('/api/access_permission_management_list')
                  .success(function(res){
                      $scope.access_permission_list = res;
-                     console.log(res);
+                    // console.log(res);
                  })   
+                 isClick = false;
+                 $window.alert("DELETE SUCCESS !!")
                 $location.path('/accessPermissionManagement');
               }
             })
@@ -603,16 +612,15 @@
         }
     });
 
-    scotchApp.controller('assignAccessPermissionController', function($scope, $http, $location) {
+    scotchApp.controller('assignAccessPermissionController', function($scope, $http, $location, $window) {
         $scope.authorityList = {};
         $scope.assign = {};
         $scope.assign.uploadflag = false;
         $scope.assign.downloadflag = false;
         $scope.assign.deleteflag = false;
 
-        $scope.hasSummit  = false;
-
-        $http.post('/authority_name_list')
+        // get authority list
+        $http.post('/api/authority_name_list')
         .success(function(res){
             $scope.authorityList = res;
         })
@@ -620,12 +628,14 @@
         $scope.selectedAuthority = null;
         $scope.assign.username = null;
 
+        var isClick = false;
+
         $scope.submit = function(index){
           if(($scope.assign.uploadflag || $scope.assign.downloadflag || $scope.assign.deleteflag &&
-            ($scope.selectedAuthority != null && $scope.assign.username != null)) && !$scope.hasSummit){
-            console.log("SUCCESS");
-            $scope.hasSummit = true;
-            $http.post('/assign_access_permission', {
+            ($scope.selectedAuthority != null && $scope.assign.username != null))  && !isClick){
+            //console.log("SUCCESS");
+            isClick = true;
+            $http.post('/api/assign_access_permission', {
                 authority : $scope.selectedAuthority,
                 username : $scope.assign.username,
                 uploadflag : $scope.assign.uploadflag,
@@ -634,13 +644,15 @@
             })
             .success(function(res){
               if(res == true){
-                console.log("Assign SUCCESS");
+                isClick = false;
+              //  console.log("Assign SUCCESS");
+                $window.alert("ASSIGN SUCCESS !!")
                 $location.path('/accessPermissionManagement');
               }
             })
           }
-          else
-            console.log("FAIL");
+          //else
+          //  console.log("FAIL");
         }
 
          $scope.check = function(){
@@ -651,29 +663,62 @@
     scotchApp.controller('downloadController', function($scope, $http, $location, $window) {
         $scope.phr_list = {};
         $scope.selectedRow = null;
+        $scope.selectedAuthority = "";
+        $scope.username = "";
+        $scope.authorityList = "";
 
-        $http.post('/download_self_phr_list')
+        console.log("PHR LIST : " + $scope.phr_list);
+
+        // get authority_name_list
+        $http.post('/api/authority_name_list')
         .success(function(res){
-            $scope.phr_list = res;
-            console.log(res);
+            $scope.authorityList = res;
         })
 
+        // click row
         $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
         }
 
+        var isClick = false;
+
+        var isClickSearch = false;
+
+        // search
+        $scope.search = function(){
+          if(!isClickSearch){
+            console.log("SEARCH DOWNLOAD");
+            isClickSearch =true;
+            $http.post('/api/download_self_phr_list',{
+                authorityName :  $scope.selectedAuthority,
+                username      :  $scope.username
+            })
+            .success(function(res){
+                isClickSearch = false;
+                $scope.phr_list = res;
+                console.log($scope.phr_list);
+                //$location.path('/downloadSelfPHR');
+            })
+          }
+        }
+
+        // open download window
         $scope.download = function(){
-          $http.post('/downloadPHR', {
-            index: $scope.selectedRow,
-            myClass: myClass
-          })
-          .success(function(res){
-            console.log("RESULT : " + res);
-                if(res){
-                  console.log("DOWNLOAD FILESS !!!");
-                  $window.open('/downloadPHR');
-                }
-          })
+          if(!isClick){
+            $http.post('/api/downloadPHR', {
+              authorityName :  $scope.selectedAuthority,
+              username      :  $scope.username,
+              index: $scope.selectedRow,
+              myClass: myClass
+            })
+            .success(function(res){
+              //console.log("RESULT : " + res);
+                  if(res){
+                //  console.log("DOWNLOAD FILESS !!!");
+                    $window.open('/api/downloadPHR');
+                  }
+            })
+          }
         }
     });
 
@@ -681,69 +726,65 @@
         $scope.phr_list = {};
         $scope.selectedRow = null;
 
-        $http.post('/delete_self_phr_list')
+        $http.post('/api/delete_self_phr_list')
         .success(function(res){
             $scope.phr_list = res;
-            console.log("DELETE LIST : " + res);
+          //   console.log("DELETE LIST : " + res);
         })
 
+        // click row
         $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
         }
 
-        $scope.download = function(){
-          $http.post('/deletePHR', {
+        // delete phr
+        $scope.delete = function(){
+          $http.post('/api/deletePHR', {
             index: $scope.selectedRow
          })
         }
     });
 
-    scotchApp.controller('loginController', function($scope,$http,$location){
+    scotchApp.controller('loginController', function($scope,$http,$location, $window){
         $scope.user = {};
-        $scope.check = 0;
+       var isClick = false;
 
         $scope.login = function(){
-          if($scope.check == 0){
-            console.log("GO LOGIN");
-            $scope.check = 1;
-            $http.post('/login', {
+          if(!isClick){
+         //   console.log("GO LOGIN");
+            isClick = true;
+            $http.post('/api/login', {
               username: $scope.user.username,
               password: $scope.user.password,
               type    : $scope.user.type
             })
             .success(function(user){
               // No error: authentication OK
-              console.log("SUCCESS");
-              console.log(user);
+          //    console.log("SUCCESS");
+          //    console.log(user);
+              $window.alert("LOGIN SUCCESS !!")
               $location.path('/info');
 
-              $http.post('/get_class')
-              .success(function(res){
-                myClass = res;
-                console.log("MYCLASS " + myClass);
-              })
-
             })
-/*            .error(function(){
-              // Error: authentication failed
-              console.log("ERROR");
-              $scope.check = 0;
-              $location.path('/');
-            });*/
+            .error(function(){
+              $window.alert("LOGIN FAILED !!!");
+              $scope.user = {};
+              isClick = false;
+            });
           }
           else{
-            console.log("WAIT LOGIN");
+        //   console.log("WAIT LOGIN");
           }
       };
     });
 
     scotchApp.controller('errorController', function($scope) {
         $scope.message = "Error Don't have this page";
+        console.log("TESTTTT ");
     });
 
     // CLICK ANYWHERE
-
-scotchApp.directive('clickOff', function($parse, $document) {
+    scotchApp.directive('clickOff', function($parse, $document) {
     var dir = {
         compile: function($element, attr) {
           // Parse the expression to be executed

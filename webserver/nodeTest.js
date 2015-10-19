@@ -11,7 +11,6 @@ var Type = require('type-of-is');
 var fs = require('fs');
 
 // DELETE DIRECTORY THAT IS NOT EMPTY
-
 var deleteFolderRecursive = function(path) {
   if( fs.existsSync(path) ) {
     fs.readdirSync(path).forEach(function(file,index){
@@ -28,8 +27,10 @@ var deleteFolderRecursive = function(path) {
 
 var app = express();
 
+// TEMP PATH TO SAVE FILES
 var path_files_upload_temp;
 
+// SET PATH USE TO UPLOAD
 var storage = multer.diskStorage({
 
 
@@ -47,9 +48,10 @@ var storage = multer.diskStorage({
 // USE TO UPLOAD FILES
 var upload = multer({  storage: storage })
 
-
+//
 var bodyParser = require('body-parser');
 
+// SET EXPRESS
 app.use(methodOverride());
 app.use(require('cookie-parser')());
 app.use(require('body-parser').urlencoded({ extended: true }));
@@ -60,6 +62,7 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname,'..','webclient/public')));
 
+// SET PACKAGE USE IN JAVA
 java.classpath.push("../phrapp-0.30/bin/");
 java.classpath.push("../phrapp-0.30/bin/commons-lang3-3.1.jar");
 java.classpath.push("../phrapp-0.30/bin/paillier.jar");
@@ -67,8 +70,10 @@ java.classpath.push("../phrapp-0.30/bin/swingx-all-1.6.3.jar");
 java.classpath.push("../phrapp-0.30/bin/paillier.jar");
 java.classpath.push("../phrapp-0.30/bin/org-json.jar");
 
+// SET OPTION TO COMPLIE JAVA
 java.options.push('-Djava.library.path=../phrapp-0.30/bin/ -classpath *:../phrapp-0.30/bin/');
 
+// CLASS TEST LOGIN
 var m_instance = java.newInstanceSync("Login");
 
 //var booleanClass = java.import('java.lang.boolean');
@@ -79,10 +84,12 @@ var boolean_false = false;
 // result boolean from login class
 var m_result_login;
 
-// result calss from login class
+// DEFINE VARIABLE 
 var m_main_class= [];
-
 var m_authority_name_list = [];
+var m_download_phr_list = [];
+var m_path_files = [];
+var m_files = [];
 
 // DELTE ALL FILE IN DIRECTORY
 var rmDir = function(dirPath) {
@@ -109,24 +116,27 @@ passport.deserializeUser(function(user, done) {
 });
 
 // route to test if the user is logged in or not
-app.get('/loggedin', function(req, res) {
+app.get('/api/loggedin', function(req, res) {
   res.send(req.isAuthenticated() ? req.user : '0');
 });
 
-app.post('/login', passport.authenticate('local'), function(req, res) {
-  console.log("REQ USER : " + req.user.name);
+// USE TO LOGIN 
+app.post('/api/login', passport.authenticate('local'), function(req, res) {
+//  console.log("REQ USER : " + req.user.name);
   res.send(req.user);
 });
 
 passport.use(new LocalStrategy(
   function(username, password, done) {
+    console.log("--------------- LOGIN ------------------")
     console.log("USERNAME : " + username);
     console.log("PASSWORD : " + password);
-    console.log("DONE : " + done);
+   // console.log("DONE : " + done);
     
+    // Call java function
     var bool = m_instance.loginSync("127.0.0.1",username,password,"User");
 
-    console.log(bool);
+//    console.log(bool);
 
     if (bool){ // stupid example
 
@@ -134,6 +144,7 @@ passport.use(new LocalStrategy(
 
       var main_class;
 
+      // Call java function
       main_class = m_instance.getMainClassSync();
 
 /*      console.log("CREATE MAIN CLASS : " + main_class);
@@ -146,9 +157,9 @@ passport.use(new LocalStrategy(
 */
       obj[username] = main_class;
 
-      console.log("OBJ : " + obj);
+//      console.log("OBJ : " + obj);
 
-      console.log("IN OBJ2 : " + obj[username]);
+//      console.log("IN OBJ2 : " + obj[username]);
 
       m_main_class[username] = main_class;
 
@@ -164,28 +175,34 @@ passport.use(new LocalStrategy(
 
       deleteFolderRecursive('Download/' + username);
       deleteFolderRecursive('Upload/' + username);
+
+      console.log("LOGIN SUCCESS");
+
       return done(null, {name: username});
     }
+
+    console.log("LOGIN FAIL");
+    console.log("----------------- END LOGIN --------------------");
 
     return done(null, false, { message: 'Incorrect username.' });
   }
 ));
 
-app.post('/get_class', function(req, res){
-  res.send(m_main_class);
-})
-
-app.get('/admin', function (req, res) {
+// USE TO TEST LOGIN 
+app.get('/api/admin', function (req, res) {
+  // Call java function
   java.callMethodSync(m_instance, "login", "127.0.0.1","admin","bright23","Admin");
   console.log("TESTTT");
 });
 
-app.get('/user', function (req, res) {
+app.get('/api/user', function (req, res) {
+  // Call java function
   java.callMethodSync(m_instance, "login_main", "127.0.0.1","alice","1jQClb1m","User");
   console.log("user");
 });
 
-app.post('/logins', function (req, res) {
+// USE TO TEST LOGIN
+app.post('/api/logins', function (req, res) {
 
     var username = req.body.username;
     var password = req.body.password;
@@ -203,24 +220,21 @@ app.post('/logins', function (req, res) {
       m_main_class[req.user.name] = m_instance.getMainClassSync();
       console.log("CLASS : " + m_main_class[req.user.name]);
     }
-    
-
 });
 
-
-
-app.get('/userinfo', function (req, res) {
+// API GET USERINFO
+app.get('/api/userinfo', function (req, res) {
 
     var userinfo = {};
 
     if(Object.keys(userinfo).length == 0)
     {
-      // Get table
+      // Get table & Call java function
       var attribute_list = m_main_class[req.user.name].getTableUserAttributeSync();
       var authorityName = m_main_class[req.user.name].getAuthorityNameSync();
       var username = m_main_class[req.user.name].getUsernameSync();
       var email_address = m_main_class[req.user.name].getemailAddressSync();
-      console.log("------------- USER INFO -------------------");
+      console.log("--------------------- USER INFO -------------------");
       console.log("Authority Name : " + authorityName);
       console.log("Username : " + username);
       console.log("Email Address : " + email_address);
@@ -232,7 +246,7 @@ app.get('/userinfo', function (req, res) {
         console.log("I : " + attribute_list[i]);
       }
 
-      
+      // VARIABLE TO SEND TO CLIENT
       userinfo.username = username;
       userinfo.authorityName = authorityName;
       userinfo.email_address = email_address;
@@ -242,15 +256,19 @@ app.get('/userinfo', function (req, res) {
     
     res.send(userinfo);
 
+    console.log("--------------------- END USER INFO ---------------------");
+
 });
 
-app.post('/changepwd', function (req, res) {
+// API CHANGE PASSWORD
+app.post('/api/changepwd', function (req, res) {
 
   console.log("----------- CHANGE PASSWORD -------------");
 
+  // Call java function
   var objChangePwd = m_main_class[req.user.name].getChangePasswdClassSync();   
 
-  console.log("CLASS CHANGE PASSWORD : " + objChangePwd);
+ // console.log("CLASS CHANGE PASSWORD : " + objChangePwd);
 
   var current_passwd = req.body.current_passwd;
   var new_passwd  = req.body.new_passwd;
@@ -268,20 +286,25 @@ app.post('/changepwd', function (req, res) {
   result = objChangePwd.getResulFlagSync();
   // Update Password
   if(result){
-    console.log("UPDATE PASSWORD");
+    console.log("UPDATE PASSWORD !!");
+
+    // Call java function
     m_main_class[req.user.name].updateNewPasswdSync(new_passwd);
 
     res.send(req.result);
+    console.log("-------------- END CHANGE PASSWORD-----------------");
   }
 });
 
-app.post('/change_email', function (req, res) {
+// API CHANGE EMAIL ADDRESS
+app.post('/api/change_email', function (req, res) {
 
   console.log("----------- CHANGE Email Address -------------");
 
+  // Call java function
   var objChangeEmail = m_main_class[req.user.name].getChangeEmailClassSync();   
 
-  console.log("CLASS CHANGE EMAIL ADDRESS : " + objChangeEmail);
+ // console.log("CLASS CHANGE EMAIL ADDRESS : " + objChangeEmail);
 
   var new_email_address  = req.body.email;
   var confirm_new_passwd = req.body.confirm_new_passwd;
@@ -289,73 +312,95 @@ app.post('/change_email', function (req, res) {
   console.log("NEW EMAIL ADDDRESS : " + new_email_address);
   console.log("CONFIRM NEW PASSWORD : " + confirm_new_passwd);
 
+  // Call java function
   objChangeEmail.change_emailSync(new_email_address, confirm_new_passwd);
 
+  // Call java function
   var result = objChangeEmail.get_resultSync();
 
   if(result){
     console.log("UPDATE EMAIL");
+
+    // Call java function
     m_main_class[req.user.name].updateNewEmailSync(new_email_address);
     res.send(result);
+
+    console.log("---------------- END CHANGE EMAIL ---------------");
   }
 });
 
-app.post('/authority_name_list', function (req, res) {
+// API GET AUTHORITY NAME LIST
+app.post('/api/authority_name_list', function (req, res) {
 
-  if(m_authority_name_list[req.user.name] == null)
+  console.log("------------------- GET AUTHORITY NAME LIST ------------------------");
+
+  if(m_authority_name_list[req.user.name] == null){
+
+    // Call java function
     m_authority_name_list[req.user.name]  = m_main_class[req.user.name].getAuthorityNameListSync();
+  }
 
+  console.log("AUTHORITY NAME LIST : ")
   console.log(m_authority_name_list[req.user.name]);
 
   res.send(m_authority_name_list[req.user.name]);
+
+  console.log("------------------- END AUTHORITY NAME LIST ------------------------");
 });
 
-//------------DOWNLOAD PHR-----------------------//
+// -------------- DOWNLOAD SELF PHR -------------------------
 
-var m_download_phr_list = [];
+// API GET LIST OF PHR
+app.post('/api/download_self_phr_list', function (req, res) {
+  console.log("------------------- GET DOWNLOAD PHR LIST ------------------------");
 
-app.post('/download_self_phr_list', function (req, res) {
+  console.log("OLD PHR LIST : " + m_download_phr_list[req.user.name]);
 
-  m_main_class[req.user.name].initDownloadSelfPHR(function(err,result){
-    if(!err) {
-      m_main_class[req.user.name].getTableDownloadPHR(function(err,result){
-        if(!err){
-          m_download_phr_list[req.user.name] = result;
-          res.send(m_download_phr_list[req.user.name]);
-        }
-      });
-    }
-  });
-
+  // Call java function
+    m_main_class[req.user.name].initDownloadSelfPHR(req.body.authorityName, req.body.username, function(err,result){
+      if(!err) {
+        // Call java function
+        m_main_class[req.user.name].getTableDownloadPHR(function(err,result){
+          if(!err){
+            console.log("RESULT : " + result);
+            m_download_phr_list[req.user.name] = result;
+            res.send(m_download_phr_list[req.user.name]);
+            console.log("------------------- END DOWNLOAD PHR LIST ------------------------");
+          }
+        });
+      }
+    });
 });
 
-var m_path_files = [];
-var m_files = [];
 
-// DOWNLOAD FILES
-var downloadfile = function(data_description, phr_id, path_files, username, callback){
+// Function to download files and  save 
+var downloadfile = function(phr_owner_authority_name, phr_owner_name, data_description, phr_id, path_files, username, callback){
 
-    m_main_class[username].downloadPHR(data_description, phr_id, path_files, function(err, result){    
+    console.log("---------------- FUNCTION DOWNLOAD FILE ----------------------");
+
+    // Call java function
+    m_main_class[username].downloadPHR(phr_owner_authority_name, phr_owner_name, data_description, phr_id, path_files, function(err, result){    
       if(result){
 
-          console.log("RESSULT DOWNLOAD : " + result);
+        //  console.log("RESSULT FROM F DOWNLOAD : " + result);
 
-          console.log("PATH FILES: " + path_files);
+        //  console.log("PATH FILES: " + path_files);
           
           var files = [];
           // process.nextTick(function() 
 
+            // READ LIST FILES IN DIRECTORY
             fs.readdir(path_files,function(err, result){
                 if (err) {
                       return console.error(err);
                 } 
 
                 else {
-                  console.log("RESULT : " + result);
+               //   console.log("RESULT : " + result);
 
                   files = result;
 
-                  console.log("result.length : " + files.length);
+               //   console.log("result.length : " + files.length);
 
                   if(files.length != 0){
 
@@ -363,103 +408,109 @@ var downloadfile = function(data_description, phr_id, path_files, username, call
 
                       m_files[username] = files[0];
 
+                      // call calback function
                       if (callback && typeof(callback) === "function") {
                           callback(true);
                       }
-
-            
-                  }
-
-                  else {
-                      //if(files.length == 0)
-                      console.log("LOOP");
-                      // process.nextTick(arguments.callee);  
                   }
                 }
-
-                // files = result;
 
               });         
       }
       else {
           console.log("ERROR " + err);
-          
+            
+            // call calback function
             if (callback && typeof(callback) === "function") {
                 callback(false);
             }
       }
 
-    });
+      console.log("---------------- END FUNCTION DOWNLOAD FILE ----------------------");
 
+    });
 }
 
-app.post('/downloadPHR', function (req, res) {
+// API DOWNLOAD PHR FILE
+app.post('/api/downloadPHR', function (req, res) {
 
-  var username = m_main_class[req.user.name].getUsernameSync();
+  console.log("------------------- DOWNLOAD FILES -------------------");
+
+  var username = req.user.name;
+  var index = req.body.index;
+  var data_description = m_download_phr_list[username][index][0];
+  var phr_id = parseInt(m_download_phr_list[username][index][3],10);
 
   m_path_files[username] = '/home/bright/Desktop/Project/webserver/Download/' + username + '/';
 
-  console.log("m_path_files : " +  m_path_files[username]);
-
-  var index = req.body.index;
-
-  var data_description = m_download_phr_list[req.user.name][index][0];
-  var phr_id = parseInt(m_download_phr_list[req.user.name][index][3],10);
+  console.log("USER PATH FILES : " +  m_path_files[username]);
 
   console.log("DATA : " + data_description);
 
   console.log("ID : " + phr_id);
 
+  // CHECK HAVE DIRECTORY
   fs.stat( m_path_files[username], function(err,stat){
+
+    // HAVE DIRECTORY
     if(err == null){
 
+          // DELETE FILE IN DIRECTORY && DOWNLOAD FILE
           if(rmDir( m_path_files[username])){
-              downloadfile(data_description, phr_id,  m_path_files[username], username, function(result){
+              downloadfile(req.body.authorityName, req.body.username ,data_description, phr_id,  m_path_files[username], username, function(result){
               res.send(result);
               });
           }
     }
 
+    // DON'T HAVE DIRECTORY
     else if(err.code == 'ENOENT'){
-         fs.mkdir( m_path_files[username],function(err){
-           if (err) {
-               return console.error(err);
-           }
-           
-           else {
-             console.log("Directory created successfully!");
-             downloadfile(data_description, phr_id,  m_path_files[username], username, function(result){
-                res.send(result);
-             });
-           }
 
-         });
+        // CREATE DIRECTORY
+        fs.mkdir( m_path_files[username],function(err){
+          if (err) {
+              return console.error(err);
+          }
+           
+          else {
+            console.log("Directory created successfully!");
+
+            // DOWNLOAD FILES
+            downloadfile(req.body.authorityName, req.body.username, data_description, phr_id,  m_path_files[username], username, function(result){
+              res.send(result);
+
+              console.log("------------------- END DOWNLOAD FILES -------------------");
+            });
+          }
+        });
     }
   });
-
-  
-
 });
 
-app.get('/downloadPHR', function (req, res) {
+// API OPEN DOWNLOAD WINDOW ON CLIENT
+app.get('/api/downloadPHR', function (req, res) {
+
+  console.log("-------------- OPEN WINDOW DOWNLOAD ------------------");
   console.log("Download Files !!");
   res.download( m_path_files[req.user.name] + m_files[req.user.name],function(err){
     if(!err){
-      console.log("ENDDDD");
+        console.log("-------------- END OPEN WINDOW DOWNLOAD ------------------");
+
     }
   });
 });
-
-
 
 //---------------------- DELETE PHR -----------------------//+
 
 var delete_phr_list = null;
 
-app.post('/delete_self_phr_list', function (req, res) {
+app.post('/api/delete_self_phr_list', function (req, res) {
 
+  // call java function
   m_main_class[req.user.name].initDeleteSelfPHR(function(err,result){
     if(!err) {
+
+      // call java function
       m_main_class[req.user.name].getTableDeletePHR(function(err,result){
         if(!err){
           delete_phr_list = result;
@@ -472,7 +523,7 @@ app.post('/delete_self_phr_list', function (req, res) {
   console.log("Delete LIST : " + delete_phr_list);
 });
 
-app.post('/deletePHR', function (req, res) {
+app.post('/api/deletePHR', function (req, res) {
 
   var index = req.body.index;
 
@@ -489,161 +540,115 @@ app.post('/deletePHR', function (req, res) {
 
 });
 
-//------------------ UPLOAD PHR FILES -----------------------------
+//--------------------------------------------------------------
 
+//------------------ UPLOAD SELF PHR FILES -----------------------------
+
+// SAVE FILE ON NODE JS FOLDER AND UPLOAD TO PHR SERVER
 var savefile = function(old_path_file, path_files_upload, phr_owner_name, phr_owner_authority_name, 
-             data_description, confidentiality_level, access_policy, username)
+             data_description, confidentiality_level, access_policy, threshold, truted_users, username, callback)
 {
+    console.log("---------------------- SAVEFILE FUNCTION ---------------------");
+
+    console.log(old_path_file);
+
+    // move files from temp to user directory
     fs.rename(old_path_file, path_files_upload, function(error){
     
     if(error) throw error;
-              
+    
+    // Delete file in temp folder
     fs.unlink(old_path_file, function(){
       if(error) throw error;
       else {
-        m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
-              path_files_upload, data_description, confidentiality_level, 
-              access_policy, function(err,result){
-              if(!err) {
-                  console.log("SUCCESS !!! : " + result);     
-              }
+        if(confidentiality_level == "Restricted level"){
 
-        });
+          // call java function
+          m_main_class.setThresholdValueSync(threshold);
+          m_main_class.setNoTrustedUsersSync(truted_users);
+
+          // call java function
+          m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+                path_files_upload, data_description, confidentiality_level, 
+                access_policy, function(err,result){
+                if(!err) {
+                    console.log("SUCCESS !!! : " + result);     
+                    if (callback && typeof(callback) === "function") {
+                        callback(result);
+                    }
+                    console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
+                }
+
+          });
+        }
+        else {
+
+          // call java function
+          m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+                path_files_upload, data_description, confidentiality_level, 
+                access_policy, function(err,result){
+                if(result) {
+                    console.log("SUCCESS !!! : " + result);     
+                    if (callback && typeof(callback) === "function") {
+                        callback(result);
+                    }
+                    console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
+                }
+
+          });
+        }
       }
-
-    });
-              
+    });             
   }); 
 }
 
-app.post('/uploadPHR', upload.single('file'), function (req, res, next) {
-  console.log(req.body);
-  console.log(req.file);
+// API UPLOAD FILES TO NODE JS
+app.post('/api/uploadPHR', upload.single('file'), function (req, res, next) {
+
+  console.log("---------------------- UPLOAD PHR ---------------------");
+  //console.log(req.body);
+  //console.log(req.file);
 
   var path_files_upload = '/home/bright/Desktop/Project/webserver/Upload/' + req.body.phr_owner_name + '/';
 
-  if(!fs.existsSync(path_files_upload)){
+  console.log("PATH : " + path_files_upload);
+
+  // CHECK HAVE DIRECTORY
+  fs.stat( path_files_upload, function(err,stat){
+
+    console.log("ERROR:  "  + err);
+    //if(!fs.existsSync(path_files_upload)){
+    if(err != null){
         fs.mkdir(path_files_upload,function(err){
           if (err) {
                return console.error(err);
           }
           else {
 
-            // save file
-            savefile(req.file.path, path_files_upload + req.file.originalname, req.body.phr_owner_name, req.body.phr_owner_authority_name, 
-              req.body.data_description, req.body.confidentiality_level, req.body.access_policy, req.user.name);   
+            // save file on folder in node server
+            savefile(req.file.path, path_files_upload + req.file.originalname, req.body.phr_owner_name, 
+              req.body.phr_owner_authority_name, req.body.data_description, req.body.confidentiality_level,
+              req.body.access_policy, req.body.threshold,  req.body.truted_users, req.user.name, function(result){
+                  res.send(result);
+              });   
           }
         });
-    }
+   }
     else {
       savefile(req.file.path, path_files_upload + req.file.originalname, req.body.phr_owner_name, req.body.phr_owner_authority_name, 
-              req.body.data_description, req.body.confidentiality_level, req.body.access_policy, req.user.name);
+              req.body.data_description, req.body.confidentiality_level, req.body.access_policy,
+              req.body.threshold,  req.body.truted_users, req.user.name, function(result){
+                  res.send(result);
+              });
     }
-
-
+  })
+  console.log("---------------------- END UPLOAD PHR ---------------------");
 });
 
+// CHECK HAVE USER
+app.post('/api/check_user_exist', function (req, res) {
 
-//------------------ ACCESS PERMISSION MANAGER ------------------
-
-
-
-app.post('/access_permission_management_list', function (req, res) {
-
-  var access_permission_list ;
-
-  m_main_class[req.user.name].getTableAccessPermissionPHR(function(err,result){
-    if(!err){
-      access_permission_list = result;
-      res.send(access_permission_list );
-    }
-  });
-
-});
-
-app.post('/edit_access_permission', function (req, res) {
-
-      m_main_class[req.user.name].getClassAccessPermissionManagementEdit(req.body.row,function(err,result){  
-      if(!err){
-        var access_permission_management_class = result;
-
-        access_permission_management_class.editAccessPermission(req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
-        if(!err){
-            var result_flag = result;
-            m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
-              if(!err){
-                  res.send(result_flag);
-              }
-            });
-          }
-        else
-          console.log(err);
-        });
-      }
-  });
-});
-
-app.post('/assign_access_permission', function (req, res) {
-    m_main_class[req.user.name].getClassAccessPermissionManagementAssign(function(err,result){  
-      if(!err){
-        var access_permission_management_class = result;
-
-        access_permission_management_class.assignAccessPermission(req.body.authority, req.body.username ,req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
-        if(!err){
-            var result_flag = result;
-            m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
-              if(!err){
-                  res.send(result_flag);
-              }
-            });
-          }
-        else
-          console.log(err);
-        });
-      }
-    });
-});
-
-
-
-app.post('/attribute_table', function (req, res) {
-
-  var attribute_table = null;
-
-  var authorityName = m_main_class[req.user.name].getAuthorityNameSync();
-
-  m_main_class[req.user.name].initTableAttributePHR(authorityName, function(err,result){
-    if(result) {
-      m_main_class[req.user.name].getTableAttribute(function(err,result){
-        if(result){
-          attribute_table = result;
-          console.log("Attribute TABLE : " + result);
-          res.send(attribute_table);
-        }
-      });
-    }
-  });
-
-});
-
-app.post('/delete_access_permission', function (req, res) {
-    m_main_class[req.user.name].removeAccessPermission(req.body.delete_user, function(err,result){
-      if(!err){
-        var result_flag = result;
-          if(result_flag){
-            m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
-              if(!err){
-                  res.send(result_flag);
-              }
-            });
-          }
-      }
-      else
-        console.log(err);
-    });
-});
-
-app.post('/check_user_exist', function (req, res) {
+    // call java function
     m_main_class[req.user.name].checkUserExist(req.body.authority_name, req.body.username, function(err,result){
       if(!err){
         res.send(result);
@@ -653,16 +658,164 @@ app.post('/check_user_exist', function (req, res) {
     });
 });
 
-app.use(function(req, res, next){
+
+// Verify upload permission
+app.post('/api/verify_upload_permission_main', function (req, res) {
+
+    console.log("---------------------- Verify upload permission---------------------");
+    // call java function
+    m_main_class[req.user.name].verifyUploadPermissionMain(req.body.username, req.body.authorityName, function(err,result){
+      if(!err) {
+        
+        res.send(true);
+
+        console.log("----------------------END Verify upload permission---------------------");
+      }
+    });
+
+});
+
+//-------------------------------------------------------------
+
+//------------------ ACCESS PERMISSION MANAGER ------------------
+
+// API GET ACCESS PERMISSION LIST
+
+app.post('/api/access_permission_management_list', function (req, res) {
+
+  console.log("-------------------- GET ACCESS PERMINSION LIST ------------------");
+  var access_permission_list ;
+
+  // call java function
+  m_main_class[req.user.name].getTableAccessPermissionPHR(function(err,result){
+    if(!err){
+      access_permission_list = result;
+      res.send(access_permission_list );
+       console.log("-------------------- END ACCESS PERMINSION LIST ------------------");
+    }
+  });
+
+});
+
+// API EDIT ACCESS PERMISSION 
+app.post('/api/edit_access_permission', function (req, res) {
+
+  console.log("-------------------- EDIT ACCESS PERMINSION LIST ------------------");
+
+  // call java function
+  m_main_class[req.user.name].getClassAccessPermissionManagementEdit(req.body.row,function(err,result){  
+    if(!err){
+      var access_permission_management_class = result;
+
+      // call java function
+      access_permission_management_class.editAccessPermission(req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
+      if(!err){
+        var result_flag = result;
+
+          // call java function
+          m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
+            if(!err){
+              res.send(result_flag);
+            }
+          });
+      }
+      else
+        console.log(err);
+      });
+      console.log("-------------------- END EDIT ACCESS PERMINSION LIST ------------------");
+    }
+  });
+});
+
+// API ASSIGN ACCESS PERMISSION
+app.post('/api/assign_access_permission', function (req, res) {
+  console.log("-------------------- END EDIT ACCESS PERMINSION LIST ------------------");
+
+  // call java function
+  m_main_class[req.user.name].getClassAccessPermissionManagementAssign(function(err,result){  
+    if(!err){
+      var access_permission_management_class = result;
+
+        // call java function
+        access_permission_management_class.assignAccessPermission(req.body.authority, req.body.username ,
+          req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
+            if(!err){
+                var result_flag = result;
+                m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
+                  if(!err){
+                      res.send(result_flag);
+                  }
+                });
+            }
+            else
+              console.log(err);
+        });
+    }
+  });
+});
+
+// API DELETE ACCESS PERMISSION
+app.post('/api/delete_access_permission', function (req, res) {
+
+    // call java function
+    m_main_class[req.user.name].removeAccessPermission(req.body.delete_user, function(err,result){
+      if(!err){
+        var result_flag = result;
+          if(result_flag){
+
+            // call java function
+            m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
+              if(!err){
+                  res.send(result_flag);
+              }
+            });
+          }
+      }
+      else
+        console.log(err);
+    });
+});
+
+//---------------------------------------------//
+
+// GET ATTRIBUTE LIST
+app.post('/api/attribute_table', function (req, res) {
+
+  var attribute_table = null;
+
+  var authorityName = m_main_class[req.user.name].getAuthorityNameSync();
+
+  console.log("-------------- get attribute table ---------------");
+
+  // call java function
+  m_main_class[req.user.name].initTableAttributePHR(authorityName, function(err,result){
+    if(result) {
+
+      // call java function
+      m_main_class[req.user.name].getTableAttribute(function(err,result){
+        if(result){
+          attribute_table = result;
+          console.log("Attribute TABLE : " + result);
+
+          console.log("-------------- END attribute table ---------------");
+          res.send(attribute_table);
+        }
+      });
+    }
+  });
+});
+
+// HANDLER NOT FOUND PAGE
+/*app.use(function(req, res, next){
   res.status(404);
   
   res.redirect('/#error');
 });
-
-
-  var server = app.listen(3000, function () {
+*/
+// START SERVER
+var server = app.listen(3000, function () {
   var host = "192.168.174.138";
   var port = server.address().port;
 
-  console.log('Example app listening at http://%s:%s', host, port);
-  });
+   console.log('Example app listening at http://%s:%s', host, port);
+});
