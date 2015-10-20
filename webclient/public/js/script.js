@@ -203,7 +203,7 @@
           }
         };
 
-        $scope.cancle = function(){
+        $scope.back = function(){
           $location.path('/info');
         }
     });
@@ -345,6 +345,9 @@
             .success(function(res){
                 isClickSearch = false;
                 $scope.canUpload = res;
+                if(!res){
+                  alert("CAN'T FIND THIS USER");
+                }
                // $location.path('/uploadPHR');
             })
           }
@@ -367,6 +370,9 @@
                 isSuccess = true;
             }, function (resp) {
                 console.log('Error status: ' + resp.status);
+
+                isSuccess = false;
+
             }, function (evt) {
                 var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
                 console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
@@ -380,6 +386,10 @@
                 $scope.search_selectedAuthority = "";
 
                 $location.path('/uploadPHR');
+              }
+              else {
+                alert("UPLOAD FAILED !!");
+                $location.path('/info');
               }
             });
        
@@ -531,7 +541,7 @@
           }
         };
 
-        $scope.cancle = function(){
+        $scope.back = function(){
           $location.path('/info');
         }
     });
@@ -658,6 +668,10 @@
          $scope.check = function(){
            return ($scope.assign.uploadflag || $scope.assign.downloadflag || $scope.assign.deleteflag);
          }
+
+         $scope.back =  function(){
+            $location.path('/accessPermissionManagement');
+         }
     });
 
     scotchApp.controller('downloadController', function($scope, $http, $location, $window) {
@@ -684,6 +698,7 @@
 
         var isClickSearch = false;
 
+        $scope.canDownload = false;
         // search
         $scope.search = function(){
           if(!isClickSearch){
@@ -696,7 +711,15 @@
             .success(function(res){
                 isClickSearch = false;
                 $scope.phr_list = res;
-                console.log($scope.phr_list);
+
+                if(res == false){
+                  alert("CAN'T FIND USER");
+                }
+                else{
+                  $scope.canDownload = true;
+                }
+
+                // console.log($scope.phr_list);
                 //$location.path('/downloadSelfPHR');
             })
           }

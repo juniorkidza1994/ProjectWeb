@@ -5085,7 +5085,7 @@ public class UserMain extends JFrame implements ConstantVars
 		return res;
 	}
 
-	public void verifyUploadPermissionMain(String phr_owner_name, String phr_owner_authority_name){
+	public boolean verifyUploadPermissionMain(String phr_owner_name, String phr_owner_authority_name){
 		boolean res = false;
 
 		System.out.println("PHR OWNER NAME : " + phr_owner_name);
@@ -5095,7 +5095,7 @@ public class UserMain extends JFrame implements ConstantVars
 		res  = verify_upload_permission_main(phr_owner_name, phr_owner_authority_name);
 		System.out.println("RESULT VERIFY : " + res);
 
-		//return res;
+		return res;
 	}
 
 	public boolean checkUserExist(String authority_name, String username){

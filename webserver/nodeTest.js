@@ -25,6 +25,20 @@ var deleteFolderRecursive = function(path) {
   }
 };
 
+var deleteFilesRecursive = function(path) {
+  if( fs.existsSync(path) ) {
+    fs.readdirSync(path).forEach(function(file,index){
+      var curPath = path + "/" + file;
+      if(fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    // fs.rmdirSync(path);
+  }
+};
+
 var app = express();
 
 // TEMP PATH TO SAVE FILES
@@ -358,7 +372,7 @@ app.post('/api/download_self_phr_list', function (req, res) {
 
   // Call java function
     m_main_class[req.user.name].initDownloadSelfPHR(req.body.authorityName, req.body.username, function(err,result){
-      if(!err) {
+      if(result) {
         // Call java function
         m_main_class[req.user.name].getTableDownloadPHR(function(err,result){
           if(!err){
@@ -368,6 +382,10 @@ app.post('/api/download_self_phr_list', function (req, res) {
             console.log("------------------- END DOWNLOAD PHR LIST ------------------------");
           }
         });
+      }
+      else{
+        var empty_array = [];
+        res.send(false);
       }
     });
 });
@@ -667,8 +685,12 @@ app.post('/api/verify_upload_permission_main', function (req, res) {
     m_main_class[req.user.name].verifyUploadPermissionMain(req.body.username, req.body.authorityName, function(err,result){
       if(!err) {
         
-        res.send(true);
+        res.send(result);
 
+        console.log("----------------------END Verify upload permission---------------------");
+      }
+      else {
+        res.send(false);
         console.log("----------------------END Verify upload permission---------------------");
       }
     });
@@ -816,6 +838,8 @@ app.post('/api/attribute_table', function (req, res) {
 var server = app.listen(3000, function () {
   var host = "192.168.174.138";
   var port = server.address().port;
+
+  rmDir('Upload/temp');
 
    console.log('Example app listening at http://%s:%s', host, port);
 });
