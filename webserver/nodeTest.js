@@ -50,9 +50,17 @@ var storage = multer.diskStorage({
 
   destination: function (req, file, cb) {
 
-    path_files_upload_temp = '/home/bright/Desktop/Project/webserver/Upload/' + "temp" + '/';
-    cb(null, path_files_upload_temp) 
+    var path_files_upload = '/home/bright/Desktop/Project/webserver/Upload/' + req.body.phr_owner_name + '/';
+
+    if(rmDir( path_files_upload)){
+
+      console.log("REQ UPLOAD : " + req.body.phr_owner_name);
+
+      
+      cb(null, path_files_upload) 
    
+    }
+
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname)
@@ -60,7 +68,7 @@ var storage = multer.diskStorage({
 })
 
 // USE TO UPLOAD FILES
-var upload = multer({  storage: storage })
+var upload = multer({  storage: storage  })
 
 //
 var bodyParser = require('body-parser');
@@ -104,6 +112,7 @@ var m_authority_name_list = [];
 var m_download_phr_list = [];
 var m_path_files = [];
 var m_files = [];
+var m_files_in_temp = [];
 
 // DELTE ALL FILE IN DIRECTORY
 var rmDir = function(dirPath) {
@@ -189,6 +198,15 @@ passport.use(new LocalStrategy(
 
       deleteFolderRecursive('Download/' + username);
       deleteFolderRecursive('Upload/' + username);
+
+      // CREATE UPLOAD FOLDER
+      fs.mkdir('Upload/' + username,function(err){
+      });
+
+      // CREATE DOWNLOAD FOLDER
+      fs.mkdir( 'Download/' + username,function(err){
+
+      });
 
       console.log("LOGIN SUCCESS");
 
@@ -467,40 +485,24 @@ app.post('/api/downloadPHR', function (req, res) {
 
   console.log("ID : " + phr_id);
 
-  // CHECK HAVE DIRECTORY
-  fs.stat( m_path_files[username], function(err,stat){
-
-    // HAVE DIRECTORY
-    if(err == null){
-
-          // DELETE FILE IN DIRECTORY && DOWNLOAD FILE
-          if(rmDir( m_path_files[username])){
-              downloadfile(req.body.authorityName, req.body.username ,data_description, phr_id,  m_path_files[username], username, function(result){
+        // DELETE FILE IN DIRECTORY && DOWNLOAD FILE
+        if(rmDir( m_path_files[username])){
+            downloadfile(req.body.authorityName, req.body.username ,data_description, phr_id,  m_path_files[username], username, function(result){
+              console.log("------------------- END DOWNLOAD FILES -------------------");
               res.send(result);
               });
-          }
-    }
+        }
+});
 
-    // DON'T HAVE DIRECTORY
-    else if(err.code == 'ENOENT'){
+// Cancle download
+app.post('/api/cancelDownloadPHR', function (req, res) {
 
-        // CREATE DIRECTORY
-        fs.mkdir( m_path_files[username],function(err){
-          if (err) {
-              return console.error(err);
-          }
-           
-          else {
-            console.log("Directory created successfully!");
-
-            // DOWNLOAD FILES
-            downloadfile(req.body.authorityName, req.body.username, data_description, phr_id,  m_path_files[username], username, function(result){
-              res.send(result);
-
-              console.log("------------------- END DOWNLOAD FILES -------------------");
-            });
-          }
-        });
+  console.log("------------------- Cancle Download FILES -------------------");
+  m_main_class[req.user.name].setCancelDownload(function(err,result){
+    if(!err){
+        // DELETE FILE IN DIRECTORY && DOWNLOAD FILE
+       res.send(true);
+        console.log("------------------- END Cancle Download FILES -------------------");
     }
   });
 });
@@ -563,62 +565,116 @@ app.post('/api/deletePHR', function (req, res) {
 //------------------ UPLOAD SELF PHR FILES -----------------------------
 
 // SAVE FILE ON NODE JS FOLDER AND UPLOAD TO PHR SERVER
-var savefile = function(old_path_file, path_files_upload, phr_owner_name, phr_owner_authority_name, 
+var savefile = function(path_files_upload, phr_owner_name, phr_owner_authority_name, 
              data_description, confidentiality_level, access_policy, threshold, truted_users, username, callback)
 {
     console.log("---------------------- SAVEFILE FUNCTION ---------------------");
 
-    console.log(old_path_file);
+    // console.log(old_path_file);
 
     // move files from temp to user directory
-    fs.rename(old_path_file, path_files_upload, function(error){
+    // fs.rename(old_path_file, path_files_upload, function(error){
     
-    if(error) throw error;
-    
-    // Delete file in temp folder
-    fs.unlink(old_path_file, function(){
-      if(error) throw error;
-      else {
-        if(confidentiality_level == "Restricted level"){
+    //   if(error) throw error;
+      
+    //   // Delete file in temp folder
+    //   fs.unlink(old_path_file, function(){
+    //     if(error) throw error;
+    //     else {
+    //       if(confidentiality_level == "Restricted level"){
 
-          // call java function
-          m_main_class.setThresholdValueSync(threshold);
-          m_main_class.setNoTrustedUsersSync(truted_users);
+    //         // call java function
+    //         m_main_class.setThresholdValueSync(threshold);
+    //         m_main_class.setNoTrustedUsersSync(truted_users);
 
-          // call java function
-          m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
-                path_files_upload, data_description, confidentiality_level, 
-                access_policy, function(err,result){
-                if(!err) {
-                    console.log("SUCCESS !!! : " + result);     
-                    if (callback && typeof(callback) === "function") {
-                        callback(result);
-                    }
-                    console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
-                }
+    //         // call java function
+    //         m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+    //               path_files_upload, data_description, confidentiality_level, 
+    //               access_policy, function(err,result){
+    //               if(!err) {
+    //                   console.log("SUCCESS !!! : " + result);     
+    //                   if (callback && typeof(callback) === "function") {
+    //                       callback(result);
+    //                   }
+    //                   console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
+    //               }
 
-          });
-        }
-        else {
+    //         });
+    //       }
+    //       else {
 
-          // call java function
-          m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
-                path_files_upload, data_description, confidentiality_level, 
-                access_policy, function(err,result){
-                if(result) {
-                    console.log("SUCCESS !!! : " + result);     
-                    if (callback && typeof(callback) === "function") {
-                        callback(result);
-                    }
-                    console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
-                }
+    //         // call java function
+    //         m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+    //               path_files_upload, data_description, confidentiality_level, 
+    //               access_policy, function(err,result){
+    //               if(result) {
+    //                   console.log("SUCCESS !!! : " + result);     
+    //                   if (callback && typeof(callback) === "function") {
+    //                       callback(result);
+    //                   }
+    //                   console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
+    //               }
 
-          });
-        }
-      }
-    });             
-  }); 
+    //         });
+    //       }
+    //     }
+    //   });             
+    // }); 
+
+          if(confidentiality_level == "Restricted level"){
+
+            // call java function
+            m_main_class.setThresholdValueSync(threshold);
+            m_main_class.setNoTrustedUsersSync(truted_users);
+
+            // call java function
+            m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+                  path_files_upload, data_description, confidentiality_level, 
+                  access_policy, function(err,result){
+                  if(!err) {
+                      console.log("SUCCESS !!! : " + result);     
+                      if (callback && typeof(callback) === "function") {
+                          callback(result);
+                      }
+                      console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
+                  }
+
+            });
+          }
+          else {
+
+            // call java function
+            m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+                  path_files_upload, data_description, confidentiality_level, 
+                  access_policy, function(err,result){
+                  if(result) {
+                      console.log("SUCCESS !!! : " + result);     
+                      if (callback && typeof(callback) === "function") {
+                          callback(result);
+                      }
+                      console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
+                  }
+
+            });
+          }
 }
+
+// Cancle Upload
+app.post('/api/cancelUploadPHR', function (req, res) {
+
+  console.log("------------------- Cancle Upload FILES -------------------");
+  m_main_class[req.user.name].setCancelUpload(function(err,result){
+    if(!err){
+        // DELETE FILE IN DIRECTORY && DOWNLOAD FILE
+       res.send(true);
+        console.log("------------------- END Cancle Upload FILES -------------------");
+    }
+  });
+});
+
+app.post('/api/testUpload',function(req, res){
+  res.send(true);
+});
 
 // API UPLOAD FILES TO NODE JS
 app.post('/api/uploadPHR', upload.single('file'), function (req, res, next) {
@@ -631,35 +687,12 @@ app.post('/api/uploadPHR', upload.single('file'), function (req, res, next) {
 
   console.log("PATH : " + path_files_upload);
 
-  // CHECK HAVE DIRECTORY
-  fs.stat( path_files_upload, function(err,stat){
-
-    console.log("ERROR:  "  + err);
-    //if(!fs.existsSync(path_files_upload)){
-    if(err != null){
-        fs.mkdir(path_files_upload,function(err){
-          if (err) {
-               return console.error(err);
-          }
-          else {
-
-            // save file on folder in node server
-            savefile(req.file.path, path_files_upload + req.file.originalname, req.body.phr_owner_name, 
+       savefile(req.file.path, req.body.phr_owner_name, 
               req.body.phr_owner_authority_name, req.body.data_description, req.body.confidentiality_level,
               req.body.access_policy, req.body.threshold,  req.body.truted_users, req.user.name, function(result){
                   res.send(result);
               });   
-          }
-        });
-   }
-    else {
-      savefile(req.file.path, path_files_upload + req.file.originalname, req.body.phr_owner_name, req.body.phr_owner_authority_name, 
-              req.body.data_description, req.body.confidentiality_level, req.body.access_policy,
-              req.body.threshold,  req.body.truted_users, req.user.name, function(result){
-                  res.send(result);
-              });
-    }
-  })
+
   console.log("---------------------- END UPLOAD PHR ---------------------");
 });
 

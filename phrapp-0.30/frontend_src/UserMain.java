@@ -3479,7 +3479,7 @@ public class UserMain extends JFrame implements ConstantVars
 				if(get_cancel_phr_uploading())
 				{
 					set_cancel_phr_uploading(false);
-					JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+					//JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
 				}
 
 				return;
@@ -3499,7 +3499,7 @@ public class UserMain extends JFrame implements ConstantVars
 				if(get_cancel_phr_uploading())
 				{
 					set_cancel_phr_uploading(false);
-					JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+					//JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
 				}
 
 				return;
@@ -3514,7 +3514,7 @@ public class UserMain extends JFrame implements ConstantVars
 				record_phr_encrypting_transaction_log_main(phr_owner_name, phr_owner_authority_name, data_description, false);
 
 				set_cancel_phr_uploading(false);
-				JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+				//JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
 				return;
 			}
 		}
@@ -3537,7 +3537,7 @@ public class UserMain extends JFrame implements ConstantVars
 			if(get_cancel_phr_uploading())
 			{
 				set_cancel_phr_uploading(false);
-				JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+				//JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
 			}
 
 			return;
@@ -3579,7 +3579,7 @@ public class UserMain extends JFrame implements ConstantVars
 			if(get_cancel_phr_uploading())
 			{
 				set_cancel_phr_uploading(false);
-				JOptionPane.showMessageDialog(main_panel, "Uploading the PHR was aborted by a user");
+				//JOptionPane.showMessageDialog(main_panel, "Uploading the PHR was aborted by a user");
 			}
 
 			return;
@@ -4198,7 +4198,7 @@ public class UserMain extends JFrame implements ConstantVars
 			if(get_cancel_phr_downloading())
 			{
 				set_cancel_phr_downloading(false);
-				JOptionPane.showMessageDialog(main_panel, "Downloading the PHR was aborted by a user");
+			//	JOptionPane.showMessageDialog(main_panel, "Downloading the PHR was aborted by a user");
 			}
 
 			return ;
@@ -4224,7 +4224,7 @@ public class UserMain extends JFrame implements ConstantVars
 			if(get_cancel_phr_downloading())
 			{
 				set_cancel_phr_downloading(false);
-				JOptionPane.showMessageDialog(main_panel, "Decrypting the PHR was aborted by a user");
+				//JOptionPane.showMessageDialog(main_panel, "Decrypting the PHR was aborted by a user");
 			}
 
 			return ;
@@ -5336,6 +5336,37 @@ public class UserMain extends JFrame implements ConstantVars
 		String username       = full_username.substring(full_username.indexOf(".") + 1);
 		remove_access_permission_main(authority_name, username);
 
+		return true;
+	}
+
+	public boolean setCancelDownload(){
+		set_cancel_phr_downloading(true);
+		if(get_phr_downloading_state())
+		{
+			// Call to C function
+			cancel_phr_downloading_main();
+		}
+		else if(get_phr_decrypting_state())
+		{
+			// Call to C function
+			cancel_phr_decrypting_main();
+		}
+
+		return true;
+	}
+
+	public boolean setCancelUpload(){
+		set_cancel_phr_uploading(true);
+		if(get_phr_encrypting_state())
+		{
+			// Call to C function
+			cancel_phr_encrypting_main();
+		}
+		else if(get_phr_uploading_state())
+		{
+			// Call to C function
+			cancel_phr_uploading_main();
+		}
 		return true;
 	}
 }

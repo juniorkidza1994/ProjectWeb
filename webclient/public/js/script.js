@@ -5,7 +5,7 @@
 
     var myClass;
 
-    var scotchApp = angular.module('scotchApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree'])
+    var scotchApp = angular.module('scotchApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree', 'ngAnimate', 'ui.bootstrap'])
 
   .config(function($routeProvider, $locationProvider, $httpProvider) {
     //================================================
@@ -223,6 +223,9 @@
         $scope.search_selectedAuthority = "";
         $scope.search_username  = "";
 
+        // Cancle upload
+        $http.post('/api/cancelUploadPHR')
+
         // get authority_name_list
         $http.post('/api/authority_name_list')
         .success(function(res){
@@ -242,13 +245,14 @@
             //console.log($scope.attribute_all);
         })
 
-        var isClick = false;
+        $scope.isClick = false;
 
         // upload later on form submit or something similar
         $scope.submit = function() {
-          if(!isClick){
+          if(!$scope.isClick){
 
-            isClick = true;
+            $scope.isClick = true;
+
           // call dfs function
             $scope.dfs($scope.tree);
 
@@ -258,11 +262,14 @@
             if(!($scope.tree.length != 0 &&  $scope.description != "" && $scope.con_level != "") && 
               !($scope.con_level == "Restricted level" && $scope.threshold > 0 && $scope.truted_users > 0)){
                 console.log("WRONG TREE");
-              isClick = false;
+                $scope.isClick = false;
             }
 
             // vaildation file & form
             else if ($scope.form.file.$valid && $scope.file && !$scope.file.$error) {
+
+              // hid form upload
+              $scope.canUpload = false;
 
               // add owner user to tree
               $scope.tree_string += " or (UsernameNode__SUB__" + $scope.userinfo.authorityName + "__SUB__" + $scope.userinfo.username + ')';
@@ -270,7 +277,6 @@
               console.log($scope.file);
               $scope.upload($scope.file);
               $scope.tree_string = "";
-              isClick = false;
             }
             // else {
                //console.log($scope.form.file.$valid);
@@ -344,54 +350,114 @@
             })
             .success(function(res){
                 isClickSearch = false;
+                // show form upload
                 $scope.canUpload = res;
                 if(!res){
                   alert("CAN'T FIND THIS USER");
                 }
                // $location.path('/uploadPHR');
             })
+            .error(function(err){
+              isClickSearch = false;
+            })
           }
       }
+  
+      $scope.progressBar = 0;
+      var m_upload;
+      // Can't change page
+      $scope.$on('$locationChangeStart', function(event) {
+        console.log("IS CLICK : "  + $scope.isClick);
+
+          // check when upload isn't complete
+          if ($scope.isClick) {
+             var r = confirm("Are you sure to leave this page ?");
+             if(r == true) {
+                // Cancle upload
+                $scope.file.upload.abort();
+                $http.post('/api/cancelUploadPHR')
+             }
+          }
+      });
+
+      var re_value = function(){
+                        // RE VALUE
+                $scope.max = 0;
+                $scope.dynamic = 0;
+                $scope.authorityList = {};
+                $scope.attribute_all = {};
+                $scope.id_node = 1;
+                $scope.userinfo = {} ;
+                $scope.description = "";
+                $scope.con_level = "";
+                $scope.threshold = -1;
+                $scope.truted_users = -1;
+                $scope.tree_string = "";
+                $scope.parent = ""; 
+                $scope.canUpload = false;
+                $scope.search_selectedAuthority = "";
+                $scope.search_username  = "";
+                 $scope.progressBar = 0;
+      }
+
+      $scope.cancel = function(){
+        var r = confirm("Are you sure to cancel Upload Files ?");
+             if(r == true) {
+                // Cancle upload
+                re_value();
+                $scope.file.upload.abort();
+                $http.post('/api/cancelUploadPHR')
+        }
+      };
 
       // upload on file select or drop
       $scope.upload = function (file) {
-            var isSuccess = false;
+        var isSuccess = false;
 
-            Upload.upload({
+        file.upload =  Upload.upload({
                 url: 'api/uploadPHR',
-                data: {file: file, 'phr_owner_authority_name': $scope.userinfo.authorityName, 
-                'phr_owner_name': $scope.userinfo.username, 'data_description': $scope.description,
+                data: {'phr_owner_name': $scope.userinfo.username, file: file, 'phr_owner_authority_name': $scope.userinfo.authorityName, 
+                'data_description': $scope.description,
                 'confidentiality_level': $scope.con_level, 'access_policy': $scope.tree_string,
                 'threshold' : $scope.threshold, 'truted_users': $scope.truted_users
               }
 
-            }).then(function (resp) {
+            })
+        file.upload.then(function (resp) {
                 console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);
                 isSuccess = true;
             }, function (resp) {
                 console.log('Error status: ' + resp.status);
-
+                $scope.file.upload.abort();
                 isSuccess = false;
 
             }, function (evt) {
                 var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
-                console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+                $scope.progressBar = progressPercentage;
+                //console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
             })
             .finally(function(){
               if(isSuccess){
                 alert("UPLOAD SUCCESS !!");
 
-                $scope.canUpload = false;
-                $scope.search_username = "";
-                $scope.search_selectedAuthority = "";
+                // $scope.canUpload = false;
+                // $scope.search_username = "";
+                // $scope.search_selectedAuthority = "";
 
-                $location.path('/uploadPHR');
+                // RE VALUE
+                re_value();
+
+                $location.path('/info');
               }
               else {
                 alert("UPLOAD FAILED !!");
                 $location.path('/info');
               }
+              $scope.isClick = false;
             });
+            
+            console.log(file);
+            
        
         };
 
@@ -683,6 +749,32 @@
 
         console.log("PHR LIST : " + $scope.phr_list);
 
+        $http.post('/api/cancelDownloadPHR')
+
+        var re_value = function(){
+                        $scope.isClick = false;
+              $scope.canDownload = false;
+              $scope.phr_list = {};
+              $scope.selectedRow = null;
+              $scope.selectedRow = null;
+              $scope.selectedAuthority = "";
+               $scope.username = "";
+             };
+
+        $scope.cancel = function(){
+          var r = confirm("Are you sure to cancel download ?");
+          if(r == true) {
+            console.log("CANCEL");
+            $http.post('/api/cancelDownloadPHR')
+            .success(function(){
+
+
+              re_value();
+              $location.path('/downloadSelfPHR'); 
+            })
+          }
+        }
+
         // get authority_name_list
         $http.post('/api/authority_name_list')
         .success(function(res){
@@ -694,7 +786,7 @@
             $scope.selectedRow = index;
         }
 
-        var isClick = false;
+        $scope.isClick = false;
 
         var isClickSearch = false;
 
@@ -727,7 +819,9 @@
 
         // open download window
         $scope.download = function(){
-          if(!isClick){
+          if(!$scope.isClick){
+            $scope.isClick = true;
+            $scope.canDownload = false;
             $http.post('/api/downloadPHR', {
               authorityName :  $scope.selectedAuthority,
               username      :  $scope.username,
@@ -735,6 +829,9 @@
               myClass: myClass
             })
             .success(function(res){
+
+              re_value();
+
               //console.log("RESULT : " + res);
                   if(res){
                 //  console.log("DOWNLOAD FILESS !!!");
@@ -743,6 +840,23 @@
             })
           }
         }
+
+        // Can't change page
+        $scope.$on('$locationChangeStart', function(event) {
+          console.log("IS CLICK : "  + $scope.isClick);
+
+            // check when upload isn't complete
+            if ($scope.isClick) {
+               var r = confirm("Are you sure to leave this page ?");
+               if(r == true) {
+                  $scope.phr_list = {};
+                  $scope.selectedRow = null;
+                  $scope.selectedRow = null;
+                  $scope.selectedAuthority = "";
+                  $http.post('/api/cancelDownloadPHR')
+               }
+            }
+        });
     });
 
     scotchApp.controller('deleteController', function($scope, $http, $location) {
