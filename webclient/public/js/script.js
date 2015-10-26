@@ -837,6 +837,9 @@
                 //  console.log("DOWNLOAD FILESS !!!");
                     $window.open('/api/downloadPHR');
                   }
+                  else {
+                    alert("DOWNLAOD FAILED (Decryption fail or can't verify user)");
+                  }
             })
           }
         }

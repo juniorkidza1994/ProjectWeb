@@ -283,6 +283,7 @@ public class UserMain extends JFrame implements ConstantVars
 	private String m_threshold_value  ;
 	private String m_no_trusted_users ;
 	private boolean m_isFinish ;
+	private boolean m_result_download;
 
 
 	public UserMain(String username, String passwd, String email_address, String authority_name, String user_auth_ip_addr, String audit_server_ip_addr, 
@@ -4141,8 +4142,8 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			public void run()
 			{
-				boolean result ;
-				perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, data_description, phr_id, phr_download_to_path);
+				
+				m_result_download = perform_phr_downloading_transaction(phr_owner_name, phr_owner_authority_name, data_description, phr_id, phr_download_to_path);
 
 				SwingUtilities.invokeLater(new Runnable()
 				{
@@ -4168,10 +4169,10 @@ public class UserMain extends JFrame implements ConstantVars
 		}
 		System.out.println("Finsih RUN DOWNLOAD");
 
-		return true;
+		return m_result_download;
 	}
 
-	private void perform_phr_downloading_transaction(String phr_owner_name, String phr_owner_authority_name, String data_description, 
+	private boolean perform_phr_downloading_transaction(String phr_owner_name, String phr_owner_authority_name, String data_description, 
 		int phr_id, String phr_download_to_path)
 	{
 		set_cancel_phr_downloading(false);
@@ -4183,7 +4184,7 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			// Call to C function
 			record_phr_downloading_transaction_log_main(phr_owner_name, phr_owner_authority_name, data_description, false);
-			return ;
+			return false;
 		}
 
 		set_phr_downloading_state(true);
@@ -4201,7 +4202,7 @@ public class UserMain extends JFrame implements ConstantVars
 			//	JOptionPane.showMessageDialog(main_panel, "Downloading the PHR was aborted by a user");
 			}
 
-			return ;
+			return false;
 		}
 
 		set_phr_downloading_state(false);
@@ -4227,7 +4228,9 @@ public class UserMain extends JFrame implements ConstantVars
 				//JOptionPane.showMessageDialog(main_panel, "Decrypting the PHR was aborted by a user");
 			}
 
-			return ;
+			System.out.println("Decrypting failled");
+
+			return false;
 		}
 
 		set_phr_decrypting_state(false);
@@ -4240,8 +4243,8 @@ public class UserMain extends JFrame implements ConstantVars
 		System.out.println("FROM CLASS DOWNLOAD SUCCESS");
 
 /*		m_isFinish = true;
-
-		return true;*/
+*/
+		return true;
 	}
 
 	private final void init_ui_for_phr_deletion_mode()
