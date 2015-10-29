@@ -5039,6 +5039,8 @@ public class UserMain extends JFrame implements ConstantVars
 
 		m_authority_name_node_js = authority_name;
 
+    	update_attribute_list_main(authority_name);
+
 		attribute_table_model = new DefaultTableModel()
 		{
 			private static final long serialVersionUID = -1113582265865921793L;
@@ -5052,8 +5054,6 @@ public class UserMain extends JFrame implements ConstantVars
 
     		attribute_table_model.setDataVector(null, new Object[] {"Attribute name", "Numerical attribute?"});
     		attribute_table = new JTable(attribute_table_model);
-
-    		update_attribute_list_main(authority_name);
 
     	return true;
     	
@@ -5372,6 +5372,40 @@ public class UserMain extends JFrame implements ConstantVars
 		}
 		return true;
 	}
+
+	// EA
+	private final void initTableTrustedUsers()
+	{		
+
+		ea_trusted_user_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1513582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    		ea_trusted_user_table_model.setDataVector(null, new Object[] {"Name"});
+
+    		ea_trusted_user_table = new JTable(ea_trusted_user_table_model);
+
+			update_emergency_trusted_user_list_main();
+	}
+
+	public Object[][] getTableTrustedUsers() {
+
+	    DefaultTableModel dtm = ea_trusted_user_table_model;
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
 }
 
 

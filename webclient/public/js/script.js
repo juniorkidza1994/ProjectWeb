@@ -5,6 +5,8 @@
 
     var myClass;
 
+    var isLoggin;
+
     var scotchApp = angular.module('scotchApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree', 'ngAnimate', 'ui.bootstrap'])
 
   .config(function($routeProvider, $locationProvider, $httpProvider) {
@@ -166,6 +168,23 @@
       $http.post('/api/logout');
     };
   });
+
+    // create the controller and inject Angular's $scope
+    scotchApp.controller('indexController', function($scope, $http, $location) {
+      $scope.isLoggin = false;
+
+      console.log("ISLOGGIN : " + $scope.isLoggin);
+
+      $http.get('/api/loggedin').success(function(user){
+        // Authenticated
+        if (user !== '0'){
+          $scope.isLoggin = true;
+        }
+        // Not Authenticated
+        else
+          $scope.isLoggin = false;
+      });
+    });
 
     // create the controller and inject Angular's $scope
     scotchApp.controller('infoController', function($scope, $http, $location) {
@@ -353,7 +372,7 @@
                 // show form upload
                 $scope.canUpload = res;
                 if(!res){
-                  alert("CAN'T FIND THIS USER");
+                  alert("Can't find this user Or You do not have the access permission");
                 }
                // $location.path('/uploadPHR');
             })
@@ -885,7 +904,7 @@
         }
     });
 
-    scotchApp.controller('loginController', function($scope,$http,$location, $window){
+    scotchApp.controller('loginController', function($scope,$http,$location, $window, $route){
         $scope.user = {};
        var isClick = false;
 
@@ -903,7 +922,7 @@
           //    console.log("SUCCESS");
           //    console.log(user);
               $window.alert("LOGIN SUCCESS !!")
-              $location.path('/info');
+              $window.location.reload();
 
             })
             .error(function(){
