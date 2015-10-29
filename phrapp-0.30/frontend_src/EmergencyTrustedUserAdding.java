@@ -55,6 +55,40 @@ class EmergencyTrustedUserAdding extends JDialog implements ConstantVars
 		setup_actions();
 	}
 
+	// USE IN WEB
+
+	public EmergencyTrustedUserAdding()
+	{
+		// result_flag                   = false;
+		// this.phr_owner_authority_name = phr_owner_authority_name;
+		// this.phr_owner_name           = phr_owner_name;
+		// this.authority_name_list      = authority_name_list;
+
+		// // Load JNI backend library
+		// System.loadLibrary("PHRapp_User_JNI");
+			
+		// //init_ui(parent);
+		// //init_authority_name_combobox(authority_name_list);
+		// setup_actions();
+	}
+
+	public void add_user(String  authority_name, String  username ){
+
+
+		System.out.println("ADD TURSTED USERS FUNCTION IN EMS");
+		System.out.println("USER : " + username );
+		System.out.println("Authority name : " + authority_name );
+
+		// Call to C function
+		if(add_emergency_trusted_user_main(authority_name, username))
+		{
+			result_flag = true;
+		}
+		else {
+			result_flag = false;		
+		}
+	}
+
 	private final void init_ui(Component parent)
 	{
 		setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
@@ -227,7 +261,7 @@ class EmergencyTrustedUserAdding extends JDialog implements ConstantVars
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		//JOptionPane.showMessageDialog(main_panel, alert_msg);
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)
@@ -236,7 +270,7 @@ class EmergencyTrustedUserAdding extends JDialog implements ConstantVars
 		uninit_backend();
 
 		// Notify alert message to user and then terminate the application
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		//JOptionPane.showMessageDialog(main_panel, alert_msg);
 		System.exit(1);
 	}
 }

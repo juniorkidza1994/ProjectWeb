@@ -570,57 +570,6 @@ var savefile = function(path_files_upload, phr_owner_name, phr_owner_authority_n
 {
     console.log("---------------------- SAVEFILE FUNCTION ---------------------");
 
-    // console.log(old_path_file);
-
-    // move files from temp to user directory
-    // fs.rename(old_path_file, path_files_upload, function(error){
-    
-    //   if(error) throw error;
-      
-    //   // Delete file in temp folder
-    //   fs.unlink(old_path_file, function(){
-    //     if(error) throw error;
-    //     else {
-    //       if(confidentiality_level == "Restricted level"){
-
-    //         // call java function
-    //         m_main_class.setThresholdValueSync(threshold);
-    //         m_main_class.setNoTrustedUsersSync(truted_users);
-
-    //         // call java function
-    //         m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
-    //               path_files_upload, data_description, confidentiality_level, 
-    //               access_policy, function(err,result){
-    //               if(!err) {
-    //                   console.log("SUCCESS !!! : " + result);     
-    //                   if (callback && typeof(callback) === "function") {
-    //                       callback(result);
-    //                   }
-    //                   console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
-    //               }
-
-    //         });
-    //       }
-    //       else {
-
-    //         // call java function
-    //         m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
-    //               path_files_upload, data_description, confidentiality_level, 
-    //               access_policy, function(err,result){
-    //               if(result) {
-    //                   console.log("SUCCESS !!! : " + result);     
-    //                   if (callback && typeof(callback) === "function") {
-    //                       callback(result);
-    //                   }
-    //                   console.log("---------------------- END SAVEFILE FUNCTION ---------------------");
-    //               }
-
-    //         });
-    //       }
-    //     }
-    //   });             
-    // }); 
-
           if(confidentiality_level == "Restricted level"){
 
             // call java function
@@ -860,6 +809,53 @@ app.post('/api/attribute_table', function (req, res) {
   });
 });
 
+// --------------------------------------------//
+// Emergercy Access Manager
+// 
+app.post('/api/trusted_users_table', function (req, res) {
+
+  var trusted_users_table = null;
+
+  console.log("-------------- get TrustedUsers table ---------------");
+
+  // call java function
+  m_main_class[req.user.name].initTableTrustedUsers( function(err,result){
+    if(result) {
+      // call java function
+      m_main_class[req.user.name].getTableTrustedUsers(function(err,result){
+        if(result){
+          trusted_users_table = result;
+          console.log("Trusted Users TABLE : " + result);
+
+          console.log("-------------- END TrustedUsers table ---------------");
+          res.send(trusted_users_table);
+        }
+      });
+    }
+  });
+});
+
+app.post('/api/add_trusted_user', function (req, res) {
+
+  console.log("-------------- ADD TrustedUsers table ---------------");
+  var authority_name = m_main_class[req.user.name].getAuthorityNameSync();
+  if(req.body.username == req.user.name && req.body.authorityName == authority_name){
+    res.send(false);
+    console.log("-------------- END TrustedUsers table ---------------");
+  }
+  else{
+  // call java function
+    m_main_class[req.user.name].addTrustedUsers(req.body.username, req.body.authorityName, function(err,result){
+      if(result) {
+        // call java function
+            res.send(result);
+            console.log("-------------- END TrustedUsers table ---------------");
+        }
+    });
+  }
+});
+
+//--------------------------------------------------------------------//
 // HANDLER NOT FOUND PAGE
 /*app.use(function(req, res, next){
   res.status(404);

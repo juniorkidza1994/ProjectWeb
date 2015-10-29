@@ -138,6 +138,14 @@
         }
       })
 
+      .when('/trustedUsers', {
+        templateUrl : 'yourTrustedUsers.html',
+        controller: 'trustedUsersController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
       .when('/error',{
         templateUrl : 'error.html',
         controller  : 'errorController'
@@ -196,6 +204,66 @@
             $scope.info  = res;
             //console.log("INFO " + $scope.info.attribute_list);
         })
+    });
+
+    scotchApp.controller('trustedUsersController', function($scope, $http, $location) {
+        $scope.trustedUsers = {};
+        $scope.authorityList = {};
+        $scope.username = "";
+        $scope.selectedAuthority ="";
+
+        // get userinfo
+        $http.post('/api/trusted_users_table')
+        .success(function(res){
+            $scope.trustedUsers = res;
+            //console.log($scope.attribute_all);
+        })
+
+        // click row
+        $scope.setClickedRow = function(index){
+            $scope.selectedRow = index;
+        }
+
+        $scope.clickedSomewhereElse = function(){
+        //  console.log("HIT !!")
+          $scope.selectedRow = null;
+        };
+
+        $http.post('/api/authority_name_list')
+        .success(function(res){
+            $scope.authorityList = res;
+        })
+
+
+        var isClick = false;
+
+        $scope.addUser = function(){
+          console.log("ADD USER");
+          if(!isClick){
+            isClick = true;
+            $http.post('/api/add_trusted_user', {
+              username        : $scope.username,
+              authorityName   : $scope.selectedAuthority,
+            })
+            .success(function(res){
+              // No error: authentication OK
+              //console.log("SUCCESS");
+              isClick = false;
+              if(res){
+                $http.post('/api/trusted_users_table')
+                .success(function(res){
+                    $scope.trustedUsers = res;
+                    alert("Add User SUCCESS !!");
+                    $location.path('/trustedUsers');
+                    //console.log($scope.attribute_all);
+                })
+              }
+              else
+                alert("Trusted user must be another user or Please input correct format for the username!!");
+              //$location.path('/info');
+            })
+          }
+        };
     });
 
     scotchApp.controller('changePwdController', function($scope, $http, $location) {

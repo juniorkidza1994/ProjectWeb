@@ -5,31 +5,56 @@
 	color: white;
 	font-weight: bold;
 }
+.form-control{
+	width: 100%
+}
+
 </style>
 	<div class="jumbotron text-center">
-		<h1>Download Your PHR Page</h1>
+		<h1>Your Trusted Users Page</h1>
 	</div>
 
-	<form method="post" class="form-horizontal" ng-show="canDownload == true">
-        
- 		<table class="table table-bordered" >
-			<tr>
-				<th>Name</th>
+	<div class="container-fluid">
+	    <div class="row">
+	    	<div class="col-sm-offset-3 col-sm-6">
+		 		<table class="table table-bordered ">
+		 			<thead>
+						<tr>
+							<th >Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in trustedUsers" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)" click-Off="clickedSomewhereElse()">
+							<td>{{item[0]}}</td>
+						</tr>
+					</tbody>
+				</table>
+	        </div>
 
-			</tr>
-			<tr ng-repeat="item in phr_list" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)">
-				<td>{{item[0]}}</td>
-			</tr>
-		</table>
+	    </div> 
+	    	<form>
+	    		<div class="form-group row">
+							<p class="col-sm-offset-1 col-sm-2 form-control-static">Authority :</p>
+								
+								<div class="col-sm-4"> 
+									<select class="form-control" ng-model="selectedAuthority" ng-options="authority for authority in authorityList" ></select> 
+								</div>							
+				</div>
+	    		<div class="form-group row">
 
-           <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-10">
-              <br />
-              	<button class="btn btn-lg btn-primary" type="submit" ng-click ="download()">Download</button>
-            </div>
-         </div>
-    </form>
+			        <div class="col-sm-offset-1  col-sm-2"> 
+						<p class=" form-control-static">Username :</p>				
+					</div>	
 
-     <h2 ng-if="isClick == true" class="col-sm-12">Wait for encryp and upload file to phr server . . . . </h2>
-     <button class="btn btn-lg btn-danger col-sm-offset-3 col-sm-3"  ng-if="isClick == true" ng-click ="cancel()">Cancel</button>
-
+					<div class="col-sm-4"> 
+						<input type="text" id="Username" class="form-control"  placeholder="Username" ng-model="username">
+					</div>				
+					<div class=" col-sm-2"> 
+						<button class="btn btn-success" type="submit" ng-click="addUser()" click-Off="clickedSomewhereElse()"> Add User </button>
+					</div>	
+					<div class=" col-sm-2"> 
+						<button class="btn btn-danger" ng-click="remove()" click-Off="clickedSomewhereElse()"> Remove </button>
+					</div>		
+				</div>
+			</form>				
+	</div>

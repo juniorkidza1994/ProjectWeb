@@ -1487,7 +1487,7 @@ public class UserMain extends JFrame implements ConstantVars
             		}
         	});
 
-		// ea_trusted_user_removal_button
+		// ea_trusted_user_removal_button 
 
 		// EA trusted user refresh info button
 		ea_trusted_user_refresh_info_button.addActionListener(new ActionListener()
@@ -5039,8 +5039,6 @@ public class UserMain extends JFrame implements ConstantVars
 
 		m_authority_name_node_js = authority_name;
 
-    	update_attribute_list_main(authority_name);
-
 		attribute_table_model = new DefaultTableModel()
 		{
 			private static final long serialVersionUID = -1113582265865921793L;
@@ -5052,8 +5050,11 @@ public class UserMain extends JFrame implements ConstantVars
     			}
 		};
 
-    		attribute_table_model.setDataVector(null, new Object[] {"Attribute name", "Numerical attribute?"});
-    		attribute_table = new JTable(attribute_table_model);
+    	attribute_table_model.setDataVector(null, new Object[] {"Attribute name", "Numerical attribute?"});
+    	attribute_table = new JTable(attribute_table_model);
+
+    	update_attribute_list_main(authority_name);
+
 
     	return true;
     	
@@ -5374,7 +5375,7 @@ public class UserMain extends JFrame implements ConstantVars
 	}
 
 	// EA
-	private final void initTableTrustedUsers()
+	public final boolean initTableTrustedUsers()
 	{		
 
 		ea_trusted_user_table_model = new DefaultTableModel()
@@ -5393,6 +5394,8 @@ public class UserMain extends JFrame implements ConstantVars
     		ea_trusted_user_table = new JTable(ea_trusted_user_table_model);
 
 			update_emergency_trusted_user_list_main();
+
+			return true;
 	}
 
 	public Object[][] getTableTrustedUsers() {
@@ -5404,6 +5407,18 @@ public class UserMain extends JFrame implements ConstantVars
 	        for (int j = 0 ; j < nCol ; j++)
 	            tableData[i][j] = dtm.getValueAt(i,j);
 	    return tableData;
+	}
+
+	public boolean addTrustedUsers(String  username, String  authority_name){
+
+		System.out.println("ADD TURSTED USERS FUNCTION IN USERMAIN");
+		System.out.println("USER : " + username );
+		System.out.println("Authority name : " + authority_name );
+
+		EmergencyTrustedUserAdding emergency_trusted_user = new EmergencyTrustedUserAdding();
+		emergency_trusted_user.add_user(authority_name, username);
+		update_emergency_trusted_user_list_main();
+		return emergency_trusted_user.get_result();
 	}
 
 }
