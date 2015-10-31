@@ -1,0 +1,39 @@
+<!-- about.html -->
+<style>
+.selected{
+	background-color: black;
+	color: white;
+	font-weight: bold;
+}
+.form-control{
+	width: 100%
+}
+
+</style>
+	<div class="jumbotron text-center">
+		<h1>PHR Owners Who Delegate You As Their Trusted User Page</h1>
+	</div>
+
+	<div class="container-fluid">
+	    <div class="row">
+	    	<div class="col-sm-offset-3 col-sm-6">
+		 		<table class="table table-bordered ">
+		 			<thead>
+						<tr>
+							<th >Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in delegate" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)" click-Off="clickedSomewhereElse()">
+							<td>{{item[0]}}</td>
+						</tr>
+					</tbody>
+				</table>
+	        </div>
+	    </div> 	
+	    <div class="row">
+	    	<div class="col-sm-offset-3 col-sm-6">
+	    			<button class="btn btn-success" type="submit" ng-click="" click-Off="clickedSomewhereElse()"> Decline a delegate </button>
+	        </div>
+	    </div> 			
+	</div>

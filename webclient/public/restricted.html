@@ -1,0 +1,62 @@
+<!-- about.html -->
+<style>
+.selected{
+	background-color: black;
+	color: white;
+	font-weight: bold;
+}
+.form-control{
+	width: 100%
+}
+
+</style>
+	<div class="jumbotron text-center">
+		<h1>PHR Owners Who Delegate You As Their Trusted User Page</h1>
+	</div>
+
+	<div class="container-fluid">
+	    <div class="row">
+	    	<div class="col-sm-offset-3 col-sm-6">
+		 		<table class="table table-bordered ">
+		 			<thead>
+						<tr>
+							<th >Requester</th>
+							<th >PHR owner</th>
+							<th >Data description</th>
+							<th >Approvals/Threshold value</th>
+							<th >Request status</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in restricted" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)" click-Off="clickedSomewhereElse()">
+							<td>{{item[0]}}</td>
+							<td>{{item[1]}}</td>
+							<td>{{item[2]}}</td>
+							<td>{{item[3]}}</td>
+							<td>{{item[4]}}</td>
+						</tr>
+					</tbody>
+				</table>
+	        </div>
+	    </div> 	
+	    <div class="row" ng-show="isShowCancel == true">
+	    	<div class="col-sm-offset-3 col-sm-1">
+	    		<label class="control-label">PHR owner: </label>
+	        </div>
+	        <div class="col-sm-3">
+	    		<button class="btn btn-success" type="submit" ng-click="" click-Off="clickedSomewhereElse()" > Cancel a request </button>
+	        </div>
+	    </div> 	
+	    </br>	
+	    <div class="row">
+	    	<div class="col-sm-offset-3 col-sm-1">
+	    		<label class="control-label">Trusted User: </label>
+	        </div>
+	        <div class="col-sm-2">
+	    		<button class="btn btn-success" type="submit" ng-click="approve()" click-Off="clickedSomewhereElse()"> Approve </button>
+	        </div>
+	        <div class="col-sm-3">
+	    		<button class="btn btn-success" type="submit" ng-click="" click-Off="clickedSomewhereElse()"> Not approve</button>
+	        </div>
+	    </div> 		
+	</div>

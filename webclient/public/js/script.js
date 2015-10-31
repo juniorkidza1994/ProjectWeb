@@ -146,10 +146,30 @@
         }
       })
 
-      .when('/error',{
-        templateUrl : 'error.html',
-        controller  : 'errorController'
+      .when('/delegate', {
+        templateUrl : 'delegate.html',
+        controller: 'delegateController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
       })
+
+      .when('/restricted', {
+        templateUrl: 'restricted.html',
+        controller: 'restrictedController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/transaction', {
+        templateUrl: 'transaction.html',
+        controller: 'transactionController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
 
       .when('/', {
         templateUrl: 'login.html',
@@ -158,6 +178,12 @@
           loggedin: checkLoggedin
         }
       })
+
+      .when('/error',{
+        templateUrl : 'error.html',
+        controller  : 'errorController'
+      })
+
 
       .otherwise({
         redirectTo: '/error'
@@ -204,6 +230,178 @@
             $scope.info  = res;
             //console.log("INFO " + $scope.info.attribute_list);
         })
+    });
+
+    scotchApp.controller('delegateController', function($scope, $http, $location) {
+        $scope.delegate = {};
+
+        // get userinfo
+        $http.post('/api/delegate_table')
+        .success(function(res){
+            $scope.delegate = res;
+            //console.log($scope.attribute_all);
+        })
+
+        // click row
+        $scope.setClickedRow = function(index){
+            $scope.selectedRow = index;
+        }
+
+        $scope.clickedSomewhereElse = function(){
+        //  console.log("HIT !!")
+          $scope.selectedRow = null;
+        };
+    });
+
+    scotchApp.controller('restrictedController', function($scope, $http, $location) {
+        $scope.restricted = {};
+        $scope.info = {};
+        $scope.isShowCancel = false;
+        $scope.selectedRow = -1;
+
+        // get table
+        $http.post('/api/restricted_table')
+        .success(function(res){
+            $scope.restricted = res;
+            //console.log($scope.attribute_all);
+        })
+
+        $http.get('/api/userinfo')
+        .success(function(res){
+            $scope.info  = res;
+            //console.log("INFO " + $scope.info.attribute_list);
+        })
+
+        // click row
+        $scope.setClickedRow = function(index){
+            $scope.selectedRow = index;
+            var full_name = info.authorityName +'.' + info.username ;
+            if(full_name == restricted[index][1]){
+              $scope.isShowCancel = true;
+            }
+        }
+
+        var isClickApprove = false;
+
+        $scope.approve = function(){
+          if($scope.selectedRow == -1){
+            alert("No any row selected");
+          }
+          else {
+            if(!isClickApprove){
+              isClickApprove = true;
+              $http.post('/api/approve_restricted', {
+                  full_emergency_staff_name : $scope.restricted[$scope.selectedRow][0],
+                  full_phr_ownername        : $scope.restricted[$scope.selectedRow][1],
+                  phr_description           : $scope.restricted[$scope.selectedRow][2],
+                  phr_id                    : parseInt($scope.restricted[$scope.selectedRow][5],10),
+
+                  emergency_unit_name       : full_emergency_staff_name.substring(0, full_emergency_staff_name.indexOf(".")),
+                  emergency_staff_name      : full_emergency_staff_name.substring(full_emergency_staff_name.indexOf(".") + 1),
+
+                  phr_owner_authority_name  : full_phr_ownername.substring(0, full_phr_ownername.indexOf(".")),
+                  phr_ownername             : full_phr_ownername.substring(full_phr_ownername.indexOf(".") + 1)
+              })
+              .success(function(res){
+                // No error: authentication OK
+                //console.log("SUCCESS");
+                isClickApprove = false;
+                if(res){
+                  $http.post('/api/restricted_table')
+                  .success(function(res){
+                      $scope.restricted = res;
+                      alert("Approve SUCCESS !!");
+                      $location.path('/restricted');
+                  })
+                }
+                else
+                  // ERROR
+                  alert(" .... ");
+                //$location.path('/info');
+              })
+            }
+          }
+        }
+
+        $scope.clickedSomewhereElse = function(){
+        //  console.log("HIT !!")
+          $scope.selectedRow = null;
+        };
+    });
+
+    scotchApp.controller('transactionController', function($scope, $http, $location, $filter) {
+      $scope.startDate = "";
+      $scope.startTime = "";
+      $scope.endDate = "";
+      $scope.endTime = "";    
+      $scope.transaction_log_type = "";
+      $scope.allFlag = false;
+      $scope.logs = {};
+
+      var monthNames = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"];
+
+      var isClick = false;
+
+      $scope.search = function(){
+        if(!isClick){
+
+          isClick = true;
+          
+          if(!$scope.allFlag){
+            // $scope.sDate.d =  $filter('date')($scope.startDate, 'd');
+            // $scope.sDate.m =  $scope.startDate.getMonth();
+            // $scope.sDate.y =  $filter('date')($scope.startDate, 'yyyy');
+
+            console.log($scope.startDate.getMonth());
+            console.log($scope.startDate.getDate());
+            console.log($scope.startTime.getHours());
+            console.log($scope.startTime.getMinutes());
+
+            $http.post('/api/transaction_auditing', {
+              transaction_log_type  : $scope.transaction_log_type, 
+              start_year_index      : $scope.startDate.getFullYear(), 
+              start_month_index     : $scope.startDate.getMonth(), 
+              start_day_index       : $scope.startDate.getDate(), 
+              start_hour_index      : $scope.startTime.getHours(), 
+              start_minute_index    : $scope.startTime.getMinutes(), 
+              end_year_index        : $scope.endDate.getFullYear(), 
+              end_month_index       : $scope.endDate.getMonth(), 
+              end_day_index         : $scope.endDate.getDate(), 
+              end_hour_index        : $scope.endTime.getHours(), 
+              end_minute_index      : $scope.endTime.getMinutes(), 
+            })
+            .success(function(res){
+              // No error: authentication OK
+              //console.log("SUCCESS");
+              $scope.logs = res;
+              isClick = false;
+              $location.path('/transaction');
+            })
+          }
+          else {
+            $http.post('/api/transaction_auditing', {
+              allFlag               : $scope.allFlag,
+              transaction_log_type  : $scope.transaction_log_type
+            })
+            .success(function(res){
+              // No error: authentication OK
+              //console.log("SUCCESS");
+              $scope.logs = res;
+              isClick = false;
+              $location.path('/transaction');
+            })
+          }
+          // console.log("Start date: " + $scope.startDate);
+          // console.log("Start date filter: " );
+          // console.log($scope.sDate);
+          // console.log("Start Time: " + $scope.startTime);
+          // console.log("End date: " + $scope.endDate);
+          // console.log("End Time: " + $scope.endTime);
+          // console.log("Choice: " + $scope.transaction_type);
+        }
+      }
+
     });
 
     scotchApp.controller('trustedUsersController', function($scope, $http, $location) {
@@ -912,8 +1110,7 @@
             $http.post('/api/downloadPHR', {
               authorityName :  $scope.selectedAuthority,
               username      :  $scope.username,
-              index: $scope.selectedRow,
-              myClass: myClass
+              index         : $scope.selectedRow,
             })
             .success(function(res){
 

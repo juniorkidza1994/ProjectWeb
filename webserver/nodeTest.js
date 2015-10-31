@@ -811,7 +811,7 @@ app.post('/api/attribute_table', function (req, res) {
 
 // --------------------------------------------//
 // Emergercy Access Manager
-// 
+// Trusted user
 app.post('/api/trusted_users_table', function (req, res) {
 
   var trusted_users_table = null;
@@ -856,6 +856,132 @@ app.post('/api/add_trusted_user', function (req, res) {
 });
 
 //--------------------------------------------------------------------//
+
+// --------------------------------------------//
+// Delegate 
+app.post('/api/delegate_table', function (req, res) {
+
+  var delegate_table = null;
+
+  console.log("-------------- get Delegate table ---------------");
+
+  // call java function
+  m_main_class[req.user.name].initTableDelegate( function(err,result){
+    if(result) {
+      // call java function
+      m_main_class[req.user.name].getTableDelegate(function(err,result){
+        if(result){
+          delegate_table = result;
+          console.log("Delegate TABLE : " + result);
+
+          console.log("-------------- END Delegate table ---------------");
+          res.send(delegate_table);
+        }
+      });
+    }
+  });
+});
+
+//--------------------------------------------------------------------//
+
+// --------------------------------------------//
+// Restricted
+app.post('/api/restricted_table', function (req, res) {
+
+  var restricted_table = null;
+
+  console.log("-------------- get Restricted table ---------------");
+
+  // call java function
+  m_main_class[req.user.name].initTableRestricted( function(err,result){
+    if(result) {
+      // call java function
+      m_main_class[req.user.name].getTableRestricted(function(err,result){
+        if(result){
+          restricted_table = result;
+          console.log("Restricted TABLE : " + result);
+
+          console.log("-------------- END Restricted table ---------------");
+          res.send(restricted_table);
+        }
+      });
+    }
+  });
+});
+
+app.post('/api/approve_restricted', function (req, res) {
+
+  var restricted_table = null;
+
+  console.log("-------------- get Restricted table ---------------");
+
+  // call java function
+  m_main_class[req.user.name].approveRestricted( req.body.phr_ownername, req.body.phr_owner_authority_name, 
+      req.body.phr_id, req.body.phr_description, req.body.emergency_staff_name, req.body.emergency_unit_name, function(err,result){
+    if(result) {
+      res.send(result);
+    }
+  });
+});
+
+//--------------------------------------------------------------------//
+// --------------------------------------------//
+// Transaction auditing 
+app.post('/api/transaction_auditing', function (req, res) {
+
+  console.log("-------------- get Transaction table ---------------");
+
+
+  if(req.body.allFlag){
+    // call java function
+    m_main_class[req.user.name].setAllLog(req.body.transaction_log_type, function(err,result){
+      if(result) {
+        console.log("result 1 : " + result);
+        m_main_class[req.user.name].getLog( function(err,result){
+          if(result) {
+            console.log("RESULT 2 :");
+            console.log(result);
+            res.send(result);
+            console.log("-------------- End Transaction table ---------------");
+          }
+          else {
+            console.log("ERROR : " + err);
+          }
+        });
+      }
+      else {
+        console.log("ERROR : " + err);
+      }
+    });
+  }
+  else {
+    // call java function
+    m_main_class[req.user.name].setPeriodLog( req.body.transaction_log_type, req.body.start_year_index, req.body.start_month_index, 
+          req.body.start_day_index, req.body.start_hour_index, req.body.start_minute_index, req.body.end_year_index, req.body.end_month_index, req.body.end_day_index, req.body.end_hour_index,  
+          req.body.end_minute_index, function(err,result){
+      if(result) {
+        console.log("result 1 : " + result);
+        m_main_class[req.user.name].getLog( function(err,result){
+          if(result) {
+            console.log("RESULT 2 :");
+            console.log(result);
+            res.send(result);
+            console.log("-------------- End Transaction table ---------------");
+          }
+          else {
+            console.log("ERROR : " + err);
+          }
+        });
+      }
+      else {
+        console.log("ERROR : " + err);
+      }
+    });
+  }
+});
+
+//--------------------------------------------------------------------//
+
 // HANDLER NOT FOUND PAGE
 /*app.use(function(req, res, next){
   res.status(404);

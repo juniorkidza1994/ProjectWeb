@@ -1847,6 +1847,9 @@ public class UserMain extends JFrame implements ConstantVars
 						transaction_log_thread_counter_lock.unlock();
 
 						String  transaction_log_type = transaction_log_type_group.getSelection().getActionCommand();
+
+						System.out.println("Transaction log type : " + transaction_log_type);
+
 						boolean audit_all_transactions_flag = audit_all_transactions_checkbox.isSelected();
 
 						if(audit_all_transactions_flag)
@@ -5375,6 +5378,7 @@ public class UserMain extends JFrame implements ConstantVars
 	}
 
 	// EA
+	// Trusted users
 	public final boolean initTableTrustedUsers()
 	{		
 
@@ -5419,6 +5423,143 @@ public class UserMain extends JFrame implements ConstantVars
 		emergency_trusted_user.add_user(authority_name, username);
 		update_emergency_trusted_user_list_main();
 		return emergency_trusted_user.get_result();
+	}
+
+	// Delegate
+	public final boolean initTableDelegate()
+	{		
+
+		ea_phr_owner_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1613582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    		ea_phr_owner_table_model.setDataVector(null, new Object[] {"Name"});
+
+    		ea_phr_owner_table = new JTable(ea_phr_owner_table_model);
+
+			update_emergency_phr_owner_list_main();
+			update_restricted_phr_access_request_list_main();
+
+			return true;
+	}
+
+	public Object[][] getTableDelegate() {
+
+	    DefaultTableModel dtm = ea_phr_owner_table_model;
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
+	// Restricted
+	public final boolean initTableRestricted()
+	{		
+
+		ea_restricted_phr_access_request_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1413582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    		ea_restricted_phr_access_request_table_model.setDataVector(null, new Object[] {"Requestor", "PHR owner", 
+			"Data description", "Approvals/Threshold value", "Request status", "PHR id"});
+
+    		ea_restricted_phr_access_request_table = new JTable(ea_restricted_phr_access_request_table_model);
+
+			update_restricted_phr_access_request_list_main();
+
+			return true;
+	}
+
+	public Object[][] getTableRestricted() {
+
+	    DefaultTableModel dtm = ea_restricted_phr_access_request_table_model;
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
+	public boolean approveRestricted(String phr_ownername, String phr_owner_authority_name, int phr_id, String phr_description, 
+		String emergency_staff_name, String emergency_unit_name){
+
+		if(approve_restricted_phr_access_request_main(phr_ownername, phr_owner_authority_name, 
+			phr_id, phr_description, emergency_staff_name, emergency_unit_name))
+		{
+			// Call to C function
+			update_restricted_phr_access_request_list_main();
+			return true;
+
+		}
+		else{
+			return false;
+		}
+	}
+
+	private UserTransactionAuditing transaction_auditing_dialog;
+
+	public boolean setAllLog(String transaction_log_type){
+		
+
+		// Call transaction auditing object
+		transaction_auditing_dialog = new UserTransactionAuditing((transaction_log_type.equals(transaction_login_log_type)) ? 
+								TransactionLogType.USER_LOGIN_LOG : TransactionLogType.USER_EVENT_LOG);
+
+		return true;
+	}
+
+	public Object[][] getLog(){
+		
+		// Call transaction auditing object
+
+		return transaction_auditing_dialog.getTableLog();
+	}
+
+
+
+
+	public boolean setPeriodLog(String transaction_log_type, final int start_year_index, final int start_month_index, 
+		final int start_day_index, final int start_hour_index, final int start_minute_index, final int end_year_index, final int end_month_index, 
+		final int end_day_index, final int end_hour_index, final int end_minute_index){
+
+		System.out.println(start_year_index);
+		System.out.println(start_month_index);
+		System.out.println(start_day_index);
+		System.out.println(start_hour_index);
+		System.out.println(start_minute_index);
+		System.out.println(end_year_index);
+		System.out.println(end_month_index);
+		System.out.println(end_day_index);
+		System.out.println(end_hour_index);
+		System.out.println(end_minute_index);
+
+		
+
+
+		// Call transaction auditing object
+		transaction_auditing_dialog = new UserTransactionAuditing((transaction_log_type.equals(transaction_login_log_type)) ? 
+								TransactionLogType.USER_LOGIN_LOG : TransactionLogType.USER_EVENT_LOG, start_year_index, start_month_index, 
+					start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
+					end_minute_index);
+
+		return true;
 	}
 
 }
