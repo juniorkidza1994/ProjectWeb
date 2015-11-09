@@ -7,6 +7,8 @@
 
     var isLoggin;
 
+    var userType;
+
     var scotchApp = angular.module('scotchApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree', 'ngAnimate', 'ui.bootstrap'])
 
   .config(function($routeProvider, $locationProvider, $httpProvider) {
@@ -21,13 +23,20 @@
       $http.get('/api/loggedin').success(function(user){
         // Authenticated
         if (user !== '0'){
-          //console.log("LOGIN");
           /*$timeout(deferred.resolve, 0);*/
-          if($location.path() != '/')
+          if($location.path() != '/'){
             deferred.resolve();
+            if(user.type == "User" && ($location.path().indexOf("/admin") > -1 ))
+              $location.url('/user/info');
+            else if(user.type == "Admin" && ($location.path().indexOf("/user") > -1 ))
+              $location.url('/admin/admininfo');      
+          }
           else{
             deferred.reject();
-            $location.url('/info');
+            if(user.type == "User")
+              $location.url('/user/info');
+            else if(user.type == "Admin")
+              $location.url('/admin/admininfo')
           }
         }
         // Not Authenticated
@@ -74,7 +83,7 @@
       .when('/ab', {
         templateUrl: '/views/main.html'
       })
-      .when('/info', {
+      .when('/user/info', {
         templateUrl : 'info.html',
         controller: 'infoController',
         resolve: {
@@ -82,7 +91,15 @@
         }
       })
 
-      .when('/downloadSelfPHR', {
+      .when('/admin/admininfo', {
+        templateUrl : 'adminInfo.html',
+        controller: 'admininfoController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/user/downloadSelfPHR', {
         templateUrl : 'downloadSelfPHR.html',
         controller: 'downloadController',
         resolve: {
@@ -90,7 +107,7 @@
         }
       })
 
-      .when('/accessPermissionManagement', {
+      .when('/user/accessPermissionManagement', {
         templateUrl : 'accessPermisManage.html',
         controller: 'accessPermisController',
         resolve: {
@@ -98,7 +115,7 @@
         }
       })
 
-      .when('/deleteSelfPHR', {
+      .when('/user/deleteSelfPHR', {
         templateUrl : 'deleteSelfPHR.html',
         controller: 'deleteController',
         resolve: {
@@ -106,7 +123,7 @@
         }
       })
 
-      .when('/changepwd', {
+      .when('/user/changepwd', {
         templateUrl : 'changepassword.html',
         controller: 'changePwdController',
         resolve: {
@@ -114,7 +131,7 @@
         }
       })
 
-      .when('/assignPermission', {
+      .when('/user/assignPermission', {
         templateUrl : 'assignAccessPermission.html',
         controller: 'assignAccessPermissionController',
         resolve: {
@@ -122,7 +139,7 @@
         }
       })
 
-      .when('/changeEmail', {
+      .when('/user/changeEmail', {
         templateUrl : 'changeEmail.html',
         controller: 'changeEmailController',
         resolve: {
@@ -130,7 +147,7 @@
         }
       })
 
-      .when('/uploadPHR', {
+      .when('/user/uploadPHR', {
         templateUrl : 'uploadPHR.html',
         controller: 'uploadPHRController',
         resolve: {
@@ -138,7 +155,7 @@
         }
       })
 
-      .when('/trustedUsers', {
+      .when('/user/trustedUsers', {
         templateUrl : 'yourTrustedUsers.html',
         controller: 'trustedUsersController',
         resolve: {
@@ -146,7 +163,7 @@
         }
       })
 
-      .when('/delegate', {
+      .when('/user/delegate', {
         templateUrl : 'delegate.html',
         controller: 'delegateController',
         resolve: {
@@ -154,7 +171,7 @@
         }
       })
 
-      .when('/restricted', {
+      .when('/user/restricted', {
         templateUrl: 'restricted.html',
         controller: 'restrictedController',
         resolve: {
@@ -162,7 +179,7 @@
         }
       })
 
-      .when('/transaction', {
+      .when('/user/transaction', {
         templateUrl: 'transaction.html',
         controller: 'transactionController',
         resolve: {
@@ -213,6 +230,7 @@
         // Authenticated
         if (user !== '0'){
           $scope.isLoggin = true;
+          $scope.usertype = user.type;
         }
         // Not Authenticated
         else
@@ -231,6 +249,12 @@
             //console.log("INFO " + $scope.info.attribute_list);
         })
     });
+
+    // create the controller and inject Angular's $scope
+    scotchApp.controller('admininfoController', function($scope, $http, $location) {
+
+    });
+
 
     scotchApp.controller('delegateController', function($scope, $http, $location) {
         $scope.delegate = {};
@@ -337,6 +361,11 @@
       $scope.transaction_log_type = "";
       $scope.allFlag = false;
       $scope.logs = {};
+      $scope.bigTotalItems = 1;
+      $scope.bigCurrentPage = 1;
+      $scope.limit = $scope.bigCurrentPage * 10;
+      $scope.begin = ($scope.bigCurrentPage - 1) * 10;
+      $scope.maxSize= 5;
 
       var monthNames = ["January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"];
@@ -353,31 +382,35 @@
             // $scope.sDate.m =  $scope.startDate.getMonth();
             // $scope.sDate.y =  $filter('date')($scope.startDate, 'yyyy');
 
-            console.log($scope.startDate.getMonth());
-            console.log($scope.startDate.getDate());
-            console.log($scope.startTime.getHours());
-            console.log($scope.startTime.getMinutes());
-
-            $http.post('/api/transaction_auditing', {
-              transaction_log_type  : $scope.transaction_log_type, 
-              start_year_index      : $scope.startDate.getFullYear(), 
-              start_month_index     : $scope.startDate.getMonth(), 
-              start_day_index       : $scope.startDate.getDate(), 
-              start_hour_index      : $scope.startTime.getHours(), 
-              start_minute_index    : $scope.startTime.getMinutes(), 
-              end_year_index        : $scope.endDate.getFullYear(), 
-              end_month_index       : $scope.endDate.getMonth(), 
-              end_day_index         : $scope.endDate.getDate(), 
-              end_hour_index        : $scope.endTime.getHours(), 
-              end_minute_index      : $scope.endTime.getMinutes(), 
-            })
-            .success(function(res){
-              // No error: authentication OK
-              //console.log("SUCCESS");
-              $scope.logs = res;
-              isClick = false;
-              $location.path('/transaction');
-            })
+            if($scope.startDate == "" || $scope.startTime == "" ||
+               $scope.endDate == "" || $scope.endTime == "" ){
+                alert("Invalid input !!");
+                isClick =false;
+            }
+            else {
+              $http.post('/api/transaction_auditing', {
+                transaction_log_type  : $scope.transaction_log_type, 
+                start_year_index      : $scope.startDate.getFullYear(), 
+                start_month_index     : $scope.startDate.getMonth(), 
+                start_day_index       : $scope.startDate.getDate(), 
+                start_hour_index      : $scope.startTime.getHours(), 
+                start_minute_index    : $scope.startTime.getMinutes(), 
+                end_year_index        : $scope.endDate.getFullYear(), 
+                end_month_index       : $scope.endDate.getMonth(), 
+                end_day_index         : $scope.endDate.getDate(), 
+                end_hour_index        : $scope.endTime.getHours(), 
+                end_minute_index      : $scope.endTime.getMinutes(), 
+              })
+              .success(function(res){
+                // No error: authentication OK
+                //console.log("SUCCESS");
+                $scope.logs = res;
+                $scope.bigTotalItems = $scope.logs.length;
+                console.log($scope.bigTotalItems);
+                isClick = false;
+                $location.path('/transaction');
+              })
+            }
           }
           else {
             $http.post('/api/transaction_auditing', {
@@ -388,6 +421,8 @@
               // No error: authentication OK
               //console.log("SUCCESS");
               $scope.logs = res;
+              $scope.bigTotalItems = $scope.logs.length;
+              console.log($scope.bigTotalItems);
               isClick = false;
               $location.path('/transaction');
             })
@@ -1174,7 +1209,14 @@
        var isClick = false;
 
         $scope.login = function(){
-          if(!isClick){
+
+          if($scope.user.username == null || $scope.user.password == null ||
+            $scope.user.type == null){
+            $window.alert("LOGIN FAILED !!!");
+              $scope.user = {};
+              isClick = false;
+          }
+          else if(!isClick){
          //   console.log("GO LOGIN");
             isClick = true;
             $http.post('/api/login', {
@@ -1190,11 +1232,6 @@
               $window.location.reload();
 
             })
-            .error(function(){
-              $window.alert("LOGIN FAILED !!!");
-              $scope.user = {};
-              isClick = false;
-            });
           }
           else{
         //   console.log("WAIT LOGIN");

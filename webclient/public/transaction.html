@@ -37,7 +37,7 @@
 					</label>		
 				</div>
 			</div>
-			<div name="form" ng-show="allFlag==false">
+			<div name="form" ng-if="allFlag==false">
 				<div class="row">
 					<label class="col-sm-offset-3 col-sm-2 control-label">Start date: </label>
 					<div class="col-sm-3 ">
@@ -67,10 +67,11 @@
 					</div>
 				</div>
 			</div>
+
 			<div class="row">
-				<div class="col-sm-2 ">
+				<div class="col-sm-offset-5 col-sm-2 ">
 					<label>
-						<button class="btn btn-info" type="submit" ng-click="search()"> SEARCH </button>
+						</br><button class="btn btn-info" type="submit" ng-click="search()"> SEARCH </button>
 					</label>
 				</div>
 			</div>
@@ -79,6 +80,7 @@
 	<div class="container-fluid">
 	    <div class="row">
 	    	<div class="col-sm-offset-1 col-sm-10">
+	    	</br>
 		 		<table class="table table-bordered ">
 		 			<thead>
 						<tr>
@@ -88,7 +90,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr ng-repeat="item in logs" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)" click-Off="clickedSomewhereElse()">
+						<tr ng-repeat="item in logs | limitTo: 10 : (bigCurrentPage-1)*10 " ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)" click-Off="clickedSomewhereElse()">
 							<td>{{item[0]}}</td>
 							<td>{{item[1]}}</td>
 							<td>{{item[2]}}</td>
@@ -97,4 +99,9 @@
 				</table>
 	        </div>
 	    </div> 			
+	    <div class="row">
+	    	<div class="col-sm-offset-4 col-sm-7">
+	    		<uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" num-pages="numPages"></uib-pagination>
+	    	</div>
+	    </div>
 	</div>

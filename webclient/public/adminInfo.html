@@ -1,0 +1,61 @@
+<!-- home.html -->
+	<div class="jumbotron text-center">
+		<h1>Admin Info Page</h1>
+	</div>
+
+	<div class="container-fluid">
+			<div class="row">
+					<div class = "col-sm-3">
+						<h3>Basic Info</h3>  
+					</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-5">USERNAME  </div>
+					<div class = "col-sm-5">:{{ info.username }}</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-5">Authority Name  </div>
+					<div class = "col-sm-5">:{{ info.authorityName }}</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-5">Email Address  </div>
+					<div class = "col-sm-5">:{{ info.email_address }}</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-6">
+						<h3>Server Address Configuration</h3>  
+					</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-5">Audit server's IP address  </div>
+					<div class = "col-sm-5">:{{ info.username }}</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-5">PHR server's IP address  </div>
+					<div class = "col-sm-5">:{{ info.authorityName }}</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-5">Emergency server's IP address </div>
+					<div class = "col-sm-5">:{{ info.email_address }}</div>
+			</div>
+
+			<div class="row">
+					<div class = "col-sm-5">
+						<h3>Mail Server Configuration</h3>  
+					</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-5">Mail server url  </div>
+					<div class = "col-sm-5">:{{ info.username }}</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-5">Email Address  </div>
+					<div class = "col-sm-5">:{{ info.email_address }}</div>
+			</div>
+
+		</br>
+		<a href="/#/changepwd" class="btn btn-info" role="button"> Change Password</a>
+		<a href="/#/changeEmail" class="btn btn-success" role="button"> Change Email Address</a>
+
+	</div>
+	

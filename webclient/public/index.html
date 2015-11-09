@@ -59,21 +59,21 @@
                 <div class="collapse navbar-collapse" id="myNavbar" ng-controller="indexController">
                   <ul class="nav navbar-nav navbar-right">
 
-                      <li ng-show="isLoggin == false"><a href="/#/"><i class="fa fa-sign-in"></i> Login</a></li>
-                      <li ng-show="isLoggin == true"><a href="/#/info"><i class="fa fa-sign-in"></i> Info</a></li>
-                      <li ng-show="isLoggin == true"><a href="/#/downloadSelfPHR"><i class="fa fa-sign-in"></i> Download</a></li>
-                      <li ng-show="isLoggin == true"><a href="/#/uploadPHR"><i class="fa fa-sign-in"></i> Upload</a></li>
-                      <li ng-show="isLoggin == true"><a href="/#/accessPermissionManagement"><i class="fa fa-sign-in"></i> Access Permission Management</a></li>
-                      <li ng-show="isLoggin == true"><a href="/#/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
-                      <li ng-show="isLoggin == true" uib-dropdown>
+                      <li ng-show="isLoggin == false && usertype == 'User'"><a href="/#/"><i class="fa fa-sign-in"></i> Login</a></li>
+                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/info"><i class="fa fa-sign-in"></i> Info</a></li>
+                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/downloadSelfPHR"><i class="fa fa-sign-in"></i> Download</a></li>
+                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/uploadPHR"><i class="fa fa-sign-in"></i> Upload</a></li>
+                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/accessPermissionManagement"><i class="fa fa-sign-in"></i> Access Permission Management</a></li>
+                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
+                      <li ng-show="isLoggin == true && usertype == 'User'" uib-dropdown>
                         <a href id="simple-dropdown" uib-dropdown-toggle>
                             Emergency Access Manager
                           </a>
                           <ul class="uib-dropdown-menu" aria-labelledby="simple-dropdown">
                             <li>
-                              <a href="/#/trustedUsers">Your Trusted Users</a>
-                              <a href="/#/delegate">PHR Owners Who Delegate You As Their Trusted User</a>
-                              <a href="/#/restricted">Restricted-Level PHR Access Requests</a>
+                              <a href="/#/user/trustedUsers">Your Trusted Users</a>
+                              <a href="/#/user/delegate">PHR Owners Who Delegate You As Their Trusted User</a>
+                              <a href="/#/user/restricted">Restricted-Level PHR Access Requests</a>
                             </li>
                           </ul>
                       </li>

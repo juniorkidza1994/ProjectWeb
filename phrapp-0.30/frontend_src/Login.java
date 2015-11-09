@@ -227,33 +227,6 @@ public class Login extends JFrame  implements ConstantVars
 
 				working_lock.unlock();
 
-/*
-		// Forget passwd button
-		forget_passwd_button.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent ae)
-			{
-				forget_passwd_button.setEnabled(false);
-				// We could not use tryLock() becuase the SwingUtilities the same thread even if
-				// we call it manay times.Note that, the tryLock() could not detect the same thead
-				if(!working_lock.isLocked())
-				{
-					working_lock.lock();
-				}
-				else
-				{
-					JOptionPane.showMessageDialog(main_panel, "Some task is working, please wait until the task is done");
-					forget_passwd_button.setEnabled(true);
-					return;
-				}	
-				// Call forget password object
-				ForgetPassword forget_password_dialog = new ForgetPassword(main_panel);
-				forget_password_dialog.setVisible(true);
-				working_lock.unlock();
-				forget_passwd_button.setEnabled(true);
-			}
-		});
-*/
 				return result;
 	}
 

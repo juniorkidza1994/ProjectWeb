@@ -4,30 +4,28 @@
 	</div>
 
 	<div class="container-fluid">
-		<div class="table-responsive">
-			<table class="table">
-				<tr>
-					<td>USERNAME : </td>
-					<td>{{ info.username }}</td>
-				</tr>
-				<tr>
-					<td>Authority Name : </td>
-					<td>{{ info.authorityName }}</td>
-				</tr>
-				<tr>
-					<td>Email Address : </td>
-					<td>{{ info.email_address }}</td>
-				</tr>
-			</table>
-		</div>
-		<div class="table-responsive">
-			<table class="table">
-				Attribute Name
-				<tr ng-repeat="x in info.attribute_list">
-					<td>{{x[0]}}</td>
-				</tr>
-			</table>
-		</div>
+			<div class="row">
+					<div class = "col-sm-3">USERNAME  </div>
+					<div class = "col-sm-6">:{{ info.username }}</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-3">Authority Name  </div>
+					<div class = "col-sm-6">:{{ info.authorityName }}</div>
+			</div>
+			<div class="row">
+					<div class = "col-sm-3">Email Address  </div>
+					<div class = "col-sm-6">:{{ info.email_address }}</div>
+			</div>
+			</br>
+			<div class="table-responsive">
+				<table class="table">
+					Attribute Name
+					<tr ng-repeat="x in info.attribute_list">
+						<td>{{x[0]}}</td>
+					</tr>
+				</table>
+			</div>
+
 
 		<a href="/#/changepwd" class="btn btn-info" role="button"> Change Password</a>
 		<a href="/#/changeEmail" class="btn btn-success" role="button"> Change Email Address</a>

@@ -131,6 +131,7 @@ var rmDir = function(dirPath) {
 
 // Serialized and deserialized methods when got from session
 passport.serializeUser(function(user, done) {
+  console.log(user);
     done(null, user);
 });
 
@@ -146,18 +147,21 @@ app.get('/api/loggedin', function(req, res) {
 // USE TO LOGIN 
 app.post('/api/login', passport.authenticate('local'), function(req, res) {
 //  console.log("REQ USER : " + req.user.name);
+  console.log(req.user);
   res.send(req.user);
 });
 
 passport.use(new LocalStrategy(
-  function(username, password, done) {
+  { passReqToCallback: true},
+  function(req, username, password, done) {
     console.log("--------------- LOGIN ------------------")
-    console.log("USERNAME : " + username);
-    console.log("PASSWORD : " + password);
+    console.log(username);
+    console.log(password);
+    console.log(req.body.type);
    // console.log("DONE : " + done);
     
     // Call java function
-    var bool = m_instance.loginSync("127.0.0.1",username,password,"User");
+    var bool = m_instance.loginSync("127.0.0.1",username,password,req.body.type);
 
 //    console.log(bool);
 
@@ -210,7 +214,7 @@ passport.use(new LocalStrategy(
 
       console.log("LOGIN SUCCESS");
 
-      return done(null, {name: username});
+      return done(null, {name: username, type:req.body.type});
     }
 
     console.log("LOGIN FAIL");
@@ -691,13 +695,14 @@ app.post('/api/access_permission_management_list', function (req, res) {
   var access_permission_list ;
 
   // call java function
-  m_main_class[req.user.name].getTableAccessPermissionPHR(function(err,result){
-    if(!err){
-      access_permission_list = result;
-      res.send(access_permission_list );
-       console.log("-------------------- END ACCESS PERMINSION LIST ------------------");
-    }
-  });
+  if(req.user.type == "User")
+  {  m_main_class[req.user.name].getTableAccessPermissionPHR(function(err,result){
+        if(!err){
+          access_permission_list = result;
+          res.send(access_permission_list );
+           console.log("-------------------- END ACCESS PERMINSION LIST ------------------");
+        }
+      });}
 
 });
 
