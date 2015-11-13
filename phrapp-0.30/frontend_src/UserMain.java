@@ -5002,7 +5002,7 @@ public class UserMain extends JFrame implements ConstantVars
 	}
 
 	public Object getChangePasswdClass(){
-		NewPasswordChanging new_passwd_changing_class = new NewPasswordChanging(main_panel, false, passwd);
+		NewPasswordChanging new_passwd_changing_class = new NewPasswordChanging(false, passwd);
 		return new_passwd_changing_class;
 	}
 
@@ -5011,7 +5011,7 @@ public class UserMain extends JFrame implements ConstantVars
 	}
 
 	public Object getChangeEmailClass(){
-		EmailAddressChanging email_address_changing_class = new EmailAddressChanging(main_panel, false, email_address, passwd);
+		EmailAddressChanging email_address_changing_class = new EmailAddressChanging(false, email_address, passwd);
 		return email_address_changing_class;
 	}
 

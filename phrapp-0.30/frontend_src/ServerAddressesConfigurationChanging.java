@@ -39,6 +39,14 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 	private String         current_emergency_server_ip_addr;
 	private String         passwd_cmp;
 
+
+	// Web
+	private	String			m_audit_server_ip_addr     ;
+	private	String 			m_phr_server_ip_addr       ;
+	private	String 			m_emergency_server_ip_addr ;
+	private String 			m_passwd				   ;
+
+
 	// Return variable
 	private boolean        result_flag;
 
@@ -54,6 +62,16 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 		init_server_address_textfields(audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr);
 		setup_actions();
 	}
+
+	public ServerAddressesConfigurationChanging(String audit_server_ip_addr, String phr_server_ip_addr, String emergency_server_ip_addr, String passwd)
+	{
+		result_flag                      = false;
+		current_audit_server_ip_addr     = audit_server_ip_addr;
+		current_phr_server_ip_addr       = phr_server_ip_addr;
+		current_emergency_server_ip_addr = emergency_server_ip_addr;
+		passwd_cmp                       = passwd;
+	}
+
 
 	private final void init_ui(Component parent)
 	{
@@ -119,6 +137,24 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 		emergency_server_ip_addr_textfield.setText(emergency_server_ip_addr);
 	}
 
+	public void change(String audit_server_ip_addr, String phr_server_ip_addr, String emergency_server_ip_addr, String passwd){
+
+		m_audit_server_ip_addr     = audit_server_ip_addr;
+		m_phr_server_ip_addr       = phr_server_ip_addr;
+		m_emergency_server_ip_addr = emergency_server_ip_addr;
+		m_passwd				   = passwd;
+
+
+		if(validate_input())
+		{
+			// Call to C function
+			if(change_server_addresses_configuration(audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr))
+			{
+				result_flag = true;
+			}
+		}
+	}
+
 	private final void setup_actions()
 	{
 		// Change button
@@ -176,10 +212,10 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 	{
 		Pattern p;
 		Matcher m;
-		String  audit_server_ip_addr     = audit_server_ip_addr_textfield.getText();
-		String  phr_server_ip_addr       = phr_server_ip_addr_textfield.getText();
-		String  emergency_server_ip_addr = emergency_server_ip_addr_textfield.getText();
-		String  passwd                   = new String(passwd_textfield.getPassword());
+		String  audit_server_ip_addr     = m_audit_server_ip_addr;
+		String  phr_server_ip_addr       = m_phr_server_ip_addr;
+		String  emergency_server_ip_addr = m_emergency_server_ip_addr;
+		String  passwd                   = m_passwd;
 
 		// Validate IP addresses
 		p = Pattern.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
@@ -245,19 +281,39 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 		return result_flag;
 	}
 
+	public boolean getResult()
+	{
+		return result_flag;
+	}
+
+	// public String get_updated_audit_server_ip_address()
+	// {
+	// 	return audit_server_ip_addr_textfield.getText();
+	// }
+
+	// public String get_updated_phr_server_ip_address()
+	// {
+	// 	return phr_server_ip_addr_textfield.getText();
+	// }
+
+	// public String get_updated_emergency_server_ip_address()
+	// {
+	// 	return emergency_server_ip_addr_textfield.getText();
+	// }
+
 	public String get_updated_audit_server_ip_address()
 	{
-		return audit_server_ip_addr_textfield.getText();
+		return m_audit_server_ip_addr;
 	}
 
 	public String get_updated_phr_server_ip_address()
 	{
-		return phr_server_ip_addr_textfield.getText();
+		return m_phr_server_ip_addr;
 	}
 
 	public String get_updated_emergency_server_ip_address()
 	{
-		return emergency_server_ip_addr_textfield.getText();
+		return m_emergency_server_ip_addr;
 	}
 
 	// Callback methods (Returning from C code)

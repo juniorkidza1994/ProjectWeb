@@ -29,14 +29,14 @@
             if(user.type == "User" && ($location.path().indexOf("/admin") > -1 ))
               $location.url('/user/info');
             else if(user.type == "Admin" && ($location.path().indexOf("/user") > -1 ))
-              $location.url('/admin/admininfo');      
+              $location.url('/admin/info');      
           }
           else{
             deferred.reject();
             if(user.type == "User")
               $location.url('/user/info');
             else if(user.type == "Admin")
-              $location.url('/admin/admininfo')
+              $location.url('/admin/info')
           }
         }
         // Not Authenticated
@@ -83,17 +83,35 @@
       .when('/ab', {
         templateUrl: '/views/main.html'
       })
-      .when('/user/info', {
-        templateUrl : 'info.html',
-        controller: 'infoController',
+
+      .when('/admin/info', {
+        templateUrl : 'adminInfo.html',
+        controller: 'admininfoController',
         resolve: {
           loggedin: checkLoggedin
         }
       })
 
-      .when('/admin/admininfo', {
-        templateUrl : 'adminInfo.html',
-        controller: 'admininfoController',
+      .when('/admin/changeconfig', {
+        templateUrl : 'changeConfig.html',
+        controller: 'changeConfigController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/admin/changemailserver', {
+        templateUrl : 'changeMailServer.html',
+        controller: 'changeMailServerController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+    //-------------------------- USER -----------------------------------------
+      .when('/user/info', {
+        templateUrl : 'info.html',
+        controller: 'userinfoController',
         resolve: {
           loggedin: checkLoggedin
         }
@@ -123,7 +141,7 @@
         }
       })
 
-      .when('/user/changepwd', {
+      .when('/changepwd', {
         templateUrl : 'changepassword.html',
         controller: 'changePwdController',
         resolve: {
@@ -139,7 +157,7 @@
         }
       })
 
-      .when('/user/changeEmail', {
+      .when('/changeEmail', {
         templateUrl : 'changeEmail.html',
         controller: 'changeEmailController',
         resolve: {
@@ -186,7 +204,6 @@
           loggedin: checkLoggedin
         }
       })
-
 
       .when('/', {
         templateUrl: 'login.html',
@@ -239,7 +256,7 @@
     });
 
     // create the controller and inject Angular's $scope
-    scotchApp.controller('infoController', function($scope, $http, $location) {
+    scotchApp.controller('userinfoController', function($scope, $http, $location) {
         $scope.info = {};
 
         // get userinfo
@@ -249,12 +266,6 @@
             //console.log("INFO " + $scope.info.attribute_list);
         })
     });
-
-    // create the controller and inject Angular's $scope
-    scotchApp.controller('admininfoController', function($scope, $http, $location) {
-
-    });
-
 
     scotchApp.controller('delegateController', function($scope, $http, $location) {
         $scope.delegate = {};
@@ -518,7 +529,13 @@
               //console.log("SUCCESS");
               isClick = false;
               alert("CHANGE PASSWORD SUCCESS !!");
-              $location.path('/info');
+              $http.get('/api/loggedin')
+              .success(function(user){
+                if(user.type = "Admin")
+                  $location.path('/admin/info');
+                else if(user.type = "User")
+                  $location.path('/user/info');
+              })
             })
           }
         };
@@ -901,11 +918,27 @@
         $scope.data = {};
         $scope.info = {};
 
-        // get userinfo
-        $http.get('/api/userinfo')
-        .success(function(res){
-            $scope.info  = res;
-            $scope.data.email = $scope.info.email_address;
+        var type;
+
+        $http.get('/api/loggedin')
+        .success(function(user){
+          type = user.type;
+          if(type == "Admin"){
+            // get userinfo
+            $http.get('/api/admininfo')
+            .success(function(res){
+                $scope.info  = res;
+                $scope.data.email = $scope.info.email_address;
+            })
+          }
+          else if(type == "User"){
+            $http.get('/api/userinfo')
+            .success(function(res){
+                $scope.info  = res;
+                $scope.data.email = $scope.info.email_address;
+            })
+          }
+
         })
 
         var isClick = false;
@@ -922,7 +955,10 @@
               //console.log("SUCCESS");
               isClick = false;
               $window.alert("CHANGE EMAIL SUCCESS !!")
-              $location.path('/info');
+              if(type == "Admin")
+                $location.path('/admin/info');
+              else if(type == "User")
+                $location.path('/user/info');
             })
           }
         };
@@ -1232,12 +1268,101 @@
               $window.location.reload();
 
             })
+            .error(function(){
+              $window.alert("LOGIN FAILED !!!");
+              $window.location.reload();
+            })
           }
           else{
         //   console.log("WAIT LOGIN");
           }
       };
     });
+
+    //----------------------- ADMIN ------------------------------
+    
+    // create the controller and inject Angular's $scope
+    scotchApp.controller('admininfoController', function($scope, $http, $location) {
+        $scope.info = {};
+
+        // get userinfo
+        $http.get('/api/admininfo')
+        .success(function(res){
+            $scope.info  = res;
+            //console.log("INFO " + $scope.info.attribute_list);
+        })
+    });
+
+    // create the controller and inject Angular's $scope
+    scotchApp.controller('changeConfigController', function($scope, $http, $location) {
+        $scope.info = {};
+        $scope.password = "";
+
+        // get userinfo
+        $http.get('/api/admininfo')
+        .success(function(res){
+            $scope.info  = res;
+            //console.log("INFO " + $scope.info.attribute_list);
+        })
+
+        $scope.submit = function(){
+          $http.post('/api/changeConfig',{
+              audit : $scope.info.audit_server_ip_addr,
+              phr   : $scope.info.phr_server_ip_addr,
+              emergency : $scope.info.emergency_server_ip_addr,
+              passwd : $scope.password
+          })
+          .success(function(res){
+            if(res){
+              alert("CHANGE IP SUCCESS !!");
+              $location.path("/admin/info");
+            }
+            else{
+              alert("CHANGE IP FAILED !!");
+              $location.path("/admin/info");
+            }
+          })
+        }
+    });
+
+        // create the controller and inject Angular's $scope
+    scotchApp.controller('changeMailServerController', function($scope, $http, $location) {
+        $scope.info = {};
+        $scope.password = "";
+        $scope.new_passwd = "";
+        $scope.confirm_passwd = "";
+        $scope.changepwd = false;
+
+        // get userinfo
+        $http.get('/api/admininfo')
+        .success(function(res){
+            $scope.info  = res;
+            //console.log("INFO " + $scope.info.attribute_list);
+        })
+
+        $scope.submit = function(){
+          $http.post('/api/changemailserver',{
+              mailserver : $scope.info.mail_server_url,
+              authorityemail   : $scope.info.authority_email_address,
+              newpasswd : $scope.new_passwd,
+              confirmpasswd : $scope.confirm_passwd,
+              changepwd   : $scope.changepwd,
+              password    : $scope.password 
+          })
+          .success(function(res){
+            if(res){
+              alert("CHANGED SUCCESS !!");
+              $location.path("/admin/info");
+            }
+            else{
+              alert("CHANGED FAILED !!");
+              $location.path("/admin/info");
+            }
+          })
+        }
+    });
+
+    //--------------------------------------------------------------------
 
     scotchApp.controller('errorController', function($scope) {
         $scope.message = "Error Don't have this page";

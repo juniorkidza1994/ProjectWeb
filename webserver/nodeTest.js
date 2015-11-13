@@ -174,8 +174,9 @@ passport.use(new LocalStrategy(
       // Call java function
       main_class = m_instance.getMainClassSync();
 
-/*      console.log("CREATE MAIN CLASS : " + main_class);
-*/
+      console.log("CREATE MAIN CLASS : ");
+      console.log(main_class);
+
       var obj = {};
 
 /*      for(var index in m_test){
@@ -187,8 +188,11 @@ passport.use(new LocalStrategy(
 //      console.log("OBJ : " + obj);
 
 //      console.log("IN OBJ2 : " + obj[username]);
+      console.log("USERNAME : ");
+      console.log(username);
 
       m_main_class[username] = main_class;
+      console.log(m_main_class[username]);
 
     //  m_main_class.push(obj);
 /*
@@ -258,6 +262,7 @@ app.post('/api/logins', function (req, res) {
     }
 });
 
+// ------------------------ USER ---------------------------------
 // API GET USERINFO
 app.get('/api/userinfo', function (req, res) {
 
@@ -986,6 +991,95 @@ app.post('/api/transaction_auditing', function (req, res) {
 });
 
 //--------------------------------------------------------------------//
+
+//------------------------ ADMIN -------------------------------------//
+
+// GET ADMIN INFO
+app.get('/api/admininfo', function (req, res) {
+
+    var admininfo = {};
+
+    m_main_class[req.user.name].testClassSync();
+
+    if(Object.keys(admininfo).length == 0)
+    {
+      // Get table & Call java function
+      var authorityName = m_main_class[req.user.name].getAuthorityNameSync();
+      var username = m_main_class[req.user.name].getUsernameSync();
+      var email_address = m_main_class[req.user.name].getEmailSync();
+      var audit_server_ip_addr = m_main_class[req.user.name].getAuditServerIPSync();
+      var phr_server_ip_addr = m_main_class[req.user.name].getPhrServerIPSync();
+      var emergency_server_ip_addr = m_main_class[req.user.name].getEmergencyServerIPSync();
+      var mail_server_url = m_main_class[req.user.name].getMailServerSync();
+      var authority_email_address = m_main_class[req.user.name].getAuthorityEmailSync();
+
+      console.log("--------------------- Admin INFO -------------------");
+      console.log("Authority Name : " + authorityName);
+      console.log("Username : " + username);
+      console.log("Email Address : " + email_address);
+
+      // VARIABLE TO SEND TO CLIENT
+      admininfo.username = username;
+      admininfo.authorityName = authorityName;
+      admininfo.email_address = email_address;
+      admininfo.audit_server_ip_addr = audit_server_ip_addr;
+      admininfo.phr_server_ip_addr = phr_server_ip_addr;
+      admininfo.emergency_server_ip_addr = emergency_server_ip_addr;
+      admininfo.mail_server_url = mail_server_url;
+      admininfo.authority_email_address = authority_email_address;
+
+    }
+    
+    res.send(admininfo);
+
+    console.log("--------------------- END Admin INFO ---------------------");
+
+});
+
+// Change Config
+
+app.post('/api/changeConfig', function (req, res) {
+
+  console.log("-------------- Change Config ---------------");
+
+  var changeConfigClass ;
+  var result ;
+
+  changeConfigClass =  m_main_class[req.user.name].getServerAddressConfigClassSync(); 
+  changeConfigClass.changeSync(req.body.audit, req.body.phr,
+    req.body.emergency, req.body.passwd); 
+
+  result = changeConfigClass.getResultSync();
+
+  m_main_class[req.user.name].updateServerAddressConfigSync(changeConfigClass);
+
+
+  res.send(result);
+
+});
+
+app.post('/api/changemailserver', function (req, res) {
+
+  console.log("-------------- Change Config ---------------");
+
+  var changeMailServerClass ;
+  var result ;
+
+  changeMailServerClass =  m_main_class[req.user.name].getMailServerConfigClassSync(); 
+  changeMailServerClass.changeSync(req.body.mailserver, req.body.authorityemail,
+    req.body.newpasswd, req.body.confirmpasswd, req.body.password, req.body.changepwd); 
+
+  result = changeMailServerClass.getResultSync();
+
+  m_main_class[req.user.name].updateMailServerSync(changeMailServerClass);
+
+
+  res.send(result);
+
+});
+
+
+//----------------------------------------------------------------------
 
 // HANDLER NOT FOUND PAGE
 /*app.use(function(req, res, next){

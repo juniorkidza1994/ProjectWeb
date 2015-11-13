@@ -48,6 +48,19 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 		this.is_admin_flag         = is_admin_flag;
 		this.current_email_address = current_email_address;
 		this.current_passwd        = current_passwd;
+
+		// init_ui(parent);
+		// init_email_address_textfield(current_email_address);
+		// setup_actions();
+	}
+
+
+	public EmailAddressChanging( boolean is_admin_flag, String current_email_address, String current_passwd)
+	{
+		result_flag                = false;
+		this.is_admin_flag         = is_admin_flag;
+		this.current_email_address = current_email_address;
+		this.current_passwd        = current_passwd;
 	}
 
 	public String getCurrentEmail(){

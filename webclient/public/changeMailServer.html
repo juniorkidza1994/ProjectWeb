@@ -1,0 +1,61 @@
+
+    <div class="jumbotron text-center">
+
+      <h1>Change Password</h2>
+      </div> <!-- /container -->
+
+      <div class="container">
+        <form method="post" class="form-horizontal">
+          
+          
+            <div class="form-group">
+              <label for="MailServer" class="col-sm-2 control-label">Mail server url</label>
+              <div class="col-sm-10">
+                  <input type="text" id="Audit" class="form-control" required ng-model="info.mail_server_url">
+              </div>
+            </div>
+
+             <div class="form-group">
+              <label for="AuthorityMail" class="col-sm-2 control-label">Authority's email adress</label>
+              <div class="col-sm-10">
+                  <input type="text" id="PHR" class="form-control" required ng-model="info.authority_email_address">
+              </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox">
+                  <label class="col-sm-5 control-label"><input type="checkbox" value="true" ng-model="changepwd"> Change an e-mail password</label>
+                </div>
+            </div>
+
+            <div ng-if="changepwd == true">
+              <div class="form-group">
+                <label for="inputPassword" class="col-sm-2 control-label">New e-mail password </label>
+                <div class="col-sm-10">
+                    <input type="text" id="Emergency" class="form-control" placeholder="New password"  required ng-model="new_passwd">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="inputPassword" class="col-sm-2 control-label">Confirm new e-mail password  </label>
+                <div class="col-sm-10">
+                    <input type="password" id="ConfirmPassword" class="form-control" placeholder="Confirm new password" required ng-model="confirm_passwd">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword" class="col-sm-2 control-label">Adming's Password </label>
+              <div class="col-sm-10">
+                  <input type="password" id="ConfirmPassword" class="form-control" placeholder="Admin's Password" required ng-model="password">
+              </div>
+            </div>
+
+             <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <br />
+                  <button class="btn btn-lg btn-primary" type="submit" ng-click ="submit()">Submit</button>
+                  <button class="btn btn-lg btn-primary" type="submit" ng-click ="back()">Back</button>
+              </div>
+           </div>
+        </form>
+      </div>

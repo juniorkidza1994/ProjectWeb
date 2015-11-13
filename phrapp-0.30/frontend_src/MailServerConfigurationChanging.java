@@ -44,6 +44,14 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 	// Return variable
 	private boolean        result_flag;
 
+	// WEB
+	private String 		   m_confirm_authority_email_passwds;
+	private	String 		   m_mail_server_url;
+	private String 		   m_authority_email_address;
+	private	String 		   m_authority_email_passwd;
+	private String 		   m_admin_passwd ;
+	private Boolean 	   m_changepwd;
+
 	public MailServerConfigurationChanging(Component parent, String mail_server_url, String authority_email_address, String authority_email_passwd, String passwd)
 	{
 		result_flag                     = false;
@@ -55,6 +63,16 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		init_ui(parent);
 		init_mail_server_textfields(mail_server_url, authority_email_address);
 		setup_actions();
+	}
+
+	public MailServerConfigurationChanging(String mail_server_url, String authority_email_address, String authority_email_passwd, String passwd)
+	{
+		result_flag                     = false;
+		current_mail_server_url         = mail_server_url;
+		current_authority_email_address = authority_email_address;
+		current_authority_email_passwd  = authority_email_passwd;
+		passwd_cmp                      = passwd;
+
 	}
 
 	private final void init_ui(Component parent)
@@ -202,13 +220,36 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		});
 	}
 
+	public void change(String mail_server_url, String authority_email_address, String authority_email_passwd, 
+		String  confirm_authority_email_passwd, String admin_passwd, Boolean changepwd){
+		m_mail_server_url         			= mail_server_url;
+		m_authority_email_address 			= authority_email_address;
+		m_authority_email_passwd  			= authority_email_passwd;
+		m_confirm_authority_email_passwds	= confirm_authority_email_passwd;
+		m_admin_passwd			  			= admin_passwd;
+		m_changepwd							= changepwd ;
+
+		if(validate_input())
+		{
+			// Call to C function
+			if(!changepwd){
+				m_authority_email_passwd = current_authority_email_passwd;
+			}
+
+			if(change_mail_server_configuration(mail_server_url, authority_email_address, authority_email_passwd))
+			{
+				result_flag = true;	
+			}
+		}
+	}
+
 	private boolean validate_input()
 	{
 		Pattern p;
 		Matcher m;
-		String  mail_server_url         = mail_server_url_textfield.getText();
-		String  authority_email_address = authority_email_address_textfield.getText();
-		String  passwd                  = new String(passwd_textfield.getPassword());
+		String  mail_server_url         = m_mail_server_url;
+		String  authority_email_address = m_authority_email_address;
+		String  passwd                  = m_admin_passwd;
 
 		// Validate mail server url
 		p = Pattern.compile("^smtp://([-a-zA-Z0-9_](.[-a-zA-Z0-9_]+)*){1}(:){1}([0-9]){1,5}$");
@@ -237,10 +278,10 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 			return false;
 		}
 
-		if(authority_email_passwd_changing_checkbox.isSelected())
+		if(m_changepwd)
 		{
-			String new_authority_email_passwd         = new String(new_authority_email_passwd_textfield.getPassword());
-			String confirm_new_authority_email_passwd = new String(confirm_new_authority_email_passwd_textfield.getPassword());
+			String new_authority_email_passwd         = m_authority_email_passwd;
+			String confirm_new_authority_email_passwd = m_confirm_authority_email_passwds;
 
 			// Validate new authority's e-mail password
 			if(!(new_authority_email_passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && new_authority_email_passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
@@ -293,7 +334,7 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		}
 
 		// Check update
-		if(!authority_email_passwd_changing_checkbox.isSelected() && mail_server_url.equals(current_mail_server_url) && 
+		if(!m_changepwd && mail_server_url.equals(current_mail_server_url) && 
 			authority_email_address.equals(current_authority_email_address))
 		{
 			JOptionPane.showMessageDialog(this, "No any update");
@@ -332,14 +373,37 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		return result_flag;
 	}
 
+	public boolean getResult()
+	{
+		return result_flag;
+	}
+
+	// public String get_updated_mail_server_url()
+	// {
+	// 	return mail_server_url_textfield.getText();
+	// }
+
+	// public String get_updated_authority_email_address()
+	// {
+	// 	return authority_email_address_textfield.getText();
+	// }
+
+	// public String get_updated_authority_email_passwd()
+	// {
+	// 	if(authority_email_passwd_changing_checkbox.isSelected())
+	// 		return new String(new_authority_email_passwd_textfield.getPassword());
+	// 	else
+	// 		return current_authority_email_passwd;
+	// }
+
 	public String get_updated_mail_server_url()
 	{
-		return mail_server_url_textfield.getText();
+		return m_mail_server_url;
 	}
 
 	public String get_updated_authority_email_address()
 	{
-		return authority_email_address_textfield.getText();
+		return m_authority_email_address;
 	}
 
 	public String get_updated_authority_email_passwd()

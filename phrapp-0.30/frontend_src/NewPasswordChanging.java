@@ -57,6 +57,17 @@ class NewPasswordChanging extends JDialog implements ConstantVars
 
 	}
 
+
+	public NewPasswordChanging(boolean is_admin_flag, String current_passwd_cmp)
+	{
+
+		m_result_flag             = false;
+		result_flag 			= false;
+		this.is_admin_flag      = is_admin_flag;
+		this.current_passwd_cmp = current_passwd_cmp;
+
+	}
+
 	private boolean validate_input()
 	{
 		Pattern p;

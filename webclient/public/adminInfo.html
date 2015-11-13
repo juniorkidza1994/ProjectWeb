@@ -21,6 +21,11 @@
 					<div class = "col-sm-5">Email Address  </div>
 					<div class = "col-sm-5">:{{ info.email_address }}</div>
 			</div>
+			</br>
+			<div class="row">
+				<a href="/#/changepwd" class="btn btn-info" role="button"> Change Password</a>
+				<a href="/#/changeEmail" class="btn btn-success" role="button"> Change Email Address</a>
+			</div>
 			<div class="row">
 					<div class = "col-sm-6">
 						<h3>Server Address Configuration</h3>  
@@ -28,16 +33,21 @@
 			</div>
 			<div class="row">
 					<div class = "col-sm-5">Audit server's IP address  </div>
-					<div class = "col-sm-5">:{{ info.username }}</div>
+					<div class = "col-sm-5">:{{ info.audit_server_ip_addr }}</div>
 			</div>
 			<div class="row">
 					<div class = "col-sm-5">PHR server's IP address  </div>
-					<div class = "col-sm-5">:{{ info.authorityName }}</div>
+					<div class = "col-sm-5">:{{ info.phr_server_ip_addr }}</div>
 			</div>
 			<div class="row">
 					<div class = "col-sm-5">Emergency server's IP address </div>
-					<div class = "col-sm-5">:{{ info.email_address }}</div>
+					<div class = "col-sm-5">:{{ info.emergency_server_ip_addr }}</div>
 			</div>
+			</br>
+			<div class="row">
+				<a href="/#/admin/changeconfig" class="btn btn-danger" role="button"> Change Configuration</a>
+			</div>
+
 
 			<div class="row">
 					<div class = "col-sm-5">
@@ -46,16 +56,17 @@
 			</div>
 			<div class="row">
 					<div class = "col-sm-5">Mail server url  </div>
-					<div class = "col-sm-5">:{{ info.username }}</div>
+					<div class = "col-sm-5">:{{ info.mail_server_url }}</div>
 			</div>
 			<div class="row">
 					<div class = "col-sm-5">Email Address  </div>
-					<div class = "col-sm-5">:{{ info.email_address }}</div>
+					<div class = "col-sm-5">:{{ info.authority_email_address }}</div>
+			</div>
+			</br>
+			<div class="row">
+				<a href="/#/admin/changemailserver" class="btn btn-warning" role="button"> Change Configuration</a>
 			</div>
 
 		</br>
-		<a href="/#/changepwd" class="btn btn-info" role="button"> Change Password</a>
-		<a href="/#/changeEmail" class="btn btn-success" role="button"> Change Email Address</a>
-
 	</div>
 	

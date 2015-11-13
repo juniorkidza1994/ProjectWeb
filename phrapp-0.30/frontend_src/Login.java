@@ -209,8 +209,7 @@ public class Login extends JFrame  implements ConstantVars
 						AdminMain admin_main = new AdminMain(username, passwd, email_address, authority_name, user_auth_ip_addr, 
 							audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr, mail_server_url, 
 							authority_email_address, authority_email_passwd, ssl_cert_hash);
-						
-						admin_main.setVisible(true);
+					
 						
 						main_class = admin_main;
 						

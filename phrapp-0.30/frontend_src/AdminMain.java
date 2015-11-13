@@ -221,6 +221,92 @@ public class AdminMain extends JFrame implements ConstantVars
 		setVisible(true);
 	}
 
+	// WEB
+
+	public void testClass(){
+		System.out.println("TEST CLASS");
+	}
+
+	public String getAuthorityName()
+	{
+		return authority_name;
+	}
+
+	public String getUsername()
+	{
+		return username + "(admin privilege)";
+	}
+
+	public String getEmail(){
+		return email_address;
+	}
+
+	public String getAuditServerIP(){
+		return audit_server_ip_addr;
+	}
+
+	public String getPhrServerIP()
+	{
+		return phr_server_ip_addr;
+	}
+
+	public String getEmergencyServerIP(){
+		return emergency_server_ip_addr;
+	}
+
+	public String getMailServer(){
+		return mail_server_url;
+	}
+
+	public String getAuthorityEmail(){
+		return authority_email_address;
+	}
+
+	public Object getChangePasswdClass(){
+		NewPasswordChanging new_passwd_changing_class = new NewPasswordChanging( true, passwd);
+		return new_passwd_changing_class;
+	}
+
+	public void updateNewPasswd(String passwd){
+		this.passwd = passwd;
+	}
+
+	public Object getChangeEmailClass(){
+		EmailAddressChanging email_address_changing_class = new EmailAddressChanging( true, email_address, passwd);
+		return email_address_changing_class;
+	}
+
+	public void updateNewEmail(String email_address){
+		this.email_address = email_address;
+		System.out.println(this.email_address);
+	}
+
+	public Object getServerAddressConfigClass(){
+		ServerAddressesConfigurationChanging server_addresses_configuration_changing_class;
+		server_addresses_configuration_changing_class = new ServerAddressesConfigurationChanging(
+		audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr, passwd);
+		return server_addresses_configuration_changing_class;
+	}
+
+	public Object getMailServerConfigClass(){
+			MailServerConfigurationChanging mail_server_configuration_changing_class;
+			mail_server_configuration_changing_class = new MailServerConfigurationChanging
+			(mail_server_url, authority_email_address, authority_email_passwd, passwd);
+			return mail_server_configuration_changing_class;
+	}
+
+	public void updateMailServer(MailServerConfigurationChanging mail_server_configuration_changing_class){
+		mail_server_url         = mail_server_configuration_changing_class.get_updated_mail_server_url();
+		authority_email_address = mail_server_configuration_changing_class.get_updated_authority_email_address();
+		authority_email_passwd  = mail_server_configuration_changing_class.get_updated_authority_email_passwd();
+	}
+
+	public void updateServerAddressConfig(ServerAddressesConfigurationChanging server_addresses_configuration_changing){
+		audit_server_ip_addr     = server_addresses_configuration_changing.get_updated_audit_server_ip_address();
+		phr_server_ip_addr       = server_addresses_configuration_changing.get_updated_phr_server_ip_address();
+		emergency_server_ip_addr = server_addresses_configuration_changing.get_updated_emergency_server_ip_address();
+	}
+
 	private final void create_info_page()
 	{
 		// Authority name
@@ -426,6 +512,27 @@ public class AdminMain extends JFrame implements ConstantVars
 		info_outer_panel.add(basic_info_panel);
 		info_outer_panel.add(server_addresses_configuration_panel);
 		info_outer_panel.add(mail_server_configuration_panel);
+	}
+
+	// Web
+	public void initAttributeTable(){
+		attribute_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    		attribute_table_model.setDataVector(null, new Object[] {"Attribute name", "Numerical attribute?"});
+    		attribute_table = new JTable(attribute_table_model);
+	}
+
+	public void updateAttribbuteTable(){
+		update_attribute_list_main();
 	}
 
 	private final void create_attribute_page()

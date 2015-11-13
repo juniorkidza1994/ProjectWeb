@@ -1,0 +1,47 @@
+
+    <div class="jumbotron text-center">
+
+      <h1>Change Password</h2>
+      </div> <!-- /container -->
+
+      <div class="container">
+        <form method="post" class="form-horizontal">
+          
+          
+            <div class="form-group">
+              <label for="AuditIP" class="col-sm-2 control-label">Audit server's IP address</label>
+              <div class="col-sm-10">
+                  <input type="text" id="Audit" class="form-control" required ng-model="info.audit_server_ip_addr">
+              </div>
+            </div>
+
+             <div class="form-group">
+              <label for="PHRIP" class="col-sm-2 control-label">PHR server's IP address</label>
+              <div class="col-sm-10">
+                  <input type="text" id="PHR" class="form-control" required ng-model="info.phr_server_ip_addr">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="EmergencyIP" class="col-sm-2 control-label">Emergency server's IP address </label>
+              <div class="col-sm-10">
+                  <input type="text" id="Emergency" class="form-control" required ng-model="info.emergency_server_ip_addr">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword" class="col-sm-2 control-label">Adming's Password </label>
+              <div class="col-sm-10">
+                  <input type="password" id="ConfirmPassword" class="form-control" placeholder="Admin's Password" required ng-model="password">
+              </div>
+            </div>
+
+             <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <br />
+                  <button class="btn btn-lg btn-primary" type="submit" ng-click ="submit()">Submit</button>
+                  <button class="btn btn-lg btn-primary" type="submit" ng-click ="back()">Back</button>
+              </div>
+           </div>
+        </form>
+      </div>
