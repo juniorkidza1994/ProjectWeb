@@ -36,6 +36,9 @@ class AttributeRegistration extends JDialog implements ConstantVars
 	// Return variable
 	private boolean    registration_result_flag;
 
+	// WEB
+	private String 	   m_attribute_name;
+
 	public AttributeRegistration(Component parent)
 	{
 		registration_result_flag = false;
@@ -46,6 +49,15 @@ class AttributeRegistration extends JDialog implements ConstantVars
 		init_ui(parent);
 		setup_actions();
 	}
+
+		public AttributeRegistration()
+	{
+		registration_result_flag = false;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
+	}
+
 
 	private final void init_ui(Component parent)
 	{
@@ -167,6 +179,22 @@ class AttributeRegistration extends JDialog implements ConstantVars
 		});
 	}
 
+	public void register(String attribute_name, Boolean is_numerical_attribute_flag){
+			
+			m_attribute_name = attribute_name;
+			
+			if(validate_input())
+			{
+
+				// Call to C function
+				if(register_attribute_main(attribute_name, is_numerical_attribute_flag.booleanValue()))
+				{
+					registration_result_flag = true;
+				}
+			}
+
+		}
+
 	private boolean validate_input()
 	{
 		Pattern p;
@@ -174,7 +202,7 @@ class AttributeRegistration extends JDialog implements ConstantVars
 
 		// Validate attribute name
 		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
-		m = p.matcher(attribute_name_textfield.getText());
+		m = p.matcher(m_attribute_name);
 
 		if(!m.matches())
 		{
@@ -186,6 +214,11 @@ class AttributeRegistration extends JDialog implements ConstantVars
 	}
 
 	public boolean get_registration_result()
+	{
+		return registration_result_flag;
+	}
+
+	public boolean getRegistrationResult()
 	{
 		return registration_result_flag;
 	}

@@ -50,7 +50,7 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 	private String 		   m_authority_email_address;
 	private	String 		   m_authority_email_passwd;
 	private String 		   m_admin_passwd ;
-	private Boolean 	   m_changepwd;
+	private boolean 	   m_changepwd;
 
 	public MailServerConfigurationChanging(Component parent, String mail_server_url, String authority_email_address, String authority_email_passwd, String passwd)
 	{
@@ -227,7 +227,7 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		m_authority_email_passwd  			= authority_email_passwd;
 		m_confirm_authority_email_passwds	= confirm_authority_email_passwd;
 		m_admin_passwd			  			= admin_passwd;
-		m_changepwd							= changepwd ;
+		m_changepwd							= changepwd.booleanValue() ;
 
 		if(validate_input())
 		{

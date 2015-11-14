@@ -1,0 +1,36 @@
+<style>
+.selected{
+	background-color: gray;
+	color: black;
+	font-weight: bold;
+}
+</style>
+
+	<div class="jumbotron text-center">
+		<h1>Attribute Management</h1>
+	</div>
+
+	<form method="post" class="form-horizontal">
+        
+ 		<table class="table table-bordered" >
+			<tr>
+				<th>Attribute Name</th>
+				<th>Numerical attribute ?</th>
+			</tr>
+			<tr ng-repeat="item in attribute_table" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)">
+				<td>{{item[0]}}</td>
+				<td>{{item[1]}}</td>
+			</tr>
+		</table>
+
+           <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <br />
+              <a href="/#/admin/registerattribute" class="btn btn-lg btn-info" role="button"> Register Attribute</a>
+
+              <button class="btn btn-lg btn-danger" type="submit" ng-click ="delete()">Delete</button>
+            </div>	
+         </div>
+    </form>
+
+

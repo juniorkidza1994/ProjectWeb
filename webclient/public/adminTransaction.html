@@ -1,0 +1,186 @@
+<!-- about.html -->
+<style>
+.selected{
+	background-color: black;
+	color: white;
+	font-weight: bold;
+}
+.form-control{
+	width: 100%
+}
+
+</style>
+	<div class="jumbotron text-center">
+		<h1>Transaction Auditing Page</h1>
+	</div>
+	<form name="form" class="form-horizontol">
+		<div class="form-group">
+			<div class="row">
+				<label class="col-sm-offset-3 col-sm-2 control-label">Transaction: </label>
+				<div class="col-sm-3 radio" ng-init="transaction_log_type = 'Audit an admin login Log'">
+					<label>
+						<input type="radio" name="type" ng-model="transaction_log_type" value="Audit an admin login Log"> Audit an admin login log
+					</label>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-offset-5 col-sm-3 radio">
+					<label>
+						<input type="radio" id = "type" name="type" ng-model="transaction_log_type" value="Audit an admin event Log" > Audit an admin event log
+					</label>		
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-offset-5 col-sm-3 radio">
+					<label>
+						<input type="radio" name="type" ng-model="transaction_log_type" value="Audit a system login Log"> Audit a system login log
+					</label>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-offset-5 col-sm-3 radio">
+					<label>
+						<input type="radio" id = "type" name="type" ng-model="transaction_log_type" value="Audit a system event Log" > Audit a system event log
+					</label>		
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-offset-5 col-sm-2 checkbox">
+					<label>
+						<input type="checkbox" name="con_level" id = "type" ng-model="allFlag" ng-click="$event.stopPropagation()" > Audit all transaction
+					</label>		
+				</div>
+			</div>
+			<div name="form" ng-if="allFlag==false">
+				<div class="row">
+					<label class="col-sm-offset-3 col-sm-2 control-label">Start date: </label>
+					<div class="col-sm-3 ">
+						<label>
+							<input type="date" name="sDay" ng-model="startDate" min="1979-12-31" required>
+						</label>
+					</div>
+					<label class="col-sm-1 control-label">Time: </label>
+					<div class="col-sm-2 ">
+						<label>
+							<input type="time" ng-model="startTime" name="sTime" required>
+						</label>
+					</div>
+				</div>
+				<div class="row">
+					<label class="col-sm-offset-3 col-sm-2 control-label">End date: </label>
+					<div class="col-sm-3 ">
+						<label>
+							<input type="date" name="sDay" ng-model="endDate" min="1979-12-31" required>
+						</label>
+					</div>
+					<label class="col-sm-1 control-label">Time: </label>
+					<div class="col-sm-2 ">
+						<label>
+							<input type="time" ng-model="endTime" name="sTime" required>
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-offset-5 col-sm-2 ">
+					<label>
+						</br><button class="btn btn-info" type="submit" ng-click="search()"> SEARCH </button>
+					</label>
+				</div>
+			</div>
+	</form>
+
+	<div class="container-fluid">
+	    <div class="row">
+	    	<div class="col-sm-offset-1 col-sm-10">
+	    	</br>
+		 		<table class="table table-bordered " ng-if ="chooseTable =='Audit an admin login Log'">
+		 			<thead>
+						<tr>
+							<th >DateTime</th>
+							<th >Event Type</th>
+							<th >IP address</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in logs | limitTo: 10 : (bigCurrentPage-1)*10 " >
+							<td>{{item[0]}}</td>
+							<td>{{item[1]}}</td>
+							<td>{{item[2]}}</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<table class="table table-bordered " ng-if ="chooseTable =='Audit an admin event Log'">
+		 			<thead>
+						<tr>
+							<th >DateTime</th>
+							<th >Actor</th>
+							<th >Event Type</th>
+							<th >Object(user)</th>
+							<th >Object</th>
+							<th >Actor's IP address</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in logs | limitTo: 10 : (bigCurrentPage-1)*10 " >
+							<td>{{item[0]}}</td>
+							<td>{{item[1]}}</td>
+							<td>{{item[2]}}</td>
+							<td>{{item[3]}}</td>
+							<td>{{item[4]}}</td>
+							<td>{{item[5]}}</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<table class="table table-bordered " ng-if ="chooseTable == 'Audit a system login Log'">
+		 			<thead>
+						<tr>
+							<th >DateTime</th>
+							<th >Username</th>
+							<th >Event Type</th>
+							<th >IP address</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in logs | limitTo: 10 : (bigCurrentPage-1)*10 " >
+							<td>{{item[0]}}</td>
+							<td>{{item[1]}}</td>
+							<td>{{item[2]}}</td>
+							<td>{{item[3]}}</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<table class="table table-bordered " ng-if ="chooseTable =='Audit a system event Log'">
+		 			<thead>
+						<tr>
+							<th >DateTime</th>
+							<th >Actor</th>
+							<th >Event Type</th>
+							<th >Object(user)</th>
+							<th >Object</th>
+							<th >Actor's IP address</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in logs | limitTo: 10 : (bigCurrentPage-1)*10 ">
+							<td>{{item[0]}}</td>
+							<td>{{item[1]}}</td>
+							<td>{{item[2]}}</td>
+							<td>{{item[3]}}</td>
+							<td>{{item[4]}}</td>
+							<td>{{item[5]}}</td>
+						</tr>
+					</tbody>
+				</table>
+	        </div>
+	    </div> 			
+	    <div class="row">
+	    	<div class="col-sm-offset-4 col-sm-7">
+	    		<uib-pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" num-pages="numPages"></uib-pagination>
+	    	</div>
+	    </div>
+	</div>

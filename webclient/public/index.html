@@ -57,15 +57,14 @@
                 </div>
 
                 <div class="collapse navbar-collapse" id="myNavbar" ng-controller="indexController">
-                  <ul class="nav navbar-nav navbar-right">
+                  <ul class="nav navbar-nav navbar-right" ng-if="usertype=='User'">
 
-                      <li ng-show="isLoggin == false && usertype == 'User'"><a href="/#/"><i class="fa fa-sign-in"></i> Login</a></li>
-                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/info"><i class="fa fa-sign-in"></i> Info</a></li>
-                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/downloadSelfPHR"><i class="fa fa-sign-in"></i> Download</a></li>
-                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/uploadPHR"><i class="fa fa-sign-in"></i> Upload</a></li>
-                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/accessPermissionManagement"><i class="fa fa-sign-in"></i> Access Permission Management</a></li>
-                      <li ng-show="isLoggin == true && usertype == 'User'"><a href="/#/user/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
-                      <li ng-show="isLoggin == true && usertype == 'User'" uib-dropdown>
+                      <li ng-show="isLoggin == true "><a href="/#/user/info"><i class="fa fa-sign-in"></i> Info</a></li>
+                      <li ng-show="isLoggin == true "><a href="/#/user/downloadSelfPHR"><i class="fa fa-sign-in"></i> Download</a></li>
+                      <li ng-show="isLoggin == true"><a href="/#/user/uploadPHR"><i class="fa fa-sign-in"></i> Upload</a></li>
+                      <li ng-show="isLoggin == true "><a href="/#/user/accessPermissionManagement"><i class="fa fa-sign-in"></i> Access Permission Management</a></li>
+                      <li ng-show="isLoggin == true "><a href="/#/user/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
+                      <li ng-show="isLoggin == true " uib-dropdown>
                         <a href id="simple-dropdown" uib-dropdown-toggle>
                             Emergency Access Manager
                           </a>
@@ -77,6 +76,14 @@
                             </li>
                           </ul>
                       </li>
+                  </ul>
+
+                  <ul class="nav navbar-nav navbar-right" ng-if="usertype=='Admin'">
+
+                      <li ng-show="isLoggin == true "><a href="/#/admin/info"><i class="fa fa-sign-in"></i> Info</a></li>
+                      <li ng-show="isLoggin == true "><a href="/#/admin/attribute"><i class="fa fa-sign-in"></i> Attribute Management</a></li>
+                      <li ng-show="isLoggin == true "><a href="/#/admin/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
+
                   </ul>
                 </div>
             </div>

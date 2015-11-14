@@ -946,10 +946,10 @@ app.post('/api/transaction_auditing', function (req, res) {
     // call java function
     m_main_class[req.user.name].setAllLog(req.body.transaction_log_type, function(err,result){
       if(result) {
-        console.log("result 1 : " + result);
+        //console.log("result 1 : " + result);
         m_main_class[req.user.name].getLog( function(err,result){
           if(result) {
-            console.log("RESULT 2 :");
+            //console.log("RESULT 2 :");
             console.log(result);
             res.send(result);
             console.log("-------------- End Transaction table ---------------");
@@ -970,11 +970,11 @@ app.post('/api/transaction_auditing', function (req, res) {
           req.body.start_day_index, req.body.start_hour_index, req.body.start_minute_index, req.body.end_year_index, req.body.end_month_index, req.body.end_day_index, req.body.end_hour_index,  
           req.body.end_minute_index, function(err,result){
       if(result) {
-        console.log("result 1 : " + result);
+        //console.log("result 1 : " + result);
         m_main_class[req.user.name].getLog( function(err,result){
           if(result) {
-            console.log("RESULT 2 :");
-            console.log(result);
+            //console.log("RESULT 2 :");
+            //console.log(result);
             res.send(result);
             console.log("-------------- End Transaction table ---------------");
           }
@@ -998,8 +998,6 @@ app.post('/api/transaction_auditing', function (req, res) {
 app.get('/api/admininfo', function (req, res) {
 
     var admininfo = {};
-
-    m_main_class[req.user.name].testClassSync();
 
     if(Object.keys(admininfo).length == 0)
     {
@@ -1060,7 +1058,7 @@ app.post('/api/changeConfig', function (req, res) {
 
 app.post('/api/changemailserver', function (req, res) {
 
-  console.log("-------------- Change Config ---------------");
+  console.log("-------------- Change Email Server ---------------");
 
   var changeMailServerClass ;
   var result ;
@@ -1073,11 +1071,111 @@ app.post('/api/changemailserver', function (req, res) {
 
   m_main_class[req.user.name].updateMailServerSync(changeMailServerClass);
 
+  // INIT TABLE
+  m_main_class[req.user.name].initAttributeTableSync();
+  
+  res.send(result);
+
+   console.log("-------------- End Email Server ---------------");
+});
+
+app.post('/api/adminattribute', function (req, res) {
+
+  console.log("-------------- Get Atrribute in admin---------------");
+
+  var attribute_table ;
+
+  m_main_class[req.user.name].getTableAttribute(function(err,result){
+    if(!err){
+      attribute_table = result;
+      console.log(attribute_table);
+      res.send(attribute_table);
+      console.log("-------------- End Atrribute in admin---------------");
+    }
+  });    
+});
+
+app.post('/api/registerattribute', function (req, res) {
+
+  console.log("-------------- Register Atrribute in admin---------------");
+
+  var registrationAttribClass = m_main_class[req.user.name].getRegistrationAttributeSync();
+  registrationAttribClass.registerSync(req.body.attributename, req.body.isnumerical);
+
+  var result = registrationAttribClass.getRegistrationResultSync();
+
+  m_main_class[req.user.name].updateAttributeTableSync();
 
   res.send(result);
 
+  console.log("--------------End Register Atrribute in admin---------------");
+
 });
 
+app.post('/api/deleteattribute', function (req, res) {
+
+  console.log("-------------- Delete Atrribute in admin---------------");
+
+  var result = m_main_class[req.user.name].removeAttributeSync(req.body.attributename);
+
+  res.send(result);
+
+  console.log("-------------- END Delete Atrribute in admin---------------");
+
+});
+
+app.post('/api/admin_transaction_auditing', function (req, res) {
+
+  console.log("-------------- get Transaction table ---------------");
+
+
+  if(req.body.allFlag){
+    // call java function
+    m_main_class[req.user.name].setAllLog(req.body.transaction_log_type, function(err,result){
+      if(result) {
+        //console.log("result 1 : " + result);
+        m_main_class[req.user.name].getLog( function(err,result){
+          if(result) {
+            //console.log("RESULT 2 :");
+            console.log(result);
+            res.send(result);
+            console.log("-------------- End Transaction table ---------------");
+          }
+          else {
+            console.log("ERROR : " + err);
+          }
+        });
+      }
+      else {
+        console.log("ERROR : " + err);
+      }
+    });
+  }
+  else {
+    // call java function
+    m_main_class[req.user.name].setPeriodLog( req.body.transaction_log_type, req.body.start_year_index, req.body.start_month_index, 
+          req.body.start_day_index, req.body.start_hour_index, req.body.start_minute_index, req.body.end_year_index, req.body.end_month_index, req.body.end_day_index, req.body.end_hour_index,  
+          req.body.end_minute_index, function(err,result){
+      if(result) {
+        //console.log("result 1 : " + result);
+        m_main_class[req.user.name].getLog( function(err,result){
+          if(result) {
+            //console.log("RESULT 2 :");
+            //console.log(result);
+            res.send(result);
+            console.log("-------------- End Transaction table ---------------");
+          }
+          else {
+            console.log("ERROR : " + err);
+          }
+        });
+      }
+      else {
+        console.log("ERROR : " + err);
+      }
+    });
+  }
+});
 
 //----------------------------------------------------------------------
 

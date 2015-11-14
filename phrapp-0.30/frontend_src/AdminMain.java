@@ -221,92 +221,6 @@ public class AdminMain extends JFrame implements ConstantVars
 		setVisible(true);
 	}
 
-	// WEB
-
-	public void testClass(){
-		System.out.println("TEST CLASS");
-	}
-
-	public String getAuthorityName()
-	{
-		return authority_name;
-	}
-
-	public String getUsername()
-	{
-		return username + "(admin privilege)";
-	}
-
-	public String getEmail(){
-		return email_address;
-	}
-
-	public String getAuditServerIP(){
-		return audit_server_ip_addr;
-	}
-
-	public String getPhrServerIP()
-	{
-		return phr_server_ip_addr;
-	}
-
-	public String getEmergencyServerIP(){
-		return emergency_server_ip_addr;
-	}
-
-	public String getMailServer(){
-		return mail_server_url;
-	}
-
-	public String getAuthorityEmail(){
-		return authority_email_address;
-	}
-
-	public Object getChangePasswdClass(){
-		NewPasswordChanging new_passwd_changing_class = new NewPasswordChanging( true, passwd);
-		return new_passwd_changing_class;
-	}
-
-	public void updateNewPasswd(String passwd){
-		this.passwd = passwd;
-	}
-
-	public Object getChangeEmailClass(){
-		EmailAddressChanging email_address_changing_class = new EmailAddressChanging( true, email_address, passwd);
-		return email_address_changing_class;
-	}
-
-	public void updateNewEmail(String email_address){
-		this.email_address = email_address;
-		System.out.println(this.email_address);
-	}
-
-	public Object getServerAddressConfigClass(){
-		ServerAddressesConfigurationChanging server_addresses_configuration_changing_class;
-		server_addresses_configuration_changing_class = new ServerAddressesConfigurationChanging(
-		audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr, passwd);
-		return server_addresses_configuration_changing_class;
-	}
-
-	public Object getMailServerConfigClass(){
-			MailServerConfigurationChanging mail_server_configuration_changing_class;
-			mail_server_configuration_changing_class = new MailServerConfigurationChanging
-			(mail_server_url, authority_email_address, authority_email_passwd, passwd);
-			return mail_server_configuration_changing_class;
-	}
-
-	public void updateMailServer(MailServerConfigurationChanging mail_server_configuration_changing_class){
-		mail_server_url         = mail_server_configuration_changing_class.get_updated_mail_server_url();
-		authority_email_address = mail_server_configuration_changing_class.get_updated_authority_email_address();
-		authority_email_passwd  = mail_server_configuration_changing_class.get_updated_authority_email_passwd();
-	}
-
-	public void updateServerAddressConfig(ServerAddressesConfigurationChanging server_addresses_configuration_changing){
-		audit_server_ip_addr     = server_addresses_configuration_changing.get_updated_audit_server_ip_address();
-		phr_server_ip_addr       = server_addresses_configuration_changing.get_updated_phr_server_ip_address();
-		emergency_server_ip_addr = server_addresses_configuration_changing.get_updated_emergency_server_ip_address();
-	}
-
 	private final void create_info_page()
 	{
 		// Authority name
@@ -514,27 +428,7 @@ public class AdminMain extends JFrame implements ConstantVars
 		info_outer_panel.add(mail_server_configuration_panel);
 	}
 
-	// Web
-	public void initAttributeTable(){
-		attribute_table_model = new DefaultTableModel()
-		{
-			private static final long serialVersionUID = -1113582265865921793L;
-
-			@Override
-    			public boolean isCellEditable(int row, int column)
-			{
-       				return false;
-    			}
-		};
-
-    		attribute_table_model.setDataVector(null, new Object[] {"Attribute name", "Numerical attribute?"});
-    		attribute_table = new JTable(attribute_table_model);
-	}
-
-	public void updateAttribbuteTable(){
-		update_attribute_list_main();
-	}
-
+	
 	private final void create_attribute_page()
 	{
 		// Attributes
@@ -3002,7 +2896,230 @@ public class AdminMain extends JFrame implements ConstantVars
 			}
 		});
 	}
+
+	// WEB
+	public String getAuthorityName()
+	{
+		return authority_name;
+	}
+
+	public String getUsername()
+	{
+		return username + "(admin privilege)";
+	}
+
+	public String getEmail(){
+		return email_address;
+	}
+
+	public String getAuditServerIP(){
+		return audit_server_ip_addr;
+	}
+
+	public String getPhrServerIP()
+	{
+		return phr_server_ip_addr;
+	}
+
+	public String getEmergencyServerIP(){
+		return emergency_server_ip_addr;
+	}
+
+	public String getMailServer(){
+		return mail_server_url;
+	}
+
+	public String getAuthorityEmail(){
+		return authority_email_address;
+	}
+
+	public Object getChangePasswdClass(){
+		NewPasswordChanging new_passwd_changing_class = new NewPasswordChanging( true, passwd);
+		return new_passwd_changing_class;
+	}
+
+	public void updateNewPasswd(String passwd){
+		this.passwd = passwd;
+	}
+
+	public Object getChangeEmailClass(){
+		EmailAddressChanging email_address_changing_class = new EmailAddressChanging( true, email_address, passwd);
+		return email_address_changing_class;
+	}
+
+	public void updateNewEmail(String email_address){
+		this.email_address = email_address;
+		System.out.println(this.email_address);
+	}
+
+	public Object getServerAddressConfigClass(){
+		ServerAddressesConfigurationChanging server_addresses_configuration_changing_class;
+		server_addresses_configuration_changing_class = new ServerAddressesConfigurationChanging(
+		audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr, passwd);
+		return server_addresses_configuration_changing_class;
+	}
+
+	public Object getMailServerConfigClass(){
+			MailServerConfigurationChanging mail_server_configuration_changing_class;
+			mail_server_configuration_changing_class = new MailServerConfigurationChanging
+			(mail_server_url, authority_email_address, authority_email_passwd, passwd);
+			return mail_server_configuration_changing_class;
+	}
+
+	public void updateMailServer(MailServerConfigurationChanging mail_server_configuration_changing_class){
+		mail_server_url         = mail_server_configuration_changing_class.get_updated_mail_server_url();
+		authority_email_address = mail_server_configuration_changing_class.get_updated_authority_email_address();
+		authority_email_passwd  = mail_server_configuration_changing_class.get_updated_authority_email_passwd();
+	}
+
+	public void updateServerAddressConfig(ServerAddressesConfigurationChanging server_addresses_configuration_changing){
+		audit_server_ip_addr     = server_addresses_configuration_changing.get_updated_audit_server_ip_address();
+		phr_server_ip_addr       = server_addresses_configuration_changing.get_updated_phr_server_ip_address();
+		emergency_server_ip_addr = server_addresses_configuration_changing.get_updated_emergency_server_ip_address();
+	}
+
+	public boolean initAttributeTable(){
+		attribute_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    		attribute_table_model.setDataVector(null, new Object[] {"Attribute name", "Numerical attribute?"});
+    		attribute_table = new JTable(attribute_table_model);
+    		update_attribute_list_main();
+
+    		return true;
+	}
+
+	public void updateAttributeTable(){
+		update_attribute_list_main();
+	}
+
+	public Object[][] getTableAttribute () {
+	    DefaultTableModel dtm = (DefaultTableModel) attribute_table.getModel();
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
+	public Object getRegistrationAttribute(){
+		AttributeRegistration attribute_registration = new AttributeRegistration();
+		return attribute_registration;
+	}
+
+	public boolean removeAttribute(String full_attribute_name){
+
+		String attribute_name      = full_attribute_name.substring(full_attribute_name.indexOf(".") + 1);
+
+		if(remove_attribute_main(attribute_name))
+		{
+			update_attribute_list_main();
+			update_user_list_main();
+
+			return true;
+		}
+		return false;
+	}
+
+	private AdminTransactionAuditing transaction_auditing_dialog;
+
+	public boolean setAllLog(String transaction_log_type){
+
+		if(transaction_log_type.equals(transaction_admin_login_log_type))
+		{
+			transaction_auditing_dialog = new AdminTransactionAuditing(TransactionLogType.ADMIN_LOGIN_LOG);
+		}
+		else if(transaction_log_type.equals(transaction_admin_event_log_type))
+		{
+			transaction_auditing_dialog = new AdminTransactionAuditing(TransactionLogType.ADMIN_EVENT_LOG);
+		}
+		else if(transaction_log_type.equals(transaction_system_login_log_type))
+		{
+			transaction_auditing_dialog = new AdminTransactionAuditing(TransactionLogType.SYSTEM_LOGIN_LOG);
+		}
+		else if(transaction_log_type.equals(transaction_system_event_log_type))
+		{
+			transaction_auditing_dialog = new AdminTransactionAuditing(TransactionLogType.SYSTEM_EVENT_LOG);
+		}
+		
+		return true;
+	}
+
+	public Object[][] getLog(){
+		
+		// Call transaction auditing object
+
+		return transaction_auditing_dialog.getTableLog();
+	}
+
+	public boolean setPeriodLog(String transaction_log_type, final int start_year_index, final int start_month_index, 
+		final int start_day_index, final int start_hour_index, final int start_minute_index, final int end_year_index, final int end_month_index, 
+		final int end_day_index, final int end_hour_index, final int end_minute_index){
+
+		TransactionLogType transaction_type;
+
+		System.out.println(start_year_index);
+		System.out.println(start_month_index);
+		System.out.println(start_day_index);
+		System.out.println(start_hour_index);
+		System.out.println(start_minute_index);
+		System.out.println(end_year_index);
+		System.out.println(end_month_index);
+		System.out.println(end_day_index);
+		System.out.println(end_hour_index);
+		System.out.println(end_minute_index);
+
+		if(transaction_log_type.equals(transaction_admin_login_log_type))
+		{
+			transaction_type = TransactionLogType.ADMIN_LOGIN_LOG;
+			// Call transaction auditing object
+			transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
+					start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
+					end_minute_index);
+		}
+		else if(transaction_log_type.equals(transaction_admin_event_log_type))
+		{
+			transaction_type = TransactionLogType.ADMIN_EVENT_LOG;
+			// Call transaction auditing object
+			transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
+					start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
+					end_minute_index);
+		}
+		else if(transaction_log_type.equals(transaction_system_login_log_type))
+		{
+			transaction_type = TransactionLogType.SYSTEM_LOGIN_LOG;
+			// Call transaction auditing object
+			transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
+					start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
+					end_minute_index);
+		}
+		else if(transaction_log_type.equals(transaction_system_event_log_type))
+		{
+			transaction_type = TransactionLogType.SYSTEM_EVENT_LOG;
+			// Call transaction auditing object
+			transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
+					start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
+					end_minute_index);
+		}
+
+
+
+
+
+		return true;
+	}
+	
 }
+
 
 
 

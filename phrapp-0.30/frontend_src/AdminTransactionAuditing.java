@@ -75,6 +75,56 @@ class AdminTransactionAuditing extends JDialog implements ConstantVars
 		}
 	}
 
+	// WEB
+
+	public AdminTransactionAuditing(TransactionLogType transaction_log_type)
+	{
+		this.transaction_log_type  = transaction_log_type;
+
+		init_transaction_log_table();
+	
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
+
+		switch(transaction_log_type)
+		{
+			case ADMIN_LOGIN_LOG:
+
+				// Call to C function
+				audit_all_transaction_logs_main(true, true);
+				break;
+
+			case ADMIN_EVENT_LOG:
+
+				// Call to C function
+				audit_all_transaction_logs_main(true, false);
+				break;
+	
+			case SYSTEM_LOGIN_LOG:
+
+				// Call to C function
+				audit_all_transaction_logs_main(false, true);
+				break;
+
+			case SYSTEM_EVENT_LOG:
+
+				// Call to C function
+				audit_all_transaction_logs_main(false, false);
+				break;
+		}
+	}
+
+	public Object[][] getTableLog() {
+
+	    DefaultTableModel dtm = transaction_log_table_model;
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
 	private final void init_ui(Component parent)
 	{
 		setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
@@ -176,6 +226,56 @@ class AdminTransactionAuditing extends JDialog implements ConstantVars
 			start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, end_minute_index);
 
 		setup_actions();
+
+		String start_date_time;  // 'YYYY-MM-DD HH:MM:SS'
+		String end_date_time;    // 'YYYY-MM-DD HH:MM:SS'
+		
+		start_date_time = String.format("%04d-%02d-%02d %02d:%02d:00", LOWER_BOUND_AUDITING_YEAR + start_year_index, 
+			start_month_index + 1, start_day_index + 1, start_hour_index, start_minute_index);
+
+		end_date_time = String.format("%04d-%02d-%02d %02d:%02d:00", LOWER_BOUND_AUDITING_YEAR + end_year_index, 
+			end_month_index + 1, end_day_index + 1, end_hour_index, end_minute_index);
+
+		switch(transaction_log_type)
+		{
+			case ADMIN_LOGIN_LOG:
+
+				// Call to C function
+				audit_some_period_time_transaction_logs_main(true, true, start_date_time, end_date_time);
+				break;
+
+			case ADMIN_EVENT_LOG:
+
+				// Call to C function
+				audit_some_period_time_transaction_logs_main(true, false, start_date_time, end_date_time);
+				break;
+	
+			case SYSTEM_LOGIN_LOG:
+
+				// Call to C function
+				audit_some_period_time_transaction_logs_main(false, true, start_date_time, end_date_time);
+				break;
+
+			case SYSTEM_EVENT_LOG:
+
+				// Call to C function
+				audit_some_period_time_transaction_logs_main(false, false, start_date_time, end_date_time);
+				break;
+		}
+	}
+
+	// WEB
+	public AdminTransactionAuditing(TransactionLogType transaction_log_type, int start_year_index, int start_month_index, int start_day_index, 
+		int start_hour_index, int start_minute_index, int end_year_index, int end_month_index, int end_day_index, int end_hour_index, 
+		int end_minute_index)
+	{
+		this.transaction_log_type  = transaction_log_type;
+		this.confirm_dialg_exiting = confirm_dialg_exiting;
+	
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
+			
+		init_transaction_log_table();
 
 		String start_date_time;  // 'YYYY-MM-DD HH:MM:SS'
 		String end_date_time;    // 'YYYY-MM-DD HH:MM:SS'

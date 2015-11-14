@@ -108,6 +108,30 @@
         }
       })
 
+      .when('/admin/attribute', {
+        templateUrl : 'attributeManagement.html',
+        controller: 'attributeController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/admin/registerattribute', {
+        templateUrl : 'registerAttribute.html',
+        controller: 'registerattributeController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/admin/transaction', {
+        templateUrl: 'adminTransaction.html',
+        controller: 'admintransactionController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
     //-------------------------- USER -----------------------------------------
       .when('/user/info', {
         templateUrl : 'info.html',
@@ -419,7 +443,7 @@
                 $scope.bigTotalItems = $scope.logs.length;
                 console.log($scope.bigTotalItems);
                 isClick = false;
-                $location.path('/transaction');
+                $location.path('/user/transaction');
               })
             }
           }
@@ -435,7 +459,7 @@
               $scope.bigTotalItems = $scope.logs.length;
               console.log($scope.bigTotalItems);
               isClick = false;
-              $location.path('/transaction');
+              $location.path('/user/transaction');
             })
           }
           // console.log("Start date: " + $scope.startDate);
@@ -1361,6 +1385,158 @@
           })
         }
     });
+
+    scotchApp.controller('attributeController', function($scope, $http, $location) {
+        $scope.attribute_table = {};
+        $scope.selectedRow = -1;
+
+        $scope.setClickedRow = function(index){
+            $scope.selectedRow = index;
+        }
+
+        // get userinfo
+          $http.post('/api/adminattribute')
+          .success(function(res){
+              $scope.attribute_table  = res;
+              console.log($scope.attribute_table);
+          })
+
+
+
+          $scope.delete = function(){
+            var r = confirm("Removing the attribute may affect to an attribute list of some users!!!\n" + 
+              "Are you sure to remove this attribute?");
+           
+
+            if(r == true) {
+               if($scope.selectedRow == -1){
+                  alert("Choose row !!");
+               }
+               else {
+
+                  $http.post('/api/deleteattribute',{
+                    attributename : $scope.attribute_table[$scope.selectedRow][0]
+                  })
+                  .success(function(res){
+                      if(res){
+                        alert("Delete Success !!");
+                        $location.path('/admin/info');
+                      }
+                      else {
+                        alert("Delete Faill !!");
+                        $location.path('/admin/info');
+                      }
+                  })
+               }
+            } 
+          }
+    });
+
+    scotchApp.controller('registerattributeController', function($scope, $http, $location) {
+        $scope.attributename = "";
+        $scope.isnumerical = false;
+
+        // get userinfo
+        $scope.submit = function(){
+          $http.post('/api/registerattribute',{
+            attributename : $scope.attributename,
+            isnumerical   : $scope.isnumerical
+          })
+          .success(function(res){
+              if(res){
+                alert("Register Success !!");
+                $location.path('/admin/info');
+              }
+              else {
+                alert("Register Faill !!");
+                $location.path('/admin/info');
+              }
+          })
+        }
+    });
+
+    scotchApp.controller('admintransactionController', function($scope, $http, $location, $filter) {
+      $scope.chooseTable = "";
+      $scope.startDate = "";
+      $scope.startTime = "";
+      $scope.endDate = "";
+      $scope.endTime = "";    
+      $scope.transaction_log_type = "";
+      $scope.allFlag = false;
+      $scope.logs = {};
+      $scope.bigTotalItems = 1;
+      $scope.bigCurrentPage = 1;
+      $scope.limit = $scope.bigCurrentPage * 10;
+      $scope.begin = ($scope.bigCurrentPage - 1) * 10;
+      $scope.maxSize= 5;
+
+      var monthNames = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"];
+
+      var isClick = false;
+
+      $scope.search = function(){
+        if(!isClick){
+
+          isClick = true;
+          
+          if(!$scope.allFlag){
+            // $scope.sDate.d =  $filter('date')($scope.startDate, 'd');
+            // $scope.sDate.m =  $scope.startDate.getMonth();
+            // $scope.sDate.y =  $filter('date')($scope.startDate, 'yyyy');
+
+            if($scope.startDate == "" || $scope.startTime == "" ||
+               $scope.endDate == "" || $scope.endTime == "" ){
+                alert("Invalid input !!");
+                isClick =false;
+            }
+            else {
+              $http.post('/api/admin_transaction_auditing', {
+                transaction_log_type  : $scope.transaction_log_type, 
+                start_year_index      : $scope.startDate.getFullYear(), 
+                start_month_index     : $scope.startDate.getMonth(), 
+                start_day_index       : $scope.startDate.getDate(), 
+                start_hour_index      : $scope.startTime.getHours(), 
+                start_minute_index    : $scope.startTime.getMinutes(), 
+                end_year_index        : $scope.endDate.getFullYear(), 
+                end_month_index       : $scope.endDate.getMonth(), 
+                end_day_index         : $scope.endDate.getDate(), 
+                end_hour_index        : $scope.endTime.getHours(), 
+                end_minute_index      : $scope.endTime.getMinutes(), 
+              })
+              .success(function(res){
+                // No error: authentication OK
+                //console.log("SUCCESS");
+                $scope.logs = res;
+                $scope.bigTotalItems = $scope.logs.length;
+                console.log($scope.bigTotalItems);
+                $scope.chooseTable = $scope.transaction_log_type;
+                isClick = false;
+                $location.path('/admin/transaction');
+              })
+            }
+          }
+          else {
+            $http.post('/api/admin_transaction_auditing', {
+              allFlag               : $scope.allFlag,
+              transaction_log_type  : $scope.transaction_log_type
+            })
+            .success(function(res){
+              // No error: authentication OK
+              //console.log("SUCCESS");
+              $scope.logs = res;
+              $scope.chooseTable = $scope.transaction_log_type;
+              $scope.bigTotalItems = $scope.logs.length;
+              console.log($scope.bigTotalItems);
+              isClick = false;
+              $location.path('/admin/transaction');
+            })
+          }
+        }
+      }
+
+    });
+
 
     //--------------------------------------------------------------------
 
