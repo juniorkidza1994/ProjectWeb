@@ -1,6 +1,6 @@
 <!-- index.html -->
     <!DOCTYPE html>
-    <html ng-app="scotchApp">
+    <html ng-app="phrApp">
     <head>
       <!-- SCROLLS -->
       <!-- load bootstrap and fontawesome via CDN -->
@@ -60,7 +60,7 @@
                   <ul class="nav navbar-nav navbar-right" ng-if="usertype=='User'">
 
                       <li ng-show="isLoggin == true "><a href="/#/user/info"><i class="fa fa-sign-in"></i> Info</a></li>
-                      <li ng-show="isLoggin == true "><a href="/#/user/downloadSelfPHR"><i class="fa fa-sign-in"></i> Download</a></li>
+                      <li ng-show="isLoggin == true "><a href="/#/user/downloadPHR"><i class="fa fa-sign-in"></i> Download</a></li>
                       <li ng-show="isLoggin == true"><a href="/#/user/uploadPHR"><i class="fa fa-sign-in"></i> Upload</a></li>
                       <li ng-show="isLoggin == true "><a href="/#/user/accessPermissionManagement"><i class="fa fa-sign-in"></i> Access Permission Management</a></li>
                       <li ng-show="isLoggin == true "><a href="/#/user/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
@@ -82,6 +82,7 @@
 
                       <li ng-show="isLoggin == true "><a href="/#/admin/info"><i class="fa fa-sign-in"></i> Info</a></li>
                       <li ng-show="isLoggin == true "><a href="/#/admin/attribute"><i class="fa fa-sign-in"></i> Attribute Management</a></li>
+                      <li ng-show="isLoggin == true "><a href="/#/admin/adminmanagement"><i class="fa fa-sign-in"></i> Admin Management</a></li>
                       <li ng-show="isLoggin == true "><a href="/#/admin/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
 
                   </ul>

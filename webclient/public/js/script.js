@@ -1,6 +1,6 @@
 'use strict';
 
-    // create the module and name it scotchApp
+    // create the module and name it phrApp
     	// also include ngRoute for all our routing needs
 
     var myClass;
@@ -9,7 +9,7 @@
 
     var userType;
 
-    var scotchApp = angular.module('scotchApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree', 'ngAnimate', 'ui.bootstrap'])
+    var phrApp = angular.module('phrApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree', 'ngAnimate', 'ui.bootstrap'])
 
   .config(function($routeProvider, $locationProvider, $httpProvider) {
     //================================================
@@ -132,6 +132,31 @@
         }
       })
 
+      .when('/admin/adminmanagement', {
+        templateUrl : 'adminManagement.html',
+        controller: 'adminManagementController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/admin/registeradmin', {
+        templateUrl : 'registerAdmin.html',
+        controller: 'registerAdminController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/admin/editadmin', {
+        templateUrl : 'editAdmin.html',
+        controller: 'editAdminController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+
     //-------------------------- USER -----------------------------------------
       .when('/user/info', {
         templateUrl : 'info.html',
@@ -141,8 +166,8 @@
         }
       })
 
-      .when('/user/downloadSelfPHR', {
-        templateUrl : 'downloadSelfPHR.html',
+      .when('/user/downloadPHR', {
+        templateUrl : 'downloadPHR.html',
         controller: 'downloadController',
         resolve: {
           loggedin: checkLoggedin
@@ -262,7 +287,7 @@
   });
 
     // create the controller and inject Angular's $scope
-    scotchApp.controller('indexController', function($scope, $http, $location) {
+    phrApp.controller('indexController', function($scope, $http, $location) {
       $scope.isLoggin = false;
 
       console.log("ISLOGGIN : " + $scope.isLoggin);
@@ -280,7 +305,7 @@
     });
 
     // create the controller and inject Angular's $scope
-    scotchApp.controller('userinfoController', function($scope, $http, $location) {
+    phrApp.controller('userinfoController', function($scope, $http, $location) {
         $scope.info = {};
 
         // get userinfo
@@ -291,7 +316,7 @@
         })
     });
 
-    scotchApp.controller('delegateController', function($scope, $http, $location) {
+    phrApp.controller('delegateController', function($scope, $http, $location) {
         $scope.delegate = {};
 
         // get userinfo
@@ -312,7 +337,7 @@
         };
     });
 
-    scotchApp.controller('restrictedController', function($scope, $http, $location) {
+    phrApp.controller('restrictedController', function($scope, $http, $location) {
         $scope.restricted = {};
         $scope.info = {};
         $scope.isShowCancel = false;
@@ -388,7 +413,7 @@
         };
     });
 
-    scotchApp.controller('transactionController', function($scope, $http, $location, $filter) {
+    phrApp.controller('transactionController', function($scope, $http, $location, $filter) {
       $scope.startDate = "";
       $scope.startTime = "";
       $scope.endDate = "";
@@ -474,7 +499,7 @@
 
     });
 
-    scotchApp.controller('trustedUsersController', function($scope, $http, $location) {
+    phrApp.controller('trustedUsersController', function($scope, $http, $location) {
         $scope.trustedUsers = {};
         $scope.authorityList = {};
         $scope.username = "";
@@ -534,7 +559,7 @@
         };
     });
 
-    scotchApp.controller('changePwdController', function($scope, $http, $location) {
+    phrApp.controller('changePwdController', function($scope, $http, $location) {
         $scope.password = {};
         $scope.password.flag = false;
         var isClick = false;
@@ -569,7 +594,7 @@
         }
     });
 
-    scotchApp.controller('uploadPHRController', ['$scope', 'Upload' , '$http' , '$location' , function ($scope, Upload, $http, $location) {
+    phrApp.controller('uploadPHRController', ['$scope', 'Upload' , '$http' , '$location' , function ($scope, Upload, $http, $location) {
         $scope.authorityList = {};
         $scope.attribute_all = {};
         $scope.id_node = 1;
@@ -808,11 +833,11 @@
                 // RE VALUE
                 re_value();
 
-                $location.path('/info');
+                $location.path('/user/info');
               }
               else {
                 alert("UPLOAD FAILED !!");
-                $location.path('/info');
+                $location.path('/user/info');
               }
               $scope.isClick = false;
             });
@@ -938,7 +963,7 @@
     }]);
 
   
-    scotchApp.controller('changeEmailController', function($scope, $http, $location, $window) {
+    phrApp.controller('changeEmailController', function($scope, $http, $location, $window) {
         $scope.data = {};
         $scope.info = {};
 
@@ -992,7 +1017,7 @@
         }
     });
 
-    scotchApp.controller('accessPermisController', function($scope, $http, $location, $window) {
+    phrApp.controller('accessPermisController', function($scope, $http, $location, $window) {
         $scope.access_permission_list = {};
         $scope.selectedRow = null;
         $scope.checked = {};
@@ -1011,7 +1036,7 @@
 
         // change location to assign
         $scope.assign = function(){
-          $location.path('/assignPermission');
+          $location.path('/user/assignPermission');
         }
 
         var isClick = false;
@@ -1068,7 +1093,7 @@
         }
     });
 
-    scotchApp.controller('assignAccessPermissionController', function($scope, $http, $location, $window) {
+    phrApp.controller('assignAccessPermissionController', function($scope, $http, $location, $window) {
         $scope.authorityList = {};
         $scope.assign = {};
         $scope.assign.uploadflag = false;
@@ -1120,7 +1145,7 @@
          }
     });
 
-    scotchApp.controller('downloadController', function($scope, $http, $location, $window) {
+    phrApp.controller('downloadController', function($scope, $http, $location, $window) {
         $scope.phr_list = {};
         $scope.selectedRow = null;
         $scope.selectedAuthority = "";
@@ -1176,7 +1201,7 @@
           if(!isClickSearch){
             console.log("SEARCH DOWNLOAD");
             isClickSearch =true;
-            $http.post('/api/download_self_phr_list',{
+            $http.post('/api/download_phr_list',{
                 authorityName :  $scope.selectedAuthority,
                 username      :  $scope.username
             })
@@ -1241,7 +1266,7 @@
         });
     });
 
-    scotchApp.controller('deleteController', function($scope, $http, $location) {
+    phrApp.controller('deleteController', function($scope, $http, $location) {
         $scope.phr_list = {};
         $scope.selectedRow = null;
 
@@ -1264,7 +1289,7 @@
         }
     });
 
-    scotchApp.controller('loginController', function($scope,$http,$location, $window, $route){
+    phrApp.controller('loginController', function($scope,$http,$location, $window, $route){
         $scope.user = {};
        var isClick = false;
 
@@ -1306,7 +1331,7 @@
     //----------------------- ADMIN ------------------------------
     
     // create the controller and inject Angular's $scope
-    scotchApp.controller('admininfoController', function($scope, $http, $location) {
+    phrApp.controller('admininfoController', function($scope, $http, $location) {
         $scope.info = {};
 
         // get userinfo
@@ -1318,7 +1343,7 @@
     });
 
     // create the controller and inject Angular's $scope
-    scotchApp.controller('changeConfigController', function($scope, $http, $location) {
+    phrApp.controller('changeConfigController', function($scope, $http, $location) {
         $scope.info = {};
         $scope.password = "";
 
@@ -1350,7 +1375,7 @@
     });
 
         // create the controller and inject Angular's $scope
-    scotchApp.controller('changeMailServerController', function($scope, $http, $location) {
+    phrApp.controller('changeMailServerController', function($scope, $http, $location) {
         $scope.info = {};
         $scope.password = "";
         $scope.new_passwd = "";
@@ -1386,7 +1411,7 @@
         }
     });
 
-    scotchApp.controller('attributeController', function($scope, $http, $location) {
+    phrApp.controller('attributeController', function($scope, $http, $location) {
         $scope.attribute_table = {};
         $scope.selectedRow = -1;
 
@@ -1432,7 +1457,7 @@
           }
     });
 
-    scotchApp.controller('registerattributeController', function($scope, $http, $location) {
+    phrApp.controller('registerattributeController', function($scope, $http, $location) {
         $scope.attributename = "";
         $scope.isnumerical = false;
 
@@ -1455,7 +1480,7 @@
         }
     });
 
-    scotchApp.controller('admintransactionController', function($scope, $http, $location, $filter) {
+    phrApp.controller('admintransactionController', function($scope, $http, $location, $filter) {
       $scope.chooseTable = "";
       $scope.startDate = "";
       $scope.startTime = "";
@@ -1537,16 +1562,157 @@
 
     });
 
+    phrApp.controller('adminManagementController', function($scope, $http, $location) {
+        $scope.admin_list = {};
+        $scope.selectedRow = -1;
+
+        $scope.setClickedRow = function(index){
+            $scope.selectedRow = index;
+        }
+
+        // get userinfo
+          $http.post('/api/adminlist')
+          .success(function(res){
+              $scope.admin_list  = res;
+              //console.log($scope.admin_list);
+          })
+
+          $scope.edit = function(){
+            if($scope.selectedRow == -1){
+              alert("Choose row !!");
+            }
+            else {
+              $http.post('/api/initeditadmin',{
+                username : $scope.admin_list[$scope.selectedRow][0],
+                email : $scope.admin_list[$scope.selectedRow][1]
+              })
+              .success(function(res){
+                if(res){
+                  $location.path('/admin/editadmin');
+                }
+                else {
+                  $location.path('/admin/editadmin');
+                }
+              })
+            }
+          }
+
+          $scope.delete = function(){
+            var r = confirm("Removing the attribute may affect to an attribute list of some users!!!\n" + 
+              "Are you sure to remove this attribute?");
+           
+            if(r == true) {
+               if($scope.selectedRow == -1){
+                  alert("Choose row !!");
+               }
+               else {
+
+                  $http.post('/api/deleteadmin',{
+                    username : $scope.admin_list[$scope.selectedRow][0]
+                  })
+                  .success(function(res){
+                      if(res){
+                        alert("Delete Success !!");
+                        $location.path('/admin/info');
+                      }
+                      else {
+                        alert("Delete Faill !!");
+                        $location.path('/admin/info');
+                      }
+                  })
+               }
+            } 
+          }
+
+          $scope.reset = function(){
+            var r = confirm("Removing the attribute may affect to an attribute list of some users!!!\n" + 
+              "Are you sure to remove this attribute?");
+           
+
+            if(r == true) {
+               if($scope.selectedRow == -1){
+                  alert("Choose row !!");
+               }
+               else {
+                  $http.post('/api/resetpasswordadmin',{
+                    username : $scope.admin_list[$scope.selectedRow][0]
+                  })
+                  .success(function(res){
+                      if(res){
+                        alert("Reset Password Success !!");
+                        $location.path('/admin/info');
+                      }
+                      else {
+                        alert("Reset Password Faill !!");
+                        $location.path('/admin/info');
+                      }
+                  })
+               }
+            } 
+          }
+    });
+
+    phrApp.controller('registerAdminController', function($scope, $http, $location) {
+        $scope.username = "";
+        $scope.email = "";
+
+        // get userinfo
+        $scope.submit = function(){
+          $http.post('/api/registeradmin',{
+            username : $scope.username,
+            email   : $scope.email
+          })
+          .success(function(res){
+              if(res){
+                alert("Register Success !!");
+                $location.path('/admin/info');
+              }
+              else {
+                alert("Register Faill !!");
+                $location.path('/admin/info');
+              }
+          })
+        }
+    });
+
+    phrApp.controller('editAdminController', function($scope, $http, $location) {
+        $scope.username = "";
+        $scope.email = "";
+
+        $http.post('/api/info_editadmin')
+        .success(function(res){
+          $scope.username = res.username;
+          $scope.email = res.email;
+        })
+
+        // get userinfo
+        $scope.submit = function(){
+          $http.post('/api/editadmin',{
+            username : $scope.username,
+            email   : $scope.email
+          })
+          .success(function(res){
+              if(res){
+                alert("Edit Success !!");
+                $location.path('/admin/info');
+              }
+              else {
+                alert("Edit Faill !!");
+                $location.path('/admin/info');
+              }
+          })
+        }
+    });
 
     //--------------------------------------------------------------------
 
-    scotchApp.controller('errorController', function($scope) {
+    phrApp.controller('errorController', function($scope) {
         $scope.message = "Error Don't have this page";
         console.log("TESTTTT ");
     });
 
     // CLICK ANYWHERE
-    scotchApp.directive('clickOff', function($parse, $document) {
+    phrApp.directive('clickOff', function($parse, $document) {
     var dir = {
         compile: function($element, attr) {
           // Parse the expression to be executed

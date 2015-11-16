@@ -42,6 +42,11 @@ class AdminManagement extends JDialog implements ConstantVars
 	// Return variable
 	private boolean    result_flag;
 
+	// WEB
+	private	String	   m_username;
+	private String	   m_email_address;
+	private String 	   m_current_username;
+
 	public AdminManagement(Component parent)       // Registration mode
 	{
 		result_flag               = false;
@@ -53,6 +58,18 @@ class AdminManagement extends JDialog implements ConstantVars
 		init_ui(parent);
 		setup_actions();
 	}
+
+	// WEB
+	public AdminManagement()       // Registration mode
+	{
+		result_flag               = false;
+		is_registration_mode_flag = true;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
+
+	}
+
 
 	public AdminManagement(Component parent, String username, String current_email_address)       // Editing mode
 	{
@@ -66,6 +83,20 @@ class AdminManagement extends JDialog implements ConstantVars
 		init_ui(parent);
 		init_textfields(username, current_email_address);
 		setup_actions();
+	}
+
+	// WEB
+	public AdminManagement(String username, String current_email_address)       // Editing mode
+	{
+		result_flag                = false;
+		is_registration_mode_flag  = false;
+		m_current_username		   = username;
+		this.current_email_address = current_email_address;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
+			
+
 	}
 
 	private final void init_ui(Component parent)
@@ -192,6 +223,42 @@ class AdminManagement extends JDialog implements ConstantVars
 		email_address_textfield.setText(email_address);
 	}
 
+	public void registerAdmin(String username, String email_address ){
+		m_username = username;
+		m_email_address = email_address;
+
+		if(is_registration_mode_flag && validate_input_registration_mode())
+		{
+			// Call to C function
+			if(register_admin_main(username, email_address))
+			{
+				result_flag = true;
+			}
+		}
+	}
+
+	public void editAdmin(String username, String email_address ){
+		m_username = username;
+		m_email_address = email_address;
+
+		if(!is_registration_mode_flag && validate_input_editing_mode())
+		{
+			// Call to C function
+			if(edit_admin_email_address_main(username, email_address))
+			{
+				result_flag = true;
+			}
+		}
+	}
+
+	public String getCurrentUsername(){
+		return m_current_username;
+	}
+
+	public String getCurrentEmail(){
+		return current_email_address;
+	}
+
 	private boolean validate_input_registration_mode()
 	{
 		Pattern p;
@@ -200,7 +267,7 @@ class AdminManagement extends JDialog implements ConstantVars
 		// Validate username
 		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
 
-		m = p.matcher(new String(username_textfield.getText()));
+		m = p.matcher(m_username);
 		if(!m.matches())
 		{
 			JOptionPane.showMessageDialog(this, "Please input correct format for the username");
@@ -210,7 +277,7 @@ class AdminManagement extends JDialog implements ConstantVars
 		// Validate e-mail address
 		p = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 
-		m = p.matcher(new String(email_address_textfield.getText()));
+		m = p.matcher(m_email_address);
 		if(!m.matches())
 		{
 			JOptionPane.showMessageDialog(this, "Please input correct format for the email address");
@@ -224,7 +291,7 @@ class AdminManagement extends JDialog implements ConstantVars
 	{
 		Pattern p;
 		Matcher m;
-		String  email_address = email_address_textfield.getText();
+		String  email_address = m_email_address;
 
 		// Validate e-mail address
 		p = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
@@ -247,6 +314,11 @@ class AdminManagement extends JDialog implements ConstantVars
 	}
 
 	public boolean get_result()
+	{
+		return result_flag;
+	}
+
+	public boolean getResult()
 	{
 		return result_flag;
 	}

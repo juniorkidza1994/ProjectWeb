@@ -392,13 +392,13 @@ app.post('/api/authority_name_list', function (req, res) {
 // -------------- DOWNLOAD SELF PHR -------------------------
 
 // API GET LIST OF PHR
-app.post('/api/download_self_phr_list', function (req, res) {
+app.post('/api/download_phr_list', function (req, res) {
   console.log("------------------- GET DOWNLOAD PHR LIST ------------------------");
 
   console.log("OLD PHR LIST : " + m_download_phr_list[req.user.name]);
 
   // Call java function
-    m_main_class[req.user.name].initDownloadSelfPHR(req.body.authorityName, req.body.username, function(err,result){
+    m_main_class[req.user.name].initDownloadPHRList(req.body.authorityName, req.body.username, function(err,result){
       if(result) {
         // Call java function
         m_main_class[req.user.name].getTableDownloadPHR(function(err,result){
@@ -586,7 +586,7 @@ var savefile = function(path_files_upload, phr_owner_name, phr_owner_authority_n
             m_main_class.setNoTrustedUsersSync(truted_users);
 
             // call java function
-            m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+            m_main_class[username].uploadPHR(phr_owner_name, phr_owner_authority_name, 
                   path_files_upload, data_description, confidentiality_level, 
                   access_policy, function(err,result){
                   if(!err) {
@@ -602,7 +602,7 @@ var savefile = function(path_files_upload, phr_owner_name, phr_owner_authority_n
           else {
 
             // call java function
-            m_main_class[username].uploadSelfPHR(phr_owner_name, phr_owner_authority_name, 
+            m_main_class[username].uploadPHR(phr_owner_name, phr_owner_authority_name, 
                   path_files_upload, data_description, confidentiality_level, 
                   access_policy, function(err,result){
                   if(result) {
@@ -628,10 +628,6 @@ app.post('/api/cancelUploadPHR', function (req, res) {
         console.log("------------------- END Cancle Upload FILES -------------------");
     }
   });
-});
-
-app.post('/api/testUpload',function(req, res){
-  res.send(true);
 });
 
 // API UPLOAD FILES TO NODE JS
@@ -1027,6 +1023,11 @@ app.get('/api/admininfo', function (req, res) {
       admininfo.authority_email_address = authority_email_address;
 
     }
+
+
+    // INIT TABLE
+    m_main_class[req.user.name].initAttributeTableSync();
+    m_main_class[req.user.name].initAdminTableSync();
     
     res.send(admininfo);
 
@@ -1070,9 +1071,6 @@ app.post('/api/changemailserver', function (req, res) {
   result = changeMailServerClass.getResultSync();
 
   m_main_class[req.user.name].updateMailServerSync(changeMailServerClass);
-
-  // INIT TABLE
-  m_main_class[req.user.name].initAttributeTableSync();
   
   res.send(result);
 
@@ -1176,6 +1174,111 @@ app.post('/api/admin_transaction_auditing', function (req, res) {
     });
   }
 });
+
+app.post('/api/adminlist', function (req, res) {
+
+  console.log("-------------- Get Admin list---------------");
+
+  var admin_table ;
+
+  m_main_class[req.user.name].getTableAdmin(function(err,result){
+    if(!err){
+      admin_table = result;
+      console.log(admin_table);
+      res.send(admin_table);
+      console.log("-------------- End Admin list---------------");
+    }
+  });    
+});
+
+app.post('/api/registeradmin', function (req, res) {
+
+  console.log("-------------- Register Admin---------------");
+
+  var registrationAdminClass = m_main_class[req.user.name].getRegisterAdminClassSync();
+  registrationAdminClass.registerAdminSync(req.body.username, req.body.email);
+
+  var result = registrationAdminClass.getResultSync();
+
+  m_main_class[req.user.name].updateAdminListSync();
+
+  res.send(result);
+
+  console.log("--------------End Register Admin---------------");
+
+});
+
+app.post('/api/deleteadmin', function (req, res) {
+
+  console.log("-------------- Delete Admin---------------");
+
+  var result = m_main_class[req.user.name].removeAdminSync(req.body.username);
+
+  res.send(result);
+
+  console.log("-------------- END Delete Admin---------------");
+
+});
+
+app.post('/api/resetpasswordadmin', function (req, res) {
+
+  console.log("-------------- Reset Password Admin---------------");
+
+  var result = m_main_class[req.user.name].resetPasswordAdminSync(req.body.username);
+
+  res.send(result);
+
+  console.log("-------------- END Reset Password Admin---------------");
+
+});
+
+app.post('/api/initeditadmin', function (req, res) {
+
+  console.log("-------------- Init edit Admin---------------");
+
+  m_main_class[req.user.name].initEditAdminClassSync(req.body.username, req.body.email);
+
+  res.send(true);
+  console.log("--------------End Init edit Admin---------------");
+
+});
+
+app.post('/api/info_editadmin', function (req, res) {
+
+  console.log("--------------Get info edit Admin---------------");
+
+  var info = {};
+
+  var editAdminClass = m_main_class[req.user.name].getEditAdminClassSync();
+
+  info.username = editAdminClass.getCurrentUsernameSync();
+
+  info.email = editAdminClass.getCurrentEmailSync();
+
+  res.send(info);
+
+  console.log("--------------End Get info edit Admin---------------");
+
+});
+
+app.post('/api/editadmin', function (req, res) {
+
+  console.log("-------------- Register Admin---------------");
+
+  var editAdminClass = m_main_class[req.user.name].getEditAdminClassSync();
+
+  editAdminClass.editAdminSync(req.body.username, req.body.email);
+
+  var result = editAdminClass.getResultSync();
+
+  m_main_class[req.user.name].updateAdminListSync();
+
+  res.send(result);
+
+  console.log("--------------End Register Admin---------------");
+
+});
+
 
 //----------------------------------------------------------------------
 

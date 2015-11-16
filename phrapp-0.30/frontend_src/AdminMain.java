@@ -3111,13 +3111,86 @@ public class AdminMain extends JFrame implements ConstantVars
 					end_minute_index);
 		}
 
-
-
-
-
 		return true;
 	}
+
+	public boolean initAdminTable(){		
+
+		// Admins
+		JLabel admin_label = new JLabel("Admins");
+
+		admin_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    		admin_table_model.setDataVector(null, new Object[] {"Username", "E-mail address"});
+    		admin_table = new JTable(admin_table_model);
+
+    		update_admin_list_main();
+
+    	return true;
+    }
 	
+	public Object[][] getTableAdmin () {
+	    DefaultTableModel dtm = (DefaultTableModel) admin_table.getModel();
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
+	public Object getRegisterAdminClass(){
+		AdminManagement admin_registration_class = new AdminManagement();
+		return admin_registration_class;
+	}
+
+	public  void updateAdminList(){
+		update_admin_list_main();
+	}
+
+	public boolean removeAdmin(String username){
+		
+		if(remove_admin_main(username))
+		{
+			update_admin_list_main();
+
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+
+	public boolean resetPasswordAdmin(String username){
+	
+		// Call to C functions
+		if(reset_admin_passwd_main(username))
+		{
+			update_admin_list_main();
+			return true;
+		}
+		else
+			return false;
+	}
+
+	AdminManagement admin_editing;
+
+	public void initEditAdminClass(String username,String email_address){
+		admin_editing = new AdminManagement(username, email_address);
+	}
+
+	public Object getEditAdminClass(){
+		return admin_editing ;
+	}
 }
 
 

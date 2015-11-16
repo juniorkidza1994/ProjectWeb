@@ -5081,7 +5081,7 @@ public class UserMain extends JFrame implements ConstantVars
 		m_no_trusted_users = no_trusted_users;
 	}
 
-	public boolean uploadSelfPHR(String phr_owner_name, String phr_owner_authority_name, 
+	public boolean uploadPHR(String phr_owner_name, String phr_owner_authority_name, 
 		String phr_upload_from_path, String data_description, String confidentiality_level, String access_policy)
 	{
 		boolean res;
@@ -5111,7 +5111,7 @@ public class UserMain extends JFrame implements ConstantVars
 
 	// DOWNLOAD SELF WEB
 
-	public boolean initDownloadSelfPHR(String phr_owner_authority_name, String phr_owner_name){
+	public boolean initDownloadPHRList(String phr_owner_authority_name, String phr_owner_name){
 		boolean result =false;
 
 		//String phr_owner_authority_name = authority_name;
