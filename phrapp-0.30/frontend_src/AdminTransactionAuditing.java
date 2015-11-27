@@ -233,8 +233,12 @@ class AdminTransactionAuditing extends JDialog implements ConstantVars
 		start_date_time = String.format("%04d-%02d-%02d %02d:%02d:00", LOWER_BOUND_AUDITING_YEAR + start_year_index, 
 			start_month_index + 1, start_day_index + 1, start_hour_index, start_minute_index);
 
+		
+
 		end_date_time = String.format("%04d-%02d-%02d %02d:%02d:00", LOWER_BOUND_AUDITING_YEAR + end_year_index, 
 			end_month_index + 1, end_day_index + 1, end_hour_index, end_minute_index);
+
+
 
 		switch(transaction_log_type)
 		{
@@ -280,12 +284,14 @@ class AdminTransactionAuditing extends JDialog implements ConstantVars
 		String start_date_time;  // 'YYYY-MM-DD HH:MM:SS'
 		String end_date_time;    // 'YYYY-MM-DD HH:MM:SS'
 		
-		start_date_time = String.format("%04d-%02d-%02d %02d:%02d:00", LOWER_BOUND_AUDITING_YEAR + start_year_index, 
+		start_date_time = String.format("%04d-%02d-%02d %02d:%02d:00", start_year_index, 
 			start_month_index + 1, start_day_index + 1, start_hour_index, start_minute_index);
+		System.out.println(start_date_time);
 
-		end_date_time = String.format("%04d-%02d-%02d %02d:%02d:00", LOWER_BOUND_AUDITING_YEAR + end_year_index, 
+		end_date_time = String.format("%04d-%02d-%02d %02d:%02d:00", end_year_index, 
 			end_month_index + 1, end_day_index + 1, end_hour_index, end_minute_index);
 
+		System.out.println(end_date_time);
 		switch(transaction_log_type)
 		{
 			case ADMIN_LOGIN_LOG:

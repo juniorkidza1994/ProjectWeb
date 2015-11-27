@@ -414,10 +414,11 @@
     });
 
     phrApp.controller('transactionController', function($scope, $http, $location, $filter) {
-      $scope.startDate = "";
-      $scope.startTime = "";
-      $scope.endDate = "";
-      $scope.endTime = "";    
+      $scope.Date = [];
+      $scope.Date.startDate = new Date();
+      $scope.Date.startTime = new Date(1970, 0, 1, 0, 0, 0);
+      $scope.Date.endDate = new Date();
+      $scope.Date.endTime = new Date(1970, 0, 1, 0, 0, 0);  
       $scope.transaction_log_type = "";
       $scope.allFlag = false;
       $scope.logs = {};
@@ -442,24 +443,24 @@
             // $scope.sDate.m =  $scope.startDate.getMonth();
             // $scope.sDate.y =  $filter('date')($scope.startDate, 'yyyy');
 
-            if($scope.startDate == "" || $scope.startTime == "" ||
-               $scope.endDate == "" || $scope.endTime == "" ){
-                alert("Invalid input !!");
-                isClick =false;
-            }
-            else {
+            // if($scope.Date.startDate == null || $scope.Date.startTime == null ||
+            //    $scope.Date.endDate == null || $scope.Date.endTime == null ){
+            //     alert("Invalid input !!");
+            //     isClick =false;
+            // }
+            // else {
               $http.post('/api/transaction_auditing', {
                 transaction_log_type  : $scope.transaction_log_type, 
-                start_year_index      : $scope.startDate.getFullYear(), 
-                start_month_index     : $scope.startDate.getMonth(), 
-                start_day_index       : $scope.startDate.getDate(), 
-                start_hour_index      : $scope.startTime.getHours(), 
-                start_minute_index    : $scope.startTime.getMinutes(), 
-                end_year_index        : $scope.endDate.getFullYear(), 
-                end_month_index       : $scope.endDate.getMonth(), 
-                end_day_index         : $scope.endDate.getDate(), 
-                end_hour_index        : $scope.endTime.getHours(), 
-                end_minute_index      : $scope.endTime.getMinutes(), 
+                start_year_index      : $scope.Date.startDate.getFullYear(), 
+                start_month_index     : $scope.Date.startDate.getMonth(), 
+                start_day_index       : $scope.Date.startDate.getDate(), 
+                start_hour_index      : $scope.Date.startTime.getHours(), 
+                start_minute_index    : $scope.Date.startTime.getMinutes(), 
+                end_year_index        : $scope.Date.endDate.getFullYear(), 
+                end_month_index       : $scope.Date.endDate.getMonth(), 
+                end_day_index         : $scope.Date.endDate.getDate(), 
+                end_hour_index        : $scope.Date.endTime.getHours(), 
+                end_minute_index      : $scope.Date.endTime.getMinutes() 
               })
               .success(function(res){
                 // No error: authentication OK
@@ -495,7 +496,7 @@
           // console.log("End Time: " + $scope.endTime);
           // console.log("Choice: " + $scope.transaction_type);
         }
-      }
+      //}
 
     });
 
@@ -1482,10 +1483,11 @@
 
     phrApp.controller('admintransactionController', function($scope, $http, $location, $filter) {
       $scope.chooseTable = "";
-      $scope.startDate = "";
-      $scope.startTime = "";
-      $scope.endDate = "";
-      $scope.endTime = "";    
+      $scope.Date = [];
+      $scope.Date.startDate = new Date();
+      $scope.Date.startTime = new Date(1970, 0, 1, 0, 0, 0);
+      $scope.Date.endDate = new Date();
+      $scope.Date.endTime = new Date(1970, 0, 1, 0, 0, 0);    
       $scope.transaction_log_type = "";
       $scope.allFlag = false;
       $scope.logs = {};
@@ -1495,69 +1497,78 @@
       $scope.begin = ($scope.bigCurrentPage - 1) * 10;
       $scope.maxSize= 5;
 
+
+
       var monthNames = ["January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"];
 
       var isClick = false;
 
       $scope.search = function(){
-        if(!isClick){
+        //if(!isClick){
 
           isClick = true;
           
-          if(!$scope.allFlag){
-            // $scope.sDate.d =  $filter('date')($scope.startDate, 'd');
-            // $scope.sDate.m =  $scope.startDate.getMonth();
-            // $scope.sDate.y =  $filter('date')($scope.startDate, 'yyyy');
+          // console.log($scope.Date.startDate);
+          // console.log($scope.Date.startTime);
+          // console.log($scope.Date.endDate);
+          // console.log($scope.Date.endTime);
 
-            if($scope.startDate == "" || $scope.startTime == "" ||
-               $scope.endDate == "" || $scope.endTime == "" ){
-                alert("Invalid input !!");
-                isClick =false;
-            }
-            else {
-              $http.post('/api/admin_transaction_auditing', {
-                transaction_log_type  : $scope.transaction_log_type, 
-                start_year_index      : $scope.startDate.getFullYear(), 
-                start_month_index     : $scope.startDate.getMonth(), 
-                start_day_index       : $scope.startDate.getDate(), 
-                start_hour_index      : $scope.startTime.getHours(), 
-                start_minute_index    : $scope.startTime.getMinutes(), 
-                end_year_index        : $scope.endDate.getFullYear(), 
-                end_month_index       : $scope.endDate.getMonth(), 
-                end_day_index         : $scope.endDate.getDate(), 
-                end_hour_index        : $scope.endTime.getHours(), 
-                end_minute_index      : $scope.endTime.getMinutes(), 
-              })
-              .success(function(res){
-                // No error: authentication OK
-                //console.log("SUCCESS");
-                $scope.logs = res;
-                $scope.bigTotalItems = $scope.logs.length;
-                console.log($scope.bigTotalItems);
-                $scope.chooseTable = $scope.transaction_log_type;
-                isClick = false;
-                $location.path('/admin/transaction');
-              })
-            }
-          }
-          else {
-            $http.post('/api/admin_transaction_auditing', {
-              allFlag               : $scope.allFlag,
-              transaction_log_type  : $scope.transaction_log_type
-            })
-            .success(function(res){
-              // No error: authentication OK
-              //console.log("SUCCESS");
-              $scope.logs = res;
-              $scope.chooseTable = $scope.transaction_log_type;
-              $scope.bigTotalItems = $scope.logs.length;
-              console.log($scope.bigTotalItems);
-              isClick = false;
-              $location.path('/admin/transaction');
-            })
-          }
-        }
+           if(!$scope.allFlag){
+        //     // $scope.sDate.d =  $filter('date')($scope.startDate, 'd');
+        //     // $scope.sDate.m =  $scope.startDate.getMonth();
+        //     // $scope.sDate.y =  $filter('date')($scope.startDate, 'yyyy');
+
+
+
+             // if($scope.Date.startDate == null || $scope.Date.startTime == null ||
+             //    $scope.Date.endDate == null || $scope.Date.endTime == null ){
+             //     alert("Invalid input !!");
+             //     isClick =false;
+             // }
+             // else {
+               $http.post('/api/admin_transaction_auditing', {
+                 transaction_log_type  : $scope.transaction_log_type, 
+                 start_year_index      : $scope.Date.startDate.getFullYear(), 
+                 start_month_index     : $scope.Date.startDate.getMonth(), 
+                 start_day_index       : $scope.Date.startDate.getDate(), 
+                 start_hour_index      : $scope.Date.startTime.getHours(), 
+                 start_minute_index    : $scope.Date.startTime.getMinutes(), 
+                 end_year_index        : $scope.Date.endDate.getFullYear(), 
+                 end_month_index       : $scope.Date.endDate.getMonth(), 
+                 end_day_index         : $scope.Date.endDate.getDate(), 
+                 end_hour_index        : $scope.Date.endTime.getHours(), 
+                 end_minute_index      : $scope.Date.endTime.getMinutes() 
+               })
+               .success(function(res){
+                 // No error: authentication OK
+                 //console.log("SUCCESS");
+                 $scope.logs = res;
+                 $scope.bigTotalItems = $scope.logs.length;
+                 console.log($scope.bigTotalItems);
+                 $scope.chooseTable = $scope.transaction_log_type;
+                 isClick = false;
+                 $location.path('/admin/transaction');
+               })
+             //}
+           }
+           else {
+             $http.post('/api/admin_transaction_auditing', {
+               allFlag               : $scope.allFlag,
+               transaction_log_type  : $scope.transaction_log_type
+             })
+             .success(function(res){
+               // No error: authentication OK
+               //console.log("SUCCESS");
+               $scope.logs = res;
+               $scope.chooseTable = $scope.transaction_log_type;
+               $scope.bigTotalItems = $scope.logs.length;
+               console.log($scope.bigTotalItems);
+               isClick = false;
+               $location.path('/admin/transaction');
+             })
+           }
+         //}
       }
 
     });
