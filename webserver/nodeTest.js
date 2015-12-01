@@ -1028,6 +1028,7 @@ app.get('/api/admininfo', function (req, res) {
     // INIT TABLE
     m_main_class[req.user.name].initAttributeTableSync();
     m_main_class[req.user.name].initAdminTableSync();
+    m_main_class[req.user.name].initAuthorityTableSync();
     
     res.send(admininfo);
 
@@ -1263,7 +1264,7 @@ app.post('/api/info_editadmin', function (req, res) {
 
 app.post('/api/editadmin', function (req, res) {
 
-  console.log("-------------- Register Admin---------------");
+  console.log("-------------- Edit Admin---------------");
 
   var editAdminClass = m_main_class[req.user.name].getEditAdminClassSync();
 
@@ -1275,11 +1276,104 @@ app.post('/api/editadmin', function (req, res) {
 
   res.send(result);
 
-  console.log("--------------End Register Admin---------------");
+  console.log("--------------End Edit Admin---------------");
 
 });
 
+app.post('/api/admin_authority_list', function (req, res) {
 
+  console.log("-------------- Get Authority list in admin---------------");
+
+  var authority_table ;
+
+  m_main_class[req.user.name].getTableAuthority(function(err,result){
+    if(!err){
+      authority_table = result;
+      console.log(authority_table);
+      res.send(authority_table);
+      console.log("-------------- End Authority list in admin---------------");
+    }
+  });   
+
+});
+
+app.post('/api/registerauthority', function (req, res) {
+
+  console.log("-------------- Register Authority---------------");
+
+  var registrationAuthorityClass = m_main_class[req.user.name].getAuthorityManagementRegisterClassSync();
+  registrationAuthorityClass.authorityManagementSync(req.body.authorityname, req.body.ipaddress);
+
+  var result = registrationAuthorityClass.getResultSync();
+
+  m_main_class[req.user.name].updateAuthorityListSync();
+
+  res.send(result);
+
+  console.log("--------------End Register Authority---------------");
+
+});
+
+app.post('/api/initeditauthority', function (req, res) {
+
+  console.log("-------------- Init edit Authority---------------");
+
+  m_main_class[req.user.name].initAuthorityManagementEditClassSync(req.body.authorityname, req.body.ipaddress);
+
+  res.send(true);
+  console.log("--------------End Init edit Authority---------------");
+
+});
+
+app.post('/api/info_editauthority', function (req, res) {
+
+  console.log("--------------Get info edit Authority---------------");
+
+  var info = {};
+
+  var editAuthorityClass = m_main_class[req.user.name].getAuthorityManagementEditClassSync();
+
+  info.authority = editAuthorityClass.getAuthorityNameSync();
+
+  info.ipaddress = editAuthorityClass.getCurrentIPSync();
+
+  console.log(info);
+
+  res.send(info);
+
+  console.log("--------------End Get info edit Authority---------------");
+
+});
+
+app.post('/api/editauthority', function (req, res) {
+
+  console.log("-------------- Edit Authority---------------");
+
+  var editAuthorityClass = m_main_class[req.user.name].getAuthorityManagementEditClassSync();
+
+  editAuthorityClass.authorityManagementSync(req.body.authority, req.body.ipaddress);
+
+  var result = editAuthorityClass.getResultSync();
+
+  m_main_class[req.user.name].updateAuthorityListSync();
+
+  res.send(result);
+
+  console.log("--------------End Edit Authority---------------");
+
+});
+
+app.post('/api/deleteauthority', function (req, res) {
+
+  console.log("-------------- Delete Authority---------------");
+
+  var result = m_main_class[req.user.name].removeAuthoritySync(req.body.authorityname);
+
+  res.send(result);
+
+  console.log("-------------- END Delete Authority---------------");
+
+});
 //----------------------------------------------------------------------
 
 // HANDLER NOT FOUND PAGE

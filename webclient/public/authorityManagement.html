@@ -1,0 +1,38 @@
+<style>
+.selected{
+	background-color: gray;
+	color: black;
+	font-weight: bold;
+}
+</style>
+
+	<div class="jumbotron text-center">
+		<h1>Authority Management</h1>
+	</div>
+
+	<form method="post" class="form-horizontal">
+        
+ 		<table class="table table-bordered" >
+			<tr>
+				<th>Authority Name</th>
+				<th>IP address</th>
+				<th>join status</th>
+			</tr>
+			<tr ng-repeat="item in authority_table" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)">
+				<td>{{item[0]}}</td>
+				<td>{{item[1]}}</td>
+				<td>{{item[2]}}</td>
+			</tr>
+		</table>
+
+           <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <br />
+              <a href="/#/admin/registerauthority" class="btn btn-lg btn-info" role="button"> Register an authority</a>
+              <button class="btn btn-lg btn-danger" type="button" ng-click ="edit()">edit</button>
+              <button class="btn btn-lg btn-danger" type="button" ng-click ="delete()">Remove</button>
+            </div>	
+         </div>
+    </form>
+
+

@@ -3117,7 +3117,6 @@ public class AdminMain extends JFrame implements ConstantVars
 	public boolean initAdminTable(){		
 
 		// Admins
-		JLabel admin_label = new JLabel("Admins");
 
 		admin_table_model = new DefaultTableModel()
 		{
@@ -3190,6 +3189,72 @@ public class AdminMain extends JFrame implements ConstantVars
 
 	public Object getEditAdminClass(){
 		return admin_editing ;
+	}
+
+
+	public boolean initAuthorityTable(){		
+
+		// Authorities
+
+		authority_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    		authority_table_model.setDataVector(null, new Object[] {"Authority name", "IP address", "Join status"});
+    		authority_table = new JTable(authority_table_model);
+
+    		update_authority_list_main();
+
+    	return true;
+    }
+
+    public Object[][] getTableAuthority () {
+	    DefaultTableModel dtm = (DefaultTableModel) authority_table.getModel();
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
+	public Object getAuthorityManagementRegisterClass(){
+		AuthorityManagement authority_registration = new AuthorityManagement();
+		return authority_registration;
+	}
+
+	AuthorityManagement authority_editing ;
+
+	public void initAuthorityManagementEditClass(String authority_name, String ip_address){
+		authority_editing = new AuthorityManagement(authority_name, ip_address);
+	}
+
+	public Object getAuthorityManagementEditClass(){
+		return authority_editing;
+	}
+
+	public  void updateAuthorityList(){
+		update_authority_list_main();
+	}
+
+	public boolean removeAuthority(String authority_name){
+
+		if(remove_authority_main(authority_name))
+		{
+			update_authority_list_main();
+			return true;
+		}
+		else
+		{	
+			return false;
+		}
 	}
 }
 

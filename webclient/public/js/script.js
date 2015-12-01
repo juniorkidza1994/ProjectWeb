@@ -156,6 +156,29 @@
         }
       })
 
+      .when('/admin/authoritymanagement', {
+        templateUrl : 'authorityManagement.html',
+        controller: 'authorityManagementController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/admin/registerauthority', {
+        templateUrl : 'registerAuthority.html',
+        controller: 'registerAuthorityController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/admin/editauthority', {
+        templateUrl : 'editAuthority.html',
+        controller: 'editAuthorityController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
 
     //-------------------------- USER -----------------------------------------
       .when('/user/info', {
@@ -1602,15 +1625,15 @@
                   $location.path('/admin/editadmin');
                 }
                 else {
-                  $location.path('/admin/editadmin');
+                  alert("Error Can't not edit admin");
+                  $location.path('/admin/adminmanagement');
                 }
               })
             }
           }
 
           $scope.delete = function(){
-            var r = confirm("Removing the attribute may affect to an attribute list of some users!!!\n" + 
-              "Are you sure to remove this attribute?");
+            var r = confirm("Are you sure to remove this admin?\n");
            
             if(r == true) {
                if($scope.selectedRow == -1){
@@ -1715,6 +1738,128 @@
         }
     });
 
+    phrApp.controller('authorityManagementController', function($scope, $http, $location) {
+      $scope.authority_table = [];
+
+      $scope.selectedRow = -1;
+
+      $scope.setClickedRow = function(index){
+            $scope.selectedRow = index;
+      }
+
+      $http.post('/api/admin_authority_list')
+      .success(function(res){
+              $scope.authority_table  = res;
+              //console.log($scope.admin_list);
+      })
+
+      $scope.edit = function(){
+            if($scope.selectedRow == -1){
+              alert("Choose row !!");
+            }
+            else {
+
+              console.log($scope.authority_table[$scope.selectedRow]);
+
+              $http.post('/api/initeditauthority',{
+                authorityname : $scope.authority_table[$scope.selectedRow][0],
+                ipaddress : $scope.authority_table[$scope.selectedRow][1]
+              })
+              .success(function(res){
+                if(res){
+                  $location.path('/admin/editauthority');
+                }
+                else {
+                  alert("Error Can't edit authority");
+                  $location.path('/admin/authoritymanagement')
+                }
+              })
+            }
+      }
+
+      $scope.delete = function(){
+            var r = confirm("Are you sure to remove this authority?\n");
+           
+            if(r == true) {
+               if($scope.selectedRow == -1){
+                  alert("Choose row !!");
+               }
+               else {
+
+                  $http.post('/api/deleteauthority',{
+                    authorityname : $scope.authority_table[$scope.selectedRow][0]
+                  })
+                  .success(function(res){
+                      if(res){
+                        alert("Delete Success !!");
+                        $location.path('/admin/info');
+                      }
+                      else {
+                        alert("Delete Faill !!");
+                        $location.path('/admin/info');
+                      }
+                  })
+               }
+            } 
+      }
+    });
+
+    phrApp.controller('registerAuthorityController', function($scope, $http, $location) {
+        $scope.authority_name = "";
+        $scope.ip_address = "";
+
+        // get userinfo
+        $scope.submit = function(){
+          $http.post('/api/registerauthority',{
+            authorityname : $scope.authority_name,
+            ipaddress   : $scope.ip_address
+          })
+          .success(function(res){
+              if(res){
+                alert("Register Success !!");
+                $location.path('/admin/info');
+              }
+              else {
+                alert("Register Faill !!");
+                $location.path('/admin/info');
+              }
+          })
+        }
+    });
+
+    phrApp.controller('editAuthorityController', function($scope, $http, $location) {
+        $scope.authority_name = "";
+        $scope.ip_address = "";
+
+        console.log("EDIT !!");
+
+        $http.post('/api/info_editauthority')
+        .success(function(res){
+          console.log("GET INFO ");
+          $scope.authority_name = res.authority;
+          $scope.ip_address = res.ipaddress;
+        })
+
+        // get userinfo
+        $scope.submit = function(){
+          console.log($scope.ip_address+"");
+
+          $http.post('/api/editauthority',{
+            authority   : $scope.authority_name,
+            ipaddress   : $scope.ip_address
+          })
+          .success(function(res){
+              if(res){
+                alert("Edit Success !!");
+                $location.path('/admin/info');
+              }
+              else {
+                alert("Edit Faill !!");
+                $location.path('/admin/info');
+              }
+          })
+        }
+    });
     //--------------------------------------------------------------------
 
     phrApp.controller('errorController', function($scope) {

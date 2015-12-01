@@ -42,6 +42,10 @@ class AuthorityManagement extends JDialog implements ConstantVars
 	// Return variable
 	private boolean    result_flag;
 
+	// WEB
+	private String		m_authority_name;
+	private String 	    m_ip_address;
+
 	public AuthorityManagement(Component parent)       // Registration mode
 	{
 		result_flag               = false;
@@ -53,6 +57,17 @@ class AuthorityManagement extends JDialog implements ConstantVars
 		init_ui(parent);
 		setup_actions();
 	}
+
+	// WEB
+	public AuthorityManagement()       // Registration mode
+	{
+		result_flag               = false;
+		is_registration_mode_flag = true;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
+	}
+
 
 	public AuthorityManagement(Component parent, String authority_name, String current_ip_address)       // Editing mode
 	{
@@ -66,6 +81,19 @@ class AuthorityManagement extends JDialog implements ConstantVars
 		init_ui(parent);
 		init_textfields(authority_name, current_ip_address);
 		setup_actions();
+	}
+
+	// WEB 
+
+	public AuthorityManagement(String authority_name, String current_ip_address)       // Editing mode
+	{
+		result_flag                = false;
+		is_registration_mode_flag  = false;
+		this.current_ip_address    = current_ip_address;
+		m_authority_name		   = authority_name;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
 	}
 
 	private final void init_ui(Component parent)
@@ -184,6 +212,33 @@ class AuthorityManagement extends JDialog implements ConstantVars
 		});
 	}
 
+	// WEB
+	public void authorityManagement(String authority_name, String ip_address){
+
+		m_authority_name = authority_name;
+		m_ip_address	 = ip_address;
+
+		System.out.println(m_ip_address);
+
+		if(is_registration_mode_flag && validate_input_registration_mode())
+		{
+							// Call to C function
+			if(register_authority_main(authority_name, ip_address))
+			{
+				result_flag = true;
+			}
+		}
+		else if(!is_registration_mode_flag && validate_input_editing_mode())
+		{
+			// Call to C function
+			if(edit_authority_ip_address_main(authority_name, ip_address))
+			{
+				result_flag = true;
+		        					
+			}
+		}
+	}
+
 	private void init_textfields(String authority_name, String ip_address)
 	{
 		authority_name_textfield.setText(authority_name);
@@ -200,7 +255,8 @@ class AuthorityManagement extends JDialog implements ConstantVars
 		// Validate authority name
 		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
 
-		m = p.matcher(new String(authority_name_textfield.getText()));
+		// m = p.matcher(new String(authority_name_textfield.getText()));
+		m = p.matcher(m_authority_name);
 		if(!m.matches())
 		{
 			JOptionPane.showMessageDialog(this, "Please input correct format for the authority name");
@@ -210,7 +266,8 @@ class AuthorityManagement extends JDialog implements ConstantVars
 		// Validate IP address
 		p = Pattern.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
 
-		m = p.matcher(new String(ip_address_textfield.getText()));
+		// m = p.matcher(new String(ip_address_textfield.getText()));
+		m = p.matcher(m_ip_address);
 		if(!m.matches())
 		{
 			JOptionPane.showMessageDialog(this, "Please input correct format for the IP address");
@@ -224,12 +281,11 @@ class AuthorityManagement extends JDialog implements ConstantVars
 	{
 		Pattern p;
 		Matcher m;
-		String  ip_address = ip_address_textfield.getText();
-
+		String  ip_address = m_ip_address;
 		// Validate IP address
 		p = Pattern.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
 
-		m = p.matcher(new String(ip_address_textfield.getText()));
+		m = p.matcher(ip_address);
 		if(!m.matches())
 		{
 			JOptionPane.showMessageDialog(this, "Please input correct format for the IP address");
@@ -250,6 +306,24 @@ class AuthorityManagement extends JDialog implements ConstantVars
 	{
 		return result_flag;
 	}
+
+	// WEB
+
+	public boolean getResult()
+	{
+		return result_flag;
+	}
+
+	public String getAuthorityName()
+	{
+		return m_authority_name;
+	}
+
+	public String getCurrentIP()
+	{
+		return current_ip_address;
+	}
+
 
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
