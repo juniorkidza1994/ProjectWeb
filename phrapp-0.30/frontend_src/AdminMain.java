@@ -178,6 +178,9 @@ public class AdminMain extends JFrame implements ConstantVars
 		init_backend();
 		store_variables_to_backend(ssl_cert_hash, username, authority_name, passwd, user_auth_ip_addr, audit_server_ip_addr);
 
+		// WEB
+		initUserTable();
+
 		init_ui();
 		setup_actions();
 
@@ -491,7 +494,7 @@ public class AdminMain extends JFrame implements ConstantVars
 	{
 		// Users
 		JLabel user_label = new JLabel("Users");
-		user_tree_table = new UserTreeTable();
+	//	user_tree_table = new UserTreeTable();
 
 		user_tree_table_panel.setPreferredSize(new Dimension(600, 200));
 		user_tree_table_panel.setMaximumSize(new Dimension(600, 200));
@@ -3255,6 +3258,48 @@ public class AdminMain extends JFrame implements ConstantVars
 		{	
 			return false;
 		}
+	}
+
+	public void initUserTable(){
+		user_tree_table = new UserTreeTable();
+
+	}
+
+	public UserTreeTableNode getAllUserNodeFromUserTreeTable()
+	{
+
+		System.out.println("Test User");
+
+		int i;
+		int base             = 0;
+		int child_root_count = user_tree_table.get_user_tree_table_model().getChildCount(user_tree_table.get_user_tree_table_root());
+
+		System.out.println("Child root count : " + child_root_count);
+
+		for(i=0; i < child_root_count ; i++)
+		{
+			UserTreeTableNode node   = (UserTreeTableNode)user_tree_table.get_user_tree_table_model().getChild(
+				user_tree_table.get_user_tree_table_root(), i);
+
+			System.out.println("I : " + i +  " " + node.getName() + " " + node.getType() + " " + node.getEmailAddress());
+
+			int child_sub_root_count = user_tree_table.get_user_tree_table_model().getChildCount(node);
+
+				for(int j=0; j < child_sub_root_count; j++)  // At an attribute level
+				{
+					UserTreeTableNode attribute_node = (UserTreeTableNode)user_tree_table.get_user_tree_table_model().getChild(node, j);
+					System.out.println("J : " + j +  " " + attribute_node.getName() + " " + attribute_node.getType());
+				}
+		}
+
+		// if(base == selected_row)    // At a user level
+		// {
+		// 	return (UserTreeTableNode)web_user_tree_table.get_user_tree_table_model().getChild(web_user_tree_table.get_user_tree_table_root(), i);
+		// }
+
+		System.out.println("End Test User");
+
+		return null;
 	}
 }
 

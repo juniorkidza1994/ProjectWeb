@@ -1374,6 +1374,21 @@ app.post('/api/deleteauthority', function (req, res) {
   console.log("-------------- END Delete Authority---------------");
 
 });
+
+
+app.get('/api/user_list', function (req, res) {
+
+  console.log("-------------- Get User List Authority---------------");
+
+  // var result = m_main_class[req.user.name].initUserTableSync();
+
+  m_main_class[req.user.name].getAllUserNodeFromUserTreeTableSync();
+
+  res.send("result");
+
+  console.log("-------------- End User List Authority---------------");
+
+});
 //----------------------------------------------------------------------
 
 // HANDLER NOT FOUND PAGE

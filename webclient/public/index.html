@@ -17,6 +17,8 @@
       <script src="lib/jquery/dist/jquery.min.js"></script>
       <script src="lib/bootstrap/dist/js/bootstrap.min.js"></script>
       <script src="lib/angular/angular.min.js"></script>
+      <script src="lib/tree-grid-directive-master/src/treeGrid.css"></script>
+      <script src="lib/tree-grid-directive-master/src/tree-grid-directive.js"></script>
       <script src="lib/angular-route/angular-route.js"></script>
       <script src="lib/angular-cookies/angular-cookies.js"></script>
       <script src="lib/angular-resource/angular-resource.js"></script>
@@ -39,6 +41,8 @@
       <script src="lib/angular-ui-tree/source/directives/uiTreeNode.js"></script>
       <script src="lib/angular-ui-tree/source/directives/uiTreeNodes.js"></script>
       <script src="lib/angular-ui-tree/source/services/helper.js"></script>
+
+
 <!-- 
       <base href="/"> -->
     </head>
@@ -83,7 +87,9 @@
                       <li ng-show="isLoggin == true "><a href="/#/admin/info"><i class="fa fa-sign-in"></i> Info</a></li>
                       <li ng-show="isLoggin == true "><a href="/#/admin/attribute"><i class="fa fa-sign-in"></i> Attribute Management</a></li>
                       <li ng-show="isLoggin == true "><a href="/#/admin/adminmanagement"><i class="fa fa-sign-in"></i> Admin Management</a></li>
+                      <li ng-show="isLoggin == true "><a href="/#/admin/usermanagement"><i class="fa fa-sign-in"></i> User Management</a></li>
                       <li ng-show="isLoggin == true "><a href="/#/admin/authoritymanagement"><i class="fa fa-sign-in"></i> Authority Management</a></li>
+
                       <li ng-show="isLoggin == true "><a href="/#/admin/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
                   </ul>
                 </div>

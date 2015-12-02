@@ -9,7 +9,7 @@
 
     var userType;
 
-    var phrApp = angular.module('phrApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree', 'ngAnimate', 'ui.bootstrap'])
+    var phrApp = angular.module('phrApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree', 'ngAnimate', 'ui.bootstrap', 'treeGrid'])
 
   .config(function($routeProvider, $locationProvider, $httpProvider) {
     //================================================
@@ -28,7 +28,7 @@
             deferred.resolve();
             if(user.type == "User" && ($location.path().indexOf("/admin") > -1 ))
               $location.url('/user/info');
-            else if(user.type == "Admin" && ($location.path().indexOf("/user") > -1 ))
+            else if(user.type == "Admin" && ($location.path().indexOf("/user/") > -1 ))
               $location.url('/admin/info');      
           }
           else{
@@ -175,6 +175,14 @@
       .when('/admin/editauthority', {
         templateUrl : 'editAuthority.html',
         controller: 'editAuthorityController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/admin/usermanagement', {
+        templateUrl : 'userManagement.html',
+        controller: 'userManagementController',
         resolve: {
           loggedin: checkLoggedin
         }
@@ -1860,6 +1868,64 @@
           })
         }
     });
+
+        phrApp.controller('editAuthorityController', function($scope, $http, $location) {
+        $scope.authority_name = "";
+        $scope.ip_address = "";
+
+        console.log("EDIT !!");
+
+        $http.post('/api/info_editauthority')
+        .success(function(res){
+          console.log("GET INFO ");
+          $scope.authority_name = res.authority;
+          $scope.ip_address = res.ipaddress;
+        })
+
+        // get userinfo
+        $scope.submit = function(){
+          console.log($scope.ip_address+"");
+
+          $http.post('/api/editauthority',{
+            authority   : $scope.authority_name,
+            ipaddress   : $scope.ip_address
+          })
+          .success(function(res){
+              if(res){
+                alert("Edit Success !!");
+                $location.path('/admin/info');
+              }
+              else {
+                alert("Edit Faill !!");
+                $location.path('/admin/info');
+              }
+          })
+        }
+    });
+
+    phrApp.controller('userManagementController', function ($scope) {
+            $scope.tree_data = [
+           {Name:"USA",Area:9826675,Population:318212000,TimeZone:"UTC -5 to -10",
+            children:[
+              {Name:"California", Area:423970,Population:38340000,TimeZone:"Pacific Time",
+                  children:[
+                      {Name:"San Francisco", Area:231,Population:837442,TimeZone:"PST"},
+                      {Name:"Los Angeles", Area:503,Population:3904657,TimeZone:"PST"}
+                  ]
+              },
+              {Name:"Illinois", Area:57914,Population:12882135,TimeZone:"Central Time Zone",
+                  children:[
+                      {Name:"Chicago", Area:234,Population:2695598,TimeZone:"CST"}
+                  ]
+              }
+          ]
+        },    
+        {Name:"Texas",Area:268581,Population:26448193,TimeZone:"Mountain"}
+        ];
+
+    });
+
+
     //--------------------------------------------------------------------
 
     phrApp.controller('errorController', function($scope) {
