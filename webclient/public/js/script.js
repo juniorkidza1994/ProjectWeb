@@ -1903,25 +1903,73 @@
         }
     });
 
-    phrApp.controller('userManagementController', function ($scope) {
-            $scope.tree_data = [
-           {Name:"USA",Area:9826675,Population:318212000,TimeZone:"UTC -5 to -10",
-            children:[
-              {Name:"California", Area:423970,Population:38340000,TimeZone:"Pacific Time",
-                  children:[
-                      {Name:"San Francisco", Area:231,Population:837442,TimeZone:"PST"},
-                      {Name:"Los Angeles", Area:503,Population:3904657,TimeZone:"PST"}
-                  ]
-              },
-              {Name:"Illinois", Area:57914,Population:12882135,TimeZone:"Central Time Zone",
-                  children:[
-                      {Name:"Chicago", Area:234,Population:2695598,TimeZone:"CST"}
-                  ]
-              }
-          ]
-        },    
-        {Name:"Texas",Area:268581,Population:26448193,TimeZone:"Mountain"}
+    phrApp.controller('userManagementController', function ($scope,$http) {
+
+        var arr = [];
+        var index = 0 ;
+
+        $scope.tree_data = [{Name: " " ,Type: " ", Email: " ", children: []}];
+
+        $http.post('/api/user_list')
+        .success(function(res){
+          console.log("GET INFO ");
+          
+          angular.forEach(res, function(value,key){
+
+            var str = value.split(" ");
+            if(str[0] == "M"){
+              arr.push({
+                ID: index, Name: str[1], Type: str[2], Email: str[3], children: [] 
+              });
+            }
+             else if(str[0] == "C"){
+                arr[arr.length - 1].children.push({
+                  ID: index, Name:str[1], Type: str[2], Email: str[3],
+                     children: [] 
+                });
+             }
+            
+            index ++ ;
+            console.log(str);
+          });
+
+          console.log(arr);
+
+          $scope.tree_data = arr.slice();
+
+          console.log($scope.tree_data);
+         
+        })
+
+         $scope.col_defs = [
+
+          {
+            field: "Type",
+            displayName: "Type",
+            cellTemplate: '<span ng-click="cellTemplateScope.click(row.branch.ID)">{{ row.branch[col.field] }}</span>',
+            cellTemplateScope: {
+                click: function(data) {         // this works too: $scope.someMethod;
+                    console.log(data);
+                }
+            }
+          },
+
+          {
+            field: "Email",
+            displayName: "Email Address",
+            cellTemplate: '<span ng-click="cellTemplateScope.click(row.branch.ID)">{{ row.branch[col.field] }}</span>',
+            cellTemplateScope: {
+                click: function(data) {         // this works too: $scope.someMethod;
+                    console.log(data);
+                }
+            }
+          }
+
         ];
+
+        $scope.my_tree_handler = function(branch){
+          console.log('you clicked on', branch.ID)
+        }
 
     });
 

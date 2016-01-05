@@ -1,18 +1,11 @@
 <!-- home.html -->
 <style>
 .selected{
-	background-color: black;
-	color: white;
+	background-color: gray;
+	color: black;
 	font-weight: bold;
 }
-.selectedNode{
-    border: 1px solid #dae2ea;
-    background-color: #D0DEFF;
-    color: #0073B6;
-	font-weight: bold;
-	padding: 10px;
-    margin-right: 10px;
-}
+
 </style>
 
 	<div class="jumbotron text-center">
@@ -20,6 +13,6 @@
 	</div>
 
 	<div class="container-fluid">
-		<tree-grid tree-data="tree_data"></tree-grid>
+		<tree-grid tree-data="tree_data" col-defs= "col_defs" on-select = "my_tree_handler(branch)" on-click = "my_tree_handler(branch)"></tree-grid>
 	</div>
 	

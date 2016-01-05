@@ -80,6 +80,7 @@
                             </li>
                           </ul>
                       </li>
+                        <li ng-show="isLoggin == true "><a class="btn btn-danger" href="/api/logout">Logout</a></li>
                   </ul>
 
                   <ul class="nav navbar-nav navbar-right" ng-if="usertype=='Admin'">
@@ -91,6 +92,8 @@
                       <li ng-show="isLoggin == true "><a href="/#/admin/authoritymanagement"><i class="fa fa-sign-in"></i> Authority Management</a></li>
 
                       <li ng-show="isLoggin == true "><a href="/#/admin/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
+                      
+                      <li ng-show="isLoggin == true "><a href="/#/admin/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li><a class="btn btn-danger" hreg="/api/logout">Logout</a>
                   </ul>
                 </div>
             </div>

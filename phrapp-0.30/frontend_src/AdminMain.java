@@ -151,6 +151,9 @@ public class AdminMain extends JFrame implements ConstantVars
 	private String            authority_email_address;
 	private String            authority_email_passwd;
 
+	// WEB
+	private ArrayList<String> 			  m_user_tree							= new ArrayList<String>();// 100 Max element
+
 	public AdminMain(String username, String passwd, String email_address, String authority_name, String user_auth_ip_addr, String audit_server_ip_addr, 
 		String phr_server_ip_addr, String emergency_server_ip_addr, String mail_server_url, String authority_email_address, String authority_email_passwd, 
 		String ssl_cert_hash)
@@ -3262,13 +3265,16 @@ public class AdminMain extends JFrame implements ConstantVars
 
 	public void initUserTable(){
 		user_tree_table = new UserTreeTable();
-
 	}
 
-	public UserTreeTableNode getAllUserNodeFromUserTreeTable()
+	public Object[] initAllUserNodeFromUserTreeTable()
 	{
 
+		m_user_tree.clear();
+
 		System.out.println("Test User");
+
+		int index = 0;
 
 		int i;
 		int base             = 0;
@@ -3281,25 +3287,26 @@ public class AdminMain extends JFrame implements ConstantVars
 			UserTreeTableNode node   = (UserTreeTableNode)user_tree_table.get_user_tree_table_model().getChild(
 				user_tree_table.get_user_tree_table_root(), i);
 
-			System.out.println("I : " + i +  " " + node.getName() + " " + node.getType() + " " + node.getEmailAddress());
+			System.out.println("M " + i +  " " + node.getName() + " " + node.getType() + " " + node.getEmailAddress());
+
+			m_user_tree.add("M " + node.getName() + " " + node.getType() + " " + node.getEmailAddress());
+
+			index ++;
 
 			int child_sub_root_count = user_tree_table.get_user_tree_table_model().getChildCount(node);
 
 				for(int j=0; j < child_sub_root_count; j++)  // At an attribute level
 				{
 					UserTreeTableNode attribute_node = (UserTreeTableNode)user_tree_table.get_user_tree_table_model().getChild(node, j);
-					System.out.println("J : " + j +  " " + attribute_node.getName() + " " + attribute_node.getType());
+					System.out.println("C" + j +  " " + attribute_node.getName() + " " + attribute_node.getType());
+					m_user_tree.add("C " + attribute_node.getName() + " " + attribute_node.getType());
+					index++;
 				}
 		}
 
-		// if(base == selected_row)    // At a user level
-		// {
-		// 	return (UserTreeTableNode)web_user_tree_table.get_user_tree_table_model().getChild(web_user_tree_table.get_user_tree_table_root(), i);
-		// }
-
 		System.out.println("End Test User");
 
-		return null;
+		return m_user_tree.toArray();
 	}
 }
 

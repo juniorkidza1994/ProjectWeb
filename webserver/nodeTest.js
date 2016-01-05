@@ -151,6 +151,13 @@ app.post('/api/login', passport.authenticate('local'), function(req, res) {
   res.send(req.user);
 });
 
+app.get('/api/logout', function(req, res){
+  m_main_class[req.user.name].closeProgramSync();
+  req.logout();
+  res.redirect('/');
+
+});
+
 passport.use(new LocalStrategy(
   { passReqToCallback: true},
   function(req, username, password, done) {
@@ -1376,15 +1383,17 @@ app.post('/api/deleteauthority', function (req, res) {
 });
 
 
-app.get('/api/user_list', function (req, res) {
+app.post('/api/user_list', function (req, res) {
 
   console.log("-------------- Get User List Authority---------------");
 
   // var result = m_main_class[req.user.name].initUserTableSync();
 
-  m_main_class[req.user.name].getAllUserNodeFromUserTreeTableSync();
+  var result = m_main_class[req.user.name].initAllUserNodeFromUserTreeTableSync();
 
-  res.send("result");
+  console.log(result);
+
+  res.send(result);
 
   console.log("-------------- End User List Authority---------------");
 
