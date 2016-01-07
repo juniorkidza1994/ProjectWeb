@@ -14,5 +14,10 @@
 
 	<div class="container-fluid">
 		<tree-grid tree-data="tree_data" col-defs= "col_defs" on-select = "my_tree_handler(branch)" on-click = "my_tree_handler(branch)"></tree-grid>
+
+		<button class="btn btn-lg btn-default" type="button" ng-click ="register()">Register</button>
+        <button class="btn btn-lg btn-success" type="button" ng-click ="delete()" ng-if="isEdit()" click-Off="clickedSomewhereElse()">Edit</button>
+        <button class="btn btn-lg btn-info" type="button" ng-click ="edit()" ng-if="isResetPwd()" >Reset Password</button>
+        <button class="btn btn-lg btn-danger" type="button" ng-click ="delete()">Remove</button>
 	</div>
 	

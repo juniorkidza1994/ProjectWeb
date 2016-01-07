@@ -3162,6 +3162,10 @@ public class AdminMain extends JFrame implements ConstantVars
 		update_admin_list_main();
 	}
 
+	public  void updateUserList(){
+		update_user_list_main();
+	}
+
 	public boolean removeAdmin(String username){
 		
 		if(remove_admin_main(username))
@@ -3289,7 +3293,7 @@ public class AdminMain extends JFrame implements ConstantVars
 
 			System.out.println("M " + i +  " " + node.getName() + " " + node.getType() + " " + node.getEmailAddress());
 
-			m_user_tree.add("M " + node.getName() + " " + node.getType() + " " + node.getEmailAddress());
+			m_user_tree.add("M+" + node.getName() + "+" + node.getType() + "+" + node.getEmailAddress());
 
 			index ++;
 
@@ -3298,8 +3302,8 @@ public class AdminMain extends JFrame implements ConstantVars
 				for(int j=0; j < child_sub_root_count; j++)  // At an attribute level
 				{
 					UserTreeTableNode attribute_node = (UserTreeTableNode)user_tree_table.get_user_tree_table_model().getChild(node, j);
-					System.out.println("C" + j +  " " + attribute_node.getName() + " " + attribute_node.getType());
-					m_user_tree.add("C " + attribute_node.getName() + " " + attribute_node.getType());
+					System.out.println("C" + j +  " " + attribute_node.getName() + "" + attribute_node.getType());
+					m_user_tree.add("C+" + attribute_node.getNameTableCell() + "+" + attribute_node.getType());
 					index++;
 				}
 		}
@@ -3308,6 +3312,15 @@ public class AdminMain extends JFrame implements ConstantVars
 
 		return m_user_tree.toArray();
 	}
+
+	UserManagement m_user_registration;
+
+	public Object getUserManagement(){
+		if(m_user_registration == null)
+			m_user_registration = new UserManagement(attribute_table_model);
+		return m_user_registration;
+	}
+
 }
 
 

@@ -118,7 +118,7 @@
 
       .when('/admin/registerattribute', {
         templateUrl : 'registerAttribute.html',
-        controller: 'registerattributeController',
+        controller: 'registerAttributeController',
         resolve: {
           loggedin: checkLoggedin
         }
@@ -183,6 +183,14 @@
       .when('/admin/usermanagement', {
         templateUrl : 'userManagement.html',
         controller: 'userManagementController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/admin/registeruser', {
+        templateUrl : 'registerUser.html',
+        controller: 'registerUserController',
         resolve: {
           loggedin: checkLoggedin
         }
@@ -1489,7 +1497,7 @@
           }
     });
 
-    phrApp.controller('registerattributeController', function($scope, $http, $location) {
+    phrApp.controller('registerAttributeController', function($scope, $http, $location) {
         $scope.attributename = "";
         $scope.isnumerical = false;
 
@@ -1903,10 +1911,12 @@
         }
     });
 
-    phrApp.controller('userManagementController', function ($scope,$http) {
+    phrApp.controller('userManagementController', function ($scope, $http, $location) {
 
         var arr = [];
-        var index = 0 ;
+        $scope.selectedRow = null ;
+
+        var index = 0;
 
         $scope.tree_data = [{Name: " " ,Type: " ", Email: " ", children: []}];
 
@@ -1916,7 +1926,7 @@
           
           angular.forEach(res, function(value,key){
 
-            var str = value.split(" ");
+            var str = value.split("+");
             if(str[0] == "M"){
               arr.push({
                 ID: index, Name: str[1], Type: str[2], Email: str[3], children: [] 
@@ -1941,38 +1951,121 @@
          
         })
 
-         $scope.col_defs = [
+        $scope.col_defs = [
 
           {
             field: "Type",
             displayName: "Type",
-            cellTemplate: '<span ng-click="cellTemplateScope.click(row.branch.ID)">{{ row.branch[col.field] }}</span>',
-            cellTemplateScope: {
-                click: function(data) {         // this works too: $scope.someMethod;
-                    console.log(data);
-                }
-            }
+            // cellTemplate: '<span ng-click="cellTemplateScope.click(row.branch.ID)">{{ row.branch[col.field] }}</span>',
+            // cellTemplateScope: {
+            //     click: function(data) {         // this works too: $scope.someMethod;
+            //         console.log(data);
+            //         $scope.index = data;
+            //     }
+            // }
           },
 
           {
             field: "Email",
             displayName: "Email Address",
-            cellTemplate: '<span ng-click="cellTemplateScope.click(row.branch.ID)">{{ row.branch[col.field] }}</span>',
-            cellTemplateScope: {
-                click: function(data) {         // this works too: $scope.someMethod;
-                    console.log(data);
-                }
-            }
+            // cellTemplate: '<span ng-click="cellTemplateScope.click(row.branch)">{{ row.branch[col.field] }}</span>',
+            // cellTemplateScope: {
+            //     click: function(data) {         // this works too: $scope.someMethod;
+            //         console.log(data);
+            //         $scope.selectedRow = data;
+            //     }
+            // }
           }
 
         ];
 
         $scope.my_tree_handler = function(branch){
-          console.log('you clicked on', branch.ID)
+          console.log('you clicked on', branch)
+          $scope.selectedRow = branch;
+        }
+
+        $scope.register =  function(){
+         $location.path('/admin/registeruser');
+        }
+
+        $scope.isEdit =     function(){
+        //  console.log($scope.selectedRow);
+          if($scope.selectedRow != null){
+            if($scope.selectedRow['Type'] == "User" || $scope.selectedRow['Name'].indexOf(" = ") != -1)
+              return true;
+            else
+              return false;
+          }
+        }
+
+        $scope.isResetPwd =     function(){
+        //  console.log($scope.selectedRow);
+          if($scope.selectedRow != null){
+            if($scope.selectedRow['Type'] == "User")
+              return true;
+            else
+              return false;
+          }
+        }
+    });
+
+    phrApp.controller('registerUserController', function($scope, $http, $location) {
+        $scope.attributename = "";
+
+        $scope.isnumerical = false;
+
+        $scope.username = "";
+        $scope.email = "";
+
+        $scope.attribute_table = [];
+
+        $http.post('/api/table_attribute_for_register_user')
+        .success(function(res){
+          console.log("SSSSS");
+          console.log(res);
+          $scope.attribute_table = res;
+
+          for(var i = 0 ; i < $scope.attribute_table.length;i++){
+
+                $scope.attribute_table[i][0] = false;
+                if($scope.attribute_table[i][2] != "(none)")
+                  $scope.attribute_table[i][2] = "(value)";
+              }
+        })
+
+        $scope.submit = function(){
+          if($scope.email == null)
+            $scope.email = "";
+          if($scope.username == null)
+            $scope.username = null;
+
+          $http.post('/api/registeruser',{
+            username   : $scope.username,
+            email   : $scope.email,
+            attributeTable : $scope.attribute_table
+          })
+          .success(function(res){
+              $scope.username = "";
+              $scope.email = "";
+
+              for(var i = 0 ; i < $scope.attribute_table.length;i++){
+                $scope.attribute_table[i][0] = false;
+                if($scope.attribute_table[i][2] != "(none)")
+                  $scope.attribute_table[i][2] = "(value)";
+              }
+
+              console.log(res);
+
+              alert(res[1]);
+
+              if(res[0]){
+                $location.path('/admin/info');
+              }
+              
+          })
         }
 
     });
-
 
     //--------------------------------------------------------------------
 

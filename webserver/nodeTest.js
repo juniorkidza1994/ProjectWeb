@@ -1398,6 +1398,66 @@ app.post('/api/user_list', function (req, res) {
   console.log("-------------- End User List Authority---------------");
 
 });
+
+app.post('/api/table_attribute_for_register_user', function (req, res) {
+
+  console.log("-------------- Get Table Attribute User---------------");
+
+  var registrationUserClass = m_main_class[req.user.name].getUserManagementSync();
+
+  var result = registrationUserClass.getTableAttributeSync();
+
+  console.log(result);
+
+  res.send(result);
+
+  console.log("--------------End Table Attribute User---------------");
+
+});
+
+app.post('/api/registeruser', function (req, res) {
+
+  console.log("-------------- Register User---------------");
+
+  var registrationUserClass = m_main_class[req.user.name].getUserManagementSync();
+
+  var flag = "";
+  
+  for(x in req.body.attributeTable){
+
+    console.log(req.body.attributeTable[x]);
+
+    flag = flag +req.body.attributeTable[x][0].toString() + " ";
+  }
+
+  flag = flag + ",";
+
+  for(x in req.body.attributeTable){
+
+    console.log(req.body.attributeTable[x]);
+
+    flag = flag +req.body.attributeTable[x][2].toString() + " ";
+  }
+
+  registrationUserClass.setTableAttributeSync(flag);
+
+  registrationUserClass.registerUserSync(req.body.username, req.body.email);
+
+  var result = [];
+
+  result[0] = registrationUserClass.getResultFlagSync();
+  result[1] = registrationUserClass.getResultMsgSync();
+
+  console.log(result);
+
+  m_main_class[req.user.name].updateAttributeTableSync();
+  m_main_class[req.user.name].updateUserListSync();
+
+  res.send(result);
+
+  console.log("--------------End Register User---------------");
+
+});
 //----------------------------------------------------------------------
 
 // HANDLER NOT FOUND PAGE

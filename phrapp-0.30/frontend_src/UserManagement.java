@@ -53,6 +53,9 @@ class UserManagement extends JDialog implements ConstantVars
 	// Return variable
 	private boolean           result_flag;
 
+	// WEB
+	private String 			  result;
+
 	public UserManagement(Component parent, DefaultTableModel external_attribute_table_model)  // Registering mode
 	{
 		is_registering_mode_flag            = true;
@@ -66,6 +69,20 @@ class UserManagement extends JDialog implements ConstantVars
 		init_attribute_table_registering_mode();
 		setup_actions();
 	}
+
+	public UserManagement(DefaultTableModel external_attribute_table_model)  // Registering Web mode
+	{
+		is_registering_mode_flag            = true;
+		result_flag                         = false;
+		this.external_attribute_table_model = external_attribute_table_model;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
+			
+		init_attribute_table();
+		init_attribute_table_registering_mode();
+	}
+
 
 	public UserManagement(Component parent, DefaultTableModel external_attribute_table_model, UserTreeTable external_user_tree_table, int selected_row)  // Editing mode
 	{
@@ -284,6 +301,69 @@ class UserManagement extends JDialog implements ConstantVars
 		});
 	}
 
+	private void init_attribute_table(){
+
+		// Attribute table
+		attribute_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921796L;
+
+			@Override
+	    		public boolean isCellEditable(int row, int column)
+			{
+				switch(column)
+				{
+					case 0:
+						return true;
+					case 1:
+						return false;
+					case 2:
+					default:
+						return ((String)external_attribute_table_model.getValueAt(row, 1)).equals("true") ? true : false;
+				}
+	    		}
+		};
+
+		attribute_table_model.setDataVector(null, new Object[] {"Selection", "Attribute name", "Attribute value"});
+		attribute_table = new JTable(attribute_table_model)
+		{
+			private static final long serialVersionUID = -1113582265865921797L;
+
+			@Override
+			public Class getColumnClass(int column)
+			{
+				switch(column)
+				{
+					case 0:
+				        	return Boolean.class;
+				    	case 1:
+				        case 2:
+					default:
+						return String.class;
+				}
+			}
+		};
+	}
+
+	public void registerUser(String username, String email_address){
+		if(is_registering_mode_flag && validate_input_registering_web_mode(username, email_address))
+		{
+
+			System.out.println("------ REGISTER USER ------------");
+			System.out.println(username);
+			System.out.println(email_address);
+			// Call to C function
+			if(register_user_main(username, email_address))
+			{
+					System.out.println("Register `Success");
+					result_flag = true;
+					result = "Success";
+			}
+		}
+		else
+			result_flag = false;
+	}
+
 	private void init_attribute_table_registering_mode()
 	{
 		int row_count = external_attribute_table_model.getRowCount();
@@ -298,6 +378,51 @@ class UserManagement extends JDialog implements ConstantVars
 			attribute_table_model.insertRow(attribute_table.getRowCount(), new Object[] {
 				false, full_attribute_name, is_numerical_attribute_flag ? "(value)" : "(none)"});
 		}
+	}
+
+	public Object[][] getTableAttribute () {
+	    DefaultTableModel dtm = (DefaultTableModel) attribute_table.getModel();
+	    int nRow = dtm.getRowCount(), nCol = dtm.getColumnCount();
+	    Object[][] tableData = new Object[nRow][nCol];
+	    for (int i = 0 ; i < nRow ; i++)
+	        for (int j = 0 ; j < nCol ; j++)
+	            tableData[i][j] = dtm.getValueAt(i,j);
+	    return tableData;
+	}
+
+	public void setTableAttribute (String flag) {
+
+	    int i  = 0;
+
+	    int pos = 0;
+
+	    for (String str: flag.split(",")){
+		    for (String r: str.split(" ")){
+		    		System.out.println(r);
+		    		if(pos == 0){
+			    		if(r.equals("true")){
+			            	System.out.println("TRUE");
+			            	attribute_table_model.setValueAt(true,i,pos);
+			            }
+			            else if(r.equals("false")){
+			            	System.out.println("FALSE");
+			            	attribute_table_model.setValueAt(false,i,pos);
+			            }
+		        	}
+		        	else if(pos == 2){
+			            attribute_table_model.setValueAt(r,i,pos);
+		        	}
+		            i++;
+		    }
+		    i = 0;
+		    pos = 2;
+		}
+
+	    for (int j = 0 ; j < attribute_table_model.getRowCount() ; j++)
+	            System.out.println(attribute_table_model.getValueAt(j,0).toString());
+
+	    System.out.println("End set table");
+
 	}
 
 	private String get_username_from_user_tree_table()
@@ -479,6 +604,81 @@ class UserManagement extends JDialog implements ConstantVars
 		return true;
 	}
 
+	// WEB
+	private boolean validate_input_registering_web_mode(String username, String email_address)
+	{
+
+		System.out.println("Start Validate");
+
+
+		Pattern p;
+		Matcher m;
+		int     noRowChecked;
+
+		// Validate username
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
+
+		m = p.matcher(username);
+		if(!m.matches())
+		{
+			//JOptionPane.showMessageDialog(this, "Please input correct format for the username");
+			result = "Please input correct format for the username";
+			return false;
+		}
+
+		// Validate e-mail address
+		p = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+
+		m = p.matcher(email_address);
+		if(!m.matches())
+		{
+			//JOptionPane.showMessageDialog(this, "Please input correct format for the email address");
+			result = "Please input correct format for the email address";
+			return false;
+		}
+
+		// Validate selected attributes
+		noRowChecked = 0;
+
+		for(int i=0; i < attribute_table_model.getRowCount(); i++)
+		{
+			boolean is_checked_flag;
+			boolean is_numerical_attribute_flag;
+
+			is_checked_flag = ((Boolean)attribute_table_model.getValueAt(i, 0)).booleanValue();
+			if(is_checked_flag)
+			{
+				noRowChecked++;
+				is_numerical_attribute_flag = ((String)external_attribute_table_model.getValueAt(i, 1)).equals("true") ? true : false;
+				if(is_numerical_attribute_flag)
+				{
+					String attribute_name  = (String)attribute_table_model.getValueAt(i, 1);
+					String attribute_value = (String)attribute_table_model.getValueAt(i, 2);
+
+					p = Pattern.compile("^[0-9]+");
+					m = p.matcher(attribute_value);
+
+					if(!m.matches())
+					{
+						//JOptionPane.showMessageDialog(this, "Please input correct format for the attribute value" + "\"" + attribute_name + "\"");
+						result = "Please input correct format for the attribute value" + "\"" + attribute_name + "\"";
+						return false;
+					}
+				}
+			}
+		}
+
+		if(noRowChecked == 0)
+		{
+			//JOptionPane.showMessageDialog(this, "Please select at least 1 attribute");
+			result = "Please select at least 1 attribute";
+			return false;
+		}
+
+		return true;
+	}
+
+
 	private boolean validate_input_editing_mode()
 	{
 		Pattern p;
@@ -620,10 +820,26 @@ class UserManagement extends JDialog implements ConstantVars
 		return result_flag;
 	}
 
+	public boolean getResultFlag()
+	{
+		return result_flag;
+	}
+
+	public String getResultMsg()
+	{
+		return result;
+	}
+
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		if(alert_msg.indexOf("Sending an e-mail") != -1){
+			System.out.println("Sending an e-mail failed");
+			result_flag = true;
+			result = "Sending an e-mail failed ";
+		}
+
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)
