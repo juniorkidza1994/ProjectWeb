@@ -107,6 +107,24 @@ class UserManagement extends JDialog implements ConstantVars
 		setup_actions();
 	}
 
+	public UserManagement(DefaultTableModel external_attribute_table_model, UserTreeTable external_user_tree_table, int selected_row)  // Editing web mode
+	{
+		is_registering_mode_flag            = false;
+		result_flag                         = false;
+		is_email_address_edited_flag        = false;
+		is_attribute_list_edited_flag       = false;
+		this.external_attribute_table_model = external_attribute_table_model;
+		this.external_user_tree_table       = external_user_tree_table;
+		this.selected_row                   = selected_row;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
+
+		init_attribute_table();
+		init_attribute_table_editing_mode();
+	}
+
+
 	private final void init_ui(Component parent)
 	{
 		setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));

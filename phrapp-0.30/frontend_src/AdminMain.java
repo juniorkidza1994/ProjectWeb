@@ -2762,7 +2762,14 @@ public class AdminMain extends JFrame implements ConstantVars
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+
+		if(alert_msg.indexOf("Sending an e-mail") != -1){
+			System.out.println("Sending an e-mail failed");
+			m_result_reset_pwd = true;
+			m_result_msg = "Sending an e-mail failed";
+		}
+
+		//JOptionPane.showMessageDialog(main_panel, alert_msg);
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)
@@ -2903,6 +2910,7 @@ public class AdminMain extends JFrame implements ConstantVars
 		});
 	}
 
+	// ---------------------------------------------------------------------------------//
 	// WEB
 	public String getAuthorityName()
 	{
@@ -3321,6 +3329,109 @@ public class AdminMain extends JFrame implements ConstantVars
 		return m_user_registration;
 	}
 
+	private boolean m_result_reset_pwd = false;
+	private String m_result_msg ;
+
+	public void resetPasswordUser(String username){
+		if(reset_user_passwd_main(username))
+		{
+			update_attribute_list_main();
+			update_user_list_main();
+
+			m_result_reset_pwd = true;
+
+			m_result_msg = "The new user's password " + "was sent to the user's e-mail address already";
+		}	
+		else
+			m_result_reset_pwd = false;
+	}
+
+	public String getResultMsg(){
+		return m_result_msg;
+	}
+
+	public boolean getResultPwd(){
+		return m_result_reset_pwd;
+	}
+
+	public boolean removeUser(int selected_row){
+		if(selected_row >= 0)
+		{
+			if(is_selected_row_user(selected_row))   // User
+			{
+				// int confirm_result = JOptionPane.showConfirmDialog(main_panel, 
+				// 	"Are you sure to remove this user?", "Remove Confirmation", JOptionPane.YES_NO_OPTION);
+
+				String username = get_selected_username_from_user_tree_table(selected_row);
+
+					// Call to C functions
+				if(remove_user_main(username))
+				{
+					update_attribute_list_main();
+					update_user_list_main();
+
+					return true;
+				}
+				else
+					return false;
+			}
+			else  // User attribute
+			{
+						// int confirm_result = JOptionPane.showConfirmDialog(main_panel, 
+						// 			"Are you sure to remove this user attribute?", "Remove Confirmation", JOptionPane.YES_NO_OPTION);
+
+				String username                 = get_root_username_from_user_tree_table(selected_row);
+				String full_attribute_name      = get_selected_full_attribute_name_from_user_tree_table(selected_row);
+				String attribute_name           = full_attribute_name.substring(full_attribute_name.indexOf(".") + 1);
+				String attribute_authority_name = full_attribute_name.substring(0, full_attribute_name.indexOf("."));
+
+				// Call to C functions
+				if(remove_user_attribute_main(username, attribute_name, attribute_authority_name))
+				{
+					update_attribute_list_main();
+					update_user_list_main();
+
+					return true;
+				}
+				else
+					return false;
+			}
+		}
+		else
+			return false;
+	}
+
+	Object editUserClass ;
+
+	public void setEditUserClass(int selected_row){
+		System.out.println(selected_row);
+		if(selected_row >= 0)
+		{
+			if(is_selected_row_user(selected_row))
+			{
+				System.out.println("Edit USer");
+				// Call user management object
+				UserManagement user_editing_dialog = new UserManagement(attribute_table_model, user_tree_table, selected_row);
+				editUserClass = user_editing_dialog;
+			}
+			else if(is_selected_row_editable_attribute(selected_row))
+			{
+
+				System.out.println("Edit Attribute");
+				NumericalAttributeValueEditing attribute_value_editing_dialog;
+
+				// Call numerical attribute value editing object
+				attribute_value_editing_dialog = new NumericalAttributeValueEditing(main_panel, user_tree_table, selected_row);
+				editUserClass = attribute_value_editing_dialog;
+			}
+		}
+		else
+			editUserClass = null;
+	}
+
+	public Object getEditUserClass(){
+		return editUserClass;
+	}
 }
 
 

@@ -1458,6 +1458,62 @@ app.post('/api/registeruser', function (req, res) {
   console.log("--------------End Register User---------------");
 
 });
+
+app.post('/api/resetpassworduser', function (req, res) {
+
+  console.log("-------------- Reset Password User---------------");
+
+  var result = [];
+
+  m_main_class[req.user.name].resetPasswordUserSync(req.body.username);
+
+  result[0] = m_main_class[req.user.name].getResultPwdSync();
+  result[1] = m_main_class[req.user.name].getResultMsgSync();
+
+  console.log(result);
+
+  res.send(result);
+
+  console.log("--------------End Reset Password User---------------");
+
+});
+
+app.post('/api/removeuser', function (req, res) {
+
+  console.log("-------------- Remove User---------------");
+
+  var result = [];
+
+  m_main_class[req.user.name].removeUserSync(req.body.ID);
+
+  console.log(result);
+
+  res.send(result);
+
+  console.log("-------------- End Remove User---------------");
+
+});
+
+app.post('/api/setedituser', function (req, res) {
+
+  console.log("-------------- Set Edit User Attribute User---------------");
+
+  m_main_class[req.user.name].setEditUserClassSync(req.body.ID);
+
+  console.log("--------------End Set Edit User User---------------");
+
+});
+
+app.post('/api/edituser', function (req, res) {
+
+  console.log("-------------- Edit User Attribute User---------------");
+
+  var editUserClass = m_main_class[req.user.name].getEditUserClassSync();
+
+  console.log(editUserClass);
+  console.log("--------------End Edit User User---------------");
+
+});
 //----------------------------------------------------------------------
 
 // HANDLER NOT FOUND PAGE

@@ -196,6 +196,14 @@
         }
       })
 
+     .when('/admin/edituser', {
+        templateUrl : 'editUser.html',
+        controller: 'editUserController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
     //-------------------------- USER -----------------------------------------
       .when('/user/info', {
         templateUrl : 'info.html',
@@ -1988,6 +1996,16 @@
          $location.path('/admin/registeruser');
         }
 
+        $scope.edit =  function(){
+          $http.post('/api/setedituser',{
+            ID   : $scope.selectedRow['ID']
+          })
+          .success(function(res){
+            console.log("SUCCESS");
+          })
+         $location.path('/admin/edituser');
+        }
+
         $scope.isEdit =     function(){
         //  console.log($scope.selectedRow);
           if($scope.selectedRow != null){
@@ -2007,6 +2025,42 @@
               return false;
           }
         }
+
+        $scope.resetPwd =     function(){
+          $http.post('/api/resetpassworduser',{
+            username   : $scope.selectedRow['Name']
+          })
+          .success(function(res){
+            alert(res[1]);
+          })
+        }
+
+        $scope.remove = function(){
+
+          var r = confirm("Are you sure to remove this " + $scope.selectedRow['Type'] + "?\n");
+           
+            if(r == true) {
+               if($scope.selectedRow == null){
+                  alert("Choose row !!");
+               }
+               else {
+
+                  $http.post('/api/removeuser',{
+                    ID : $scope.selectedRow['ID']
+                  })
+                  .success(function(res){
+                      if(res){
+                        alert("Remove Success !!");
+                        $location.path('/admin/info');
+                      }
+                      else {
+                        alert("Remove Faill !!");
+                        $location.path('/admin/info');
+                      }
+                  })
+               }
+            } 
+          }
     });
 
     phrApp.controller('registerUserController', function($scope, $http, $location) {
@@ -2066,6 +2120,16 @@
         }
 
     });
+
+    phrApp.controller('editUserController', function($scope, $http, $location) {
+        
+        $http.post('/api/edituser')
+        .success(function(res){
+          console.log("Successsssssssssss");
+        })
+
+    });
+
 
     //--------------------------------------------------------------------
 
