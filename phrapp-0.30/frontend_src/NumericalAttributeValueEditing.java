@@ -39,6 +39,13 @@ class NumericalAttributeValueEditing extends JDialog implements ConstantVars
 	// Return variable
 	private boolean       result_flag;
 
+	// Web
+	private String 		  m_attribute_name;
+	private String 		  m_attribute_value;
+	private String 		  m_username;
+
+	private String 		  m_result;
+
 	public NumericalAttributeValueEditing(Component parent, UserTreeTable external_user_tree_table, int selected_row)
 	{
 		result_flag = false;
@@ -58,6 +65,57 @@ class NumericalAttributeValueEditing extends JDialog implements ConstantVars
 		init_ui(parent);
 		init_textfields(username, attribute_name_ref.get(), attribute_value_ref.get());
 		setup_actions();
+	}
+
+
+	// WEB
+	public NumericalAttributeValueEditing(UserTreeTable external_user_tree_table, int selected_row)
+	{
+		result_flag = false;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Admin_JNI");
+
+		String username = get_username_from_user_tree_table(external_user_tree_table, selected_row);
+
+		// Reference parameters
+		AtomicReference<String> attribute_name_ref  = new AtomicReference<String>("");
+		AtomicReference<String> attribute_value_ref = new AtomicReference<String>("");
+		get_attribute_info(external_user_tree_table, selected_row, attribute_name_ref, attribute_value_ref);
+
+		current_attribute_value = Integer.parseInt(attribute_value_ref.get());
+
+		m_username        = username;
+		m_attribute_name  = attribute_name_ref.get();
+		m_attribute_value = attribute_value_ref.get();
+
+	}
+
+	public void editAttribute(String username, String full_attribute_name, String attribute_value){
+		if(validate_web_input(attribute_value))
+		{
+
+			String attribute_name           = full_attribute_name.substring(full_attribute_name.indexOf(".") + 1);
+			String attribute_authority_name = full_attribute_name.substring(0, full_attribute_name.indexOf("."));
+
+			// Call to C function
+			if(edit_user_attribute_value_main(username, attribute_name, attribute_authority_name, attribute_value))
+			{
+				result_flag = true;
+			}
+		}
+	}
+
+	public String getUsername(){
+		return m_username;
+	}
+
+	public String getAttributeName(){
+		return m_attribute_name;
+	}
+
+	public String getAttributeValue(){
+		return m_attribute_value;
 	}
 
 	private final void init_ui(Component parent)
@@ -195,6 +253,35 @@ class NumericalAttributeValueEditing extends JDialog implements ConstantVars
 		return true;
 	}
 
+	private boolean validate_web_input(String attribute_value)
+	{
+		Pattern p;
+		Matcher m;
+
+		// Validate attribute value
+		p = Pattern.compile("^[0-9]+");
+		m = p.matcher(attribute_value);
+
+		if(!m.matches())
+		{
+			//JOptionPane.showMessageDialog(this, "Please input correct format for the attribute value");
+			m_result = "Please input correct format for the attribute value";
+
+			return false;
+		}
+
+		// Check update
+		if(Integer.parseInt(attribute_value) == current_attribute_value)
+		{
+			JOptionPane.showMessageDialog(this, "No any update");
+			m_result = "No any update";
+
+			return false;
+		}
+
+		return true;
+	}
+
 	private void init_textfields(String username, String attribute_name, String attribute_value)
 	{
 		username_textfield.setText(username);
@@ -265,10 +352,20 @@ class NumericalAttributeValueEditing extends JDialog implements ConstantVars
 		return result_flag;
 	}
 
+	public boolean getResult(){
+		return result_flag;
+	}
+
+	public String getResultMsg(){
+		return m_result;
+	}
+
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		//JOptionPane.showMessageDialog(main_panel, alert_msg);
+		m_result = alert_msg;
+
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)

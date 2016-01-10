@@ -1399,13 +1399,25 @@ app.post('/api/user_list', function (req, res) {
 
 });
 
-app.post('/api/table_attribute_for_register_user', function (req, res) {
+
+app.post('/api/set_register_user', function (req, res) {
+
+  console.log("-------------- Set Edit User Attribute User---------------");
+
+  m_main_class[req.user.name].setUserManagementSync();
+
+  console.log("--------------End Set Edit User User---------------");
+
+});
+
+
+app.post('/api/table_attribute_for_user_management', function (req, res) {
 
   console.log("-------------- Get Table Attribute User---------------");
 
-  var registrationUserClass = m_main_class[req.user.name].getUserManagementSync();
+  var UserManagementClass = m_main_class[req.user.name].getUserManagementSync();
 
-  var result = registrationUserClass.getTableAttributeSync();
+  var result = UserManagementClass.getTableAttributeSync();
 
   console.log(result);
 
@@ -1496,24 +1508,118 @@ app.post('/api/removeuser', function (req, res) {
 
 app.post('/api/setedituser', function (req, res) {
 
-  console.log("-------------- Set Edit User Attribute User---------------");
+  console.log("-------------- Set Edit User ---------------");
 
   m_main_class[req.user.name].setEditUserClassSync(req.body.ID);
 
-  console.log("--------------End Set Edit User User---------------");
+  console.log("--------------End Set Edit User ---------------");
+
+});
+
+app.post('/api/info_for_edit_user', function (req, res) {
+
+  console.log("-------------- Edit User---------------");
+
+  var editUserClass = m_main_class[req.user.name].getUserManagementSync();
+
+  console.log(editUserClass.getUserEditSync());
+  console.log(editUserClass.getEmailEditSync());
+
+  var result = [];
+  result[0] = editUserClass.getUserEditSync();
+  result[1]    = editUserClass.getEmailEditSync();
+
+  res.send(result);
+  console.log("--------------End Edit User ---------------");
 
 });
 
 app.post('/api/edituser', function (req, res) {
 
-  console.log("-------------- Edit User Attribute User---------------");
+  console.log("-------------- Register User---------------");
 
-  var editUserClass = m_main_class[req.user.name].getEditUserClassSync();
+  var editUserClass = m_main_class[req.user.name].getUserManagementSync();
 
-  console.log(editUserClass);
-  console.log("--------------End Edit User User---------------");
+  var flag = "";
+  
+  for(x in req.body.attributeTable){
+
+    console.log(req.body.attributeTable[x]);
+
+    flag = flag +req.body.attributeTable[x][0].toString() + " ";
+  }
+
+  flag = flag + ",";
+
+  for(x in req.body.attributeTable){
+
+    flag = flag +req.body.attributeTable[x][2].toString() + " ";
+  }
+
+  editUserClass.setTableAttributeSync(flag);
+
+  editUserClass.editUserSync(req.body.username, req.body.email);
+
+  // return value
+
+  console.log("--------------End Register User---------------");
 
 });
+
+app.post('/api/seteditattribute', function (req, res) {
+
+  console.log("-------------- Set Edit Attribute User---------------");
+
+  m_main_class[req.user.name].setEditAttributeClassSync(req.body.ID);
+
+  res.send(true);
+
+  console.log("--------------End Set Edit Attribute User---------------");
+
+});
+
+app.post('/api/info_for_edit_attribute', function (req, res) {
+
+  console.log("-------------- Get Info Attribute User---------------");
+
+  var editAttributeClass = m_main_class[req.user.name].getEditAttributeClassSync();
+
+  var result = [];
+  result[0] = editAttributeClass.getUsernameSync();
+  result[1] = editAttributeClass.getAttributeNameSync();
+  result[2] = editAttributeClass.getAttributeValueSync();
+
+  res.send(result);
+  console.log("--------------End Get Info Attribute User ---------------");
+
+});
+
+app.post('/api/editattribute', function (req, res) {
+
+  console.log("-------------- Edit User Attribute ---------------");
+
+  var editAttributeClass = m_main_class[req.user.name].getEditAttributeClassSync();
+
+  var result = [];
+
+  editAttributeClass.editAttributeSync(req.body.username, req.body.attributename, req.body.attributevalue);
+
+  result[0] = editAttributeClass.getResultSync();
+
+  m_main_class[req.user.name].updateAttributeTableSync();
+  m_main_class[req.user.name].updateUserListSync();
+
+  result[1] = editAttributeClass.getResultMsgSync();
+
+  res.send(result);
+
+
+  console.log("--------------End Edit User Attribute---------------");
+
+});
+
+
+
 //----------------------------------------------------------------------
 
 // HANDLER NOT FOUND PAGE

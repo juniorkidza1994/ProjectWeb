@@ -204,6 +204,14 @@
         }
       })
 
+     .when('/admin/editattribute', {
+        templateUrl : 'editAttribute.html',
+        controller: 'editAttributeController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
     //-------------------------- USER -----------------------------------------
       .when('/user/info', {
         templateUrl : 'info.html',
@@ -1885,7 +1893,7 @@
         }
     });
 
-        phrApp.controller('editAuthorityController', function($scope, $http, $location) {
+    phrApp.controller('editAuthorityController', function($scope, $http, $location) {
         $scope.authority_name = "";
         $scope.ip_address = "";
 
@@ -1924,40 +1932,50 @@
         var arr = [];
         $scope.selectedRow = null ;
 
-        var index = 0;
+        
 
         $scope.tree_data = [{Name: " " ,Type: " ", Email: " ", children: []}];
 
-        $http.post('/api/user_list')
-        .success(function(res){
-          console.log("GET INFO ");
-          
-          angular.forEach(res, function(value,key){
+        var getlist = function(){
 
-            var str = value.split("+");
-            if(str[0] == "M"){
-              arr.push({
-                ID: index, Name: str[1], Type: str[2], Email: str[3], children: [] 
-              });
-            }
-             else if(str[0] == "C"){
-                arr[arr.length - 1].children.push({
-                  ID: index, Name:str[1], Type: str[2], Email: str[3],
-                     children: [] 
-                });
-             }
+          arr = [];
+          $scope.selectedRow = null ;
+
+          var index = 0;
+
+          $http.post('/api/user_list')
+          .success(function(res){
+            console.log("GET INFO ");
             
-            index ++ ;
-            console.log(str);
-          });
+            angular.forEach(res, function(value,key){
 
-          console.log(arr);
+              var str = value.split("+");
+              if(str[0] == "M"){
+                arr.push({
+                  ID: index, Name: str[1], Type: str[2], Email: str[3], children: [] 
+                });
+              }
+               else if(str[0] == "C"){
+                  arr[arr.length - 1].children.push({
+                    ID: index, Name:str[1], Type: str[2], Email: str[3],
+                       children: [] 
+                  });
+               }
+              
+              index ++ ;
+              console.log(str);
+            });
 
-          $scope.tree_data = arr.slice();
+            console.log(arr);
 
-          console.log($scope.tree_data);
-         
-        })
+            $scope.tree_data = arr.slice();
+
+            console.log($scope.tree_data);
+           
+          })
+        };
+
+        getlist();
 
         $scope.col_defs = [
 
@@ -1993,26 +2011,37 @@
         }
 
         $scope.register =  function(){
+          $http.post('/api/set_register_user')
+          .success(function(res){
+          })
+
          $location.path('/admin/registeruser');
         }
 
         $scope.edit =  function(){
-          $http.post('/api/setedituser',{
-            ID   : $scope.selectedRow['ID']
-          })
-          .success(function(res){
-            console.log("SUCCESS");
-          })
-         $location.path('/admin/edituser');
-        }
 
-        $scope.isEdit =     function(){
-        //  console.log($scope.selectedRow);
+          console.log($scope.selectedRow);
+
           if($scope.selectedRow != null){
-            if($scope.selectedRow['Type'] == "User" || $scope.selectedRow['Name'].indexOf(" = ") != -1)
-              return true;
-            else
-              return false;
+            if($scope.selectedRow['Type'] == "User"){
+              $http.post('/api/setedituser',{
+                ID   : $scope.selectedRow['ID']
+              })
+              .success(function(res){
+                console.log("EDIT USER");
+                 $location.path('/admin/edituser');
+              })
+               
+            }
+            else if($scope.selectedRow['Name'].indexOf(" = ") != -1 && $scope.selectedRow['Type'] == "Attribute"){
+              $http.post('/api/seteditattribute',{
+                ID   : $scope.selectedRow['ID']
+              })
+              .success(function(res){
+                console.log("EDIT ATTRIBUTE");
+                $location.path('/admin/editattribute');
+              })
+            }
           }
         }
 
@@ -2026,40 +2055,71 @@
           }
         }
 
-        $scope.resetPwd =     function(){
-          $http.post('/api/resetpassworduser',{
-            username   : $scope.selectedRow['Name']
-          })
-          .success(function(res){
-            alert(res[1]);
-          })
+        $scope.isEdit =     function(){
+        //  console.log($scope.selectedRow);
+          if($scope.selectedRow != null){
+            if($scope.selectedRow['Type'] == "User" || ($scope.selectedRow['Name'].indexOf(" = ") != -1 && $scope.selectedRow['Type'] == "Attribute"))
+              return true;
+            else
+              return false;
+          }
         }
+
+         var isClicked_resetPwd = false;
+
+        $scope.resetPwd =     function(){
+
+          if(!isClicked_resetPwd){
+            isClicked_resetPwd = true;
+            $http.post('/api/resetpassworduser',{
+              username   : $scope.selectedRow['Name']
+            })
+            .success(function(res){
+              alert(res[1]);
+            })
+            isClicked_resetPwd = false;
+          }
+        }
+
+        var isClicked_remove = false;
 
         $scope.remove = function(){
 
-          var r = confirm("Are you sure to remove this " + $scope.selectedRow['Type'] + "?\n");
-           
-            if(r == true) {
-               if($scope.selectedRow == null){
-                  alert("Choose row !!");
-               }
-               else {
+          if(!isClicked_remove){
 
-                  $http.post('/api/removeuser',{
-                    ID : $scope.selectedRow['ID']
-                  })
-                  .success(function(res){
-                      if(res){
-                        alert("Remove Success !!");
-                        $location.path('/admin/info');
-                      }
-                      else {
-                        alert("Remove Faill !!");
-                        $location.path('/admin/info');
-                      }
-                  })
-               }
-            } 
+            isClicked_remove = true;
+
+            var r = confirm("Are you sure to remove this " + $scope.selectedRow['Type'] + "?\n");
+             
+              if(r == true) {
+                 if($scope.selectedRow == null){
+                    alert("Choose row !!");
+                     isClicked_remove = false;
+                 }
+                 else {
+
+                    $http.post('/api/removeuser',{
+                      ID : $scope.selectedRow['ID']
+                    })
+                    .success(function(res){
+
+                      isClicked_remove = false;
+
+                        if(res){
+                          alert("Remove Success !!");
+                          getlist();
+                          $location.path('/admin/usermanagement');
+                        }
+                        else {
+                          alert("Remove Faill !!");
+                          $location.path('/admin/usermanagement');
+                        }
+                    })
+                 }
+              } 
+              else
+                 isClicked_remove = false;
+            }
           }
     });
 
@@ -2073,7 +2133,7 @@
 
         $scope.attribute_table = [];
 
-        $http.post('/api/table_attribute_for_register_user')
+        $http.post('/api/table_attribute_for_user_management')
         .success(function(res){
           console.log("SSSSS");
           console.log(res);
@@ -2087,46 +2147,126 @@
               }
         })
 
+        var isClicked = false;
+
         $scope.submit = function(){
+          if(!isClicked){
+
+            isClicked = true;
+
+            if($scope.email == null)
+              $scope.email = "";
+            if($scope.username == null)
+              $scope.username = null;
+
+            $http.post('/api/registeruser',{
+              username   : $scope.username,
+              email   : $scope.email,
+              attributeTable : $scope.attribute_table
+            })
+            .success(function(res){
+                $scope.username = "";
+                $scope.email = "";
+
+                for(var i = 0 ; i < $scope.attribute_table.length;i++){
+                  $scope.attribute_table[i][0] = false;
+                  if($scope.attribute_table[i][2] != "(none)")
+                    $scope.attribute_table[i][2] = "(value)";
+                }
+
+                console.log(res);
+
+                alert(res[1]);
+
+                if(res[0]){
+                  $location.path('/admin/usermanagement');
+                }
+                
+            })
+          }
+        }
+    });
+
+    phrApp.controller('editUserController', function($scope, $http, $location) {
+        
+      $scope.username = "";
+      $scope.email = "";
+      $scope.attribute_table = [];
+
+      $http.post('/api/table_attribute_for_user_management')
+      .success(function(res){
+        $scope.attribute_table = res;
+          console.log("TABLE");
+          console.log(res);
+       })
+
+      $http.post('/api/info_for_edit_user')
+      .success(function(res){
+        $scope.username = res[0];
+        $scope.email    = res[1];
+          console.log("USERNAME Enail");
+          console.log(res);
+      })
+
+      var isClicked  = false;
+
+      $scope.submit = function(){
+        if(!isClicked){
           if($scope.email == null)
             $scope.email = "";
           if($scope.username == null)
             $scope.username = null;
 
-          $http.post('/api/registeruser',{
-            username   : $scope.username,
+          $http.post('/api/edituser',{
+            username: $scope.username,
             email   : $scope.email,
             attributeTable : $scope.attribute_table
           })
           .success(function(res){
-              $scope.username = "";
-              $scope.email = "";
-
-              for(var i = 0 ; i < $scope.attribute_table.length;i++){
-                $scope.attribute_table[i][0] = false;
-                if($scope.attribute_table[i][2] != "(none)")
-                  $scope.attribute_table[i][2] = "(value)";
-              }
-
-              console.log(res);
-
-              alert(res[1]);
-
-              if(res[0]){
-                $location.path('/admin/info');
-              }
-              
+              console.log("SADAS");
           })
         }
+      }
 
     });
 
-    phrApp.controller('editUserController', function($scope, $http, $location) {
+    phrApp.controller('editAttributeController', function($scope, $http, $location) {
         
-        $http.post('/api/edituser')
-        .success(function(res){
-          console.log("Successsssssssssss");
-        })
+      $scope.username = "";
+      $scope.attributename = "";
+      $scope.attributevalue = "";
+
+      $http.post('/api/info_for_edit_attribute')
+      .success(function(res){
+        $scope.username         = res[0];
+        $scope.attributename    = res[1];
+        $scope.attributevalue   = res[2];
+          console.log("USERNAME Attribute");
+          console.log(res);
+          console.log($scope.username);
+          console.log($scope.attributename);
+          console.log($scope.attributevalue);
+      })
+
+      var isClicked = false;
+
+      $scope.submit = function(){
+
+        if(!isClicked){
+
+          isClicked = true;
+          $http.post('/api/editattribute',{
+            username: $scope.username,
+            attributename   : $scope.attributename,
+            attributevalue : $scope.attributevalue
+          })
+          .success(function(res){
+              isClicked = true;
+              alert(res[1]);
+              $location.path('/admin/usermanagement');
+          })
+        }
+      }
 
     });
 

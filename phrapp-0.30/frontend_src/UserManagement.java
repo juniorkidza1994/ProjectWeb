@@ -120,6 +120,8 @@ class UserManagement extends JDialog implements ConstantVars
 		// Load JNI backend library
 		System.loadLibrary("PHRapp_Admin_JNI");
 
+		current_email_address = get_email_address_from_user_tree_table();
+
 		init_attribute_table();
 		init_attribute_table_editing_mode();
 	}
@@ -382,6 +384,41 @@ class UserManagement extends JDialog implements ConstantVars
 			result_flag = false;
 	}
 
+	public void editUser(String username ,String email_address){
+		
+		if(!is_registering_mode_flag && validate_input_editing_web_mode(email_address)){
+
+			if(is_email_address_edited_flag && is_attribute_list_edited_flag)
+			{
+
+				// Call to C function
+				if(edit_user_email_address_and_attribute_list_main(username, email_address))
+				{
+					result_flag = true;
+										
+				}
+			}
+			else if(is_email_address_edited_flag)
+			{
+									
+				// Call to C function
+				if(edit_user_email_address_only_main(username, email_address))
+				{
+					result_flag = true;
+					
+				}
+			}
+			else if(is_attribute_list_edited_flag)
+			{
+				// Call to C function
+				if(edit_user_attribute_list_only_main(username))
+				{	
+					result_flag = true;
+				}
+			}
+		}
+	}
+
 	private void init_attribute_table_registering_mode()
 	{
 		int row_count = external_attribute_table_model.getRowCount();
@@ -448,6 +485,15 @@ class UserManagement extends JDialog implements ConstantVars
 		UserTreeTableNode user_node = get_selected_user_node_from_user_tree_table();
 		return user_node.getName();
 	} 
+
+	public String getUserEdit(){
+		return get_username_from_user_tree_table();
+	}
+
+	public String getEmailEdit(){
+		return get_email_address_from_user_tree_table();
+	}
+
 
 	private String get_email_address_from_user_tree_table()
 	{
@@ -752,6 +798,70 @@ class UserManagement extends JDialog implements ConstantVars
 		return check_for_update();
 	}
 
+	private boolean validate_input_editing_web_mode(String email)
+	{
+		Pattern p;
+		Matcher m;
+		int     noRowChecked;
+
+		// Validate e-mail address
+		p = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+
+		m = p.matcher(email);
+		if(!m.matches())
+		{
+			//JOptionPane.showMessageDialog(this, "Please input correct format for the email address");
+				
+			result = "Please input correct format for the email address";
+
+			return false;
+		}
+
+		// Validate selected attributes
+		noRowChecked = 0;
+
+		for(int i=0; i < attribute_table_model.getRowCount(); i++)
+		{
+			boolean is_checked_flag;
+			boolean is_numerical_attribute_flag;
+
+			is_checked_flag = ((Boolean)attribute_table_model.getValueAt(i, 0)).booleanValue();
+			if(is_checked_flag)
+			{
+				noRowChecked++;
+				is_numerical_attribute_flag = ((String)external_attribute_table_model.getValueAt(i, 1)).equals("true") ? true : false;
+				if(is_numerical_attribute_flag)
+				{
+					String attribute_name  = (String)attribute_table_model.getValueAt(i, 1);
+					String attribute_value = (String)attribute_table_model.getValueAt(i, 2);
+
+					p = Pattern.compile("^[0-9]+");
+					m = p.matcher(attribute_value);
+
+					if(!m.matches())
+					{
+						//JOptionPane.showMessageDialog(this, "Please input correct format for the attribute value" + "\"" + attribute_name + "\"");
+						
+						result = "Please input correct format for the attribute value" + "\"" + attribute_name + "\"";
+
+						return false;
+					}
+				}
+			}
+		}
+
+		if(noRowChecked == 0)
+		{
+			JOptionPane.showMessageDialog(this, "Please select at least 1 attribute");
+			
+			result = "Please select at least 1 attribute";
+
+			return false;
+		}
+
+		return checkForUpdate(email);
+	}
+
 	private boolean check_for_update()
 	{
 		is_email_address_edited_flag  = false;
@@ -760,6 +870,91 @@ class UserManagement extends JDialog implements ConstantVars
 		// Check e-mail address update
 		if(!email_address_textfield.getText().equals(current_email_address))
 			is_email_address_edited_flag = true;
+
+		// Check attribute list
+		int i;
+		int base             = 0;
+		int child_root_count = external_user_tree_table.get_user_tree_table_model().getChildCount(external_user_tree_table.get_user_tree_table_root());
+
+		for(i=0; i < child_root_count && base != selected_row; i++)
+		{
+			UserTreeTableNode node = (UserTreeTableNode)external_user_tree_table.get_user_tree_table_model().getChild(
+				external_user_tree_table.get_user_tree_table_root(), i);
+
+			int child_sub_root_count = external_user_tree_table.get_user_tree_table_model().getChildCount(node);
+			base += child_sub_root_count+1;
+		}
+
+		if(base == selected_row)    // At a user level
+		{
+			UserTreeTableNode user_node;
+			int               child_sub_root_count;
+			int		  rowCount;
+
+			user_node = (UserTreeTableNode)external_user_tree_table.get_user_tree_table_model().getChild(external_user_tree_table.get_user_tree_table_root(), i);
+			child_sub_root_count = external_user_tree_table.get_user_tree_table_model().getChildCount(user_node);
+
+			rowCount = attribute_table_model.getRowCount();
+			for(int j=0; j < rowCount && !is_attribute_list_edited_flag; j++)
+			{
+				boolean is_attribute_checked_flag = ((Boolean)attribute_table_model.getValueAt(j, 0)).booleanValue();
+				String  attribute_name            = (String)attribute_table_model.getValueAt(j, 1);
+				boolean found_flag		  = false;
+
+				for(int k=0; k < child_sub_root_count && !is_attribute_list_edited_flag; k++)    // At an attribute level
+				{
+					UserTreeTableNode attribute_node;
+					String            attribute_node_name;
+
+					attribute_node      = (UserTreeTableNode)external_user_tree_table.get_user_tree_table_model().getChild(user_node, k);
+					attribute_node_name = (attribute_node.getNameTableCell().indexOf(" = ") >= 0) ? attribute_node.getNameTableCell(
+						).substring(0, attribute_node.getNameTableCell().indexOf(" = ")) : attribute_node.getNameTableCell();
+
+					if(attribute_node_name.equals(attribute_name))
+					{
+						boolean is_numerical_attribute_flag = (attribute_node.getNameTableCell().indexOf(" = ") >= 0);
+
+						found_flag = true;
+						if(is_numerical_attribute_flag)
+						{
+							int current_attribute_value = attribute_node.getAttributeValue();
+							int attribute_value         = Integer.parseInt((String)attribute_table_model.getValueAt(j, 2));
+
+							if((is_attribute_checked_flag && attribute_value != current_attribute_value) || !is_attribute_checked_flag)
+								is_attribute_list_edited_flag = true;
+						}
+						else
+						{
+							if(!is_attribute_checked_flag)
+								is_attribute_list_edited_flag = true;
+						}
+					}
+				}
+
+				if(!found_flag && is_attribute_checked_flag)
+					is_attribute_list_edited_flag = true;
+			}
+		}
+
+		if(is_email_address_edited_flag || is_attribute_list_edited_flag)
+			return true;
+
+		JOptionPane.showMessageDialog(this, "No any update");
+		return false;
+	}
+
+
+	// web
+	public boolean checkForUpdate(String email)
+	{
+		is_email_address_edited_flag  = false;
+		is_attribute_list_edited_flag = false;
+
+		// Check e-mail address update
+		if(!email.equals(current_email_address)){
+			is_email_address_edited_flag = true;
+			System.out.println("EMAIL UPDATE");
+		}
 
 		// Check attribute list
 		int i;

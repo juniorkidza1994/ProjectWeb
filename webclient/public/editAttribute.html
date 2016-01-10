@@ -1,0 +1,40 @@
+
+    <div class="jumbotron text-center">
+
+      <h1>Edit Attribute</h2>
+      </div> <!-- /container -->
+
+      <div class="container">
+        <form method="post" class="form-horizontal">
+          
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">Username: </label>
+              <div class="col-sm-10">
+                  {{username}}
+              </div>
+            </div>
+
+              <div class="form-group" >
+                <label  class="col-sm-2 control-label">Attribute Name: </label>
+                <div class="col-sm-10">
+                    {{attributename}}
+                </div>
+              </div>
+
+              <div class="form-group" >
+                <label  class="col-sm-2 control-label">Attribute Value: </label>
+                <div class="col-sm-10">
+                    <input type="text" id="name" class="form-control" placeholder="E-mail Address" required ng-model="attributevalue">
+                </div>
+              </div>
+             
+
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <br />
+                  <button class="btn btn-success" type="submit" ng-click ="submit()">Submit</button>
+                  <a href="/#/admin/attribute" class="btn btn-info" role="button"> Back</a>
+              </div>
+           </div>
+        </form>
+      </div>

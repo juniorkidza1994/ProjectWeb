@@ -1,7 +1,7 @@
 
     <div class="jumbotron text-center">
 
-      <h1>Register User</h2>
+      <h1>Edit User</h2>
       </div> <!-- /container -->
 
       <div class="container">
@@ -10,7 +10,7 @@
             <div class="form-group">
               <label  class="col-sm-2 control-label">Username: </label>
               <div class="col-sm-10">
-                  <input type="text" id="name" class="form-control" placeholder="Username" required ng-model="username">
+                  {{username}}
               </div>
             </div>
 
@@ -20,12 +20,30 @@
                   <input type="text" id="name" class="form-control" placeholder="E-mail Address" required ng-model="email">
               </div>
             </div>
-            
-            <div class="form-group">
-              <label  class="col-sm-2 control-label">E-mail Address: </label>
-              <div class="col-sm-10">
-                  <input type="text" id="name" class="form-control" placeholder="E-mail Address" required ng-model="email">
+
+              <div class="form-group" ng-if="">
+                <label  class="col-sm-2 control-label">E-mail Address: </label>
+                <div class="col-sm-10">
+                    <input type="text" id="name" class="form-control" placeholder="E-mail Address" required ng-model="email">
+                </div>
               </div>
+              <div class="form-group">
+                <label  class="col-sm-2 control-label">Attributes: </label>
+                <div class="col-sm-10">
+                  <table class="table table-bordered" >
+                    <tr>
+                      <th>Selection</th>
+                      <th>Attribute Name</th>
+                      <th>Attribute Value</th>
+                    </tr>
+                    <tr ng-repeat="item in attribute_table" >
+                      <td><input type="checkbox" ng-model="attribute_table[$index][0]"></td>
+                      <td>{{item[1]}}</td>
+                      <td ng-if="item[2] == '(none)' ||  !item[0]">{{item[2]}}</td>
+                      <td ng-if="item[2] != '(none)' && item[0]"><input type="text" ng-model="attribute_table[$index][2]"></td>
+                    </tr>
+                  </table>
+                </div>
             </div>
 
             <div class="form-group">

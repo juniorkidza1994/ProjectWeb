@@ -3321,12 +3321,14 @@ public class AdminMain extends JFrame implements ConstantVars
 		return m_user_tree.toArray();
 	}
 
-	UserManagement m_user_registration;
+	Object m_user_manage;
+
+	public void setUserManagement(){
+		m_user_manage = new UserManagement(attribute_table_model);
+	}
 
 	public Object getUserManagement(){
-		if(m_user_registration == null)
-			m_user_registration = new UserManagement(attribute_table_model);
-		return m_user_registration;
+		return m_user_manage;
 	}
 
 	private boolean m_result_reset_pwd = false;
@@ -3401,8 +3403,6 @@ public class AdminMain extends JFrame implements ConstantVars
 			return false;
 	}
 
-	Object editUserClass ;
-
 	public void setEditUserClass(int selected_row){
 		System.out.println(selected_row);
 		if(selected_row >= 0)
@@ -3412,7 +3412,7 @@ public class AdminMain extends JFrame implements ConstantVars
 				System.out.println("Edit USer");
 				// Call user management object
 				UserManagement user_editing_dialog = new UserManagement(attribute_table_model, user_tree_table, selected_row);
-				editUserClass = user_editing_dialog;
+				m_user_manage = user_editing_dialog;
 			}
 			else if(is_selected_row_editable_attribute(selected_row))
 			{
@@ -3422,16 +3422,29 @@ public class AdminMain extends JFrame implements ConstantVars
 
 				// Call numerical attribute value editing object
 				attribute_value_editing_dialog = new NumericalAttributeValueEditing(main_panel, user_tree_table, selected_row);
-				editUserClass = attribute_value_editing_dialog;
+				m_user_manage = attribute_value_editing_dialog;
 			}
 		}
 		else
-			editUserClass = null;
+			m_user_manage = null;
 	}
 
-	public Object getEditUserClass(){
-		return editUserClass;
+	private Object m_editAttribute;
+
+	public void setEditAttributeClass(int selected_row){
+
+		NumericalAttributeValueEditing attribute_value_editing_dialog;
+
+		// Call numerical attribute value editing object
+		attribute_value_editing_dialog = new NumericalAttributeValueEditing(user_tree_table, selected_row);
+	
+		m_editAttribute = attribute_value_editing_dialog;
+	} 
+
+	public Object getEditAttributeClass(){
+		return m_editAttribute;
 	}
+
 }
 
 
