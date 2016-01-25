@@ -46,22 +46,23 @@ class NewPasswordChanging extends JDialog implements ConstantVars
 
 	// Return variable
 	private boolean        m_result_flag;	
+	private String		   m_result_msg;
 
 	public NewPasswordChanging(Component parent, boolean is_admin_flag, String current_passwd_cmp)
 	{
 
-		m_result_flag             = false;
+		m_result_flag           = false;
 		result_flag 			= false;
 		this.is_admin_flag      = is_admin_flag;
 		this.current_passwd_cmp = current_passwd_cmp;
 
 	}
 
-
+	// WEB
 	public NewPasswordChanging(boolean is_admin_flag, String current_passwd_cmp)
 	{
 
-		m_result_flag             = false;
+		m_result_flag           = false;
 		result_flag 			= false;
 		this.is_admin_flag      = is_admin_flag;
 		this.current_passwd_cmp = current_passwd_cmp;
@@ -148,10 +149,104 @@ class NewPasswordChanging extends JDialog implements ConstantVars
 		return true;
 	}
 
+	private boolean validate_input_web()
+	{
+		Pattern p;
+		Matcher m;
+
+		// Validate current passwd
+		if(!(current_passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && current_passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
+		{
+			// JOptionPane.showMessageDialog(this, "Please input the current password's length between " + 
+			// 	PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+			
+			m_result_msg = "Please input the current password's length between " + 
+				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters";
+			return false;
+		}
+
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9\\_&$%#@*+-/]+");
+		m = p.matcher(current_passwd);
+		if(m.matches() == false)
+		{
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the current password");
+			m_result_msg = "Please input correct format for the current password";
+
+			return false;
+		}
+
+		// Validate new passwd
+		if(!(new_passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && new_passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
+		{
+			// JOptionPane.showMessageDialog(this, "Please input the new password's length between " + 
+			// 	PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+			m_result_msg = "Please input the new password's length between " + 
+				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters";
+			return false;
+		}
+
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9\\_&$%#@*+-/]+");
+		m = p.matcher(new_passwd);
+		if(m.matches() == false)
+		{
+		//	JOptionPane.showMessageDialog(this, "Please input correct format for the new password");
+			m_result_msg = "Please input correct format for the new password";
+			return false;
+		}
+
+		// Validate confirm new passwd
+		if(!(confirm_new_passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && confirm_new_passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
+		{
+			//JOptionPane.showMessageDialog(this, "Please input the confirm new password's length between " + 
+			//	PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+			m_result_msg = "Please input the confirm new password's length between " + 
+			PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters";
+			return false;
+		}
+
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9\\_&$%#@*+-/]+");
+		m = p.matcher(confirm_new_passwd);
+		if(m.matches() == false)
+		{
+		//	JOptionPane.showMessageDialog(this, "Please input correct format for the confirm new password");
+			m_result_msg = "Please input correct format for the confirm new password";
+			return false;
+		}
+
+		// Do a new password and a confirm new password match?
+		if(!new_passwd.equals(confirm_new_passwd))
+		{
+		//	JOptionPane.showMessageDialog(this, "The new password and confirm new password do not match");
+			m_result_msg = "The new password and confirm new password do not match";
+			return false;
+		}
+
+		// Do an current password match a compared current password?
+		if(!current_passwd.equals(current_passwd_cmp))
+		{
+		//	JOptionPane.showMessageDialog(this, "Invalid the current password");
+			m_result_msg = "Invalid the current password";
+			return false;
+		}
+
+		// Check update
+		if(current_passwd.equals(new_passwd))
+		{
+		//	JOptionPane.showMessageDialog(this, "No any update");
+			m_result_msg = "No any update";
+			return false;
+		}
+
+		return true;
+	}
+
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
+		if(alert_msg.equals("Sending an e-mail failed (SSL connect error)"))
+			m_result_flag = true;
+		m_result_msg = alert_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)
@@ -186,7 +281,7 @@ class NewPasswordChanging extends JDialog implements ConstantVars
 		System.out.println("NEW PASSWORD : " + this.new_passwd);
 		System.out.println("CONFIRM PASSWORD : " + this.confirm_new_passwd);
 
-		if(validate_input())
+		if(validate_input_web())
 		{
 
 			// Call to C function
@@ -194,19 +289,26 @@ class NewPasswordChanging extends JDialog implements ConstantVars
 			{
 				m_result_flag = true;
 				result_flag   = true;
+				m_result_msg  = "Change Password Success";
 			}
 			else if(!is_admin_flag && change_user_passwd_main(new_passwd, send_new_passwd_flag.booleanValue()))
 			{
 				System.out.println("CHANGE PASS SUCCESS!!");
 				m_result_flag = true;
 				result_flag   = true;
+				m_result_msg  = "Change Password Success";
 			}
 		}
 	}
 
-	public boolean getResulFlag()
+	public boolean getResultFlag()
 	{
 		return m_result_flag;
+	}
+
+	public String getResultMsg()
+	{
+		return m_result_msg;
 	}
 }
 

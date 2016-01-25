@@ -3445,6 +3445,10 @@ public class AdminMain extends JFrame implements ConstantVars
 		return m_editAttribute;
 	}
 
+	public void closeProgram(){
+		System.exit(0);
+	}
+
 }
 
 

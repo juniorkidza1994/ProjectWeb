@@ -21,6 +21,7 @@
     "angular-ui-tree": "~2.9.0",
     "angular-bootstrap": "~0.14.3",
     "angular-animate": "~1.4.7",
-    "bootstrap-table": "~1.9.1"
+    "bootstrap-table": "~1.9.1",
+    "socket.io-client": "~1.4.4"
   }
 }

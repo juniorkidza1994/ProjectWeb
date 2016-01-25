@@ -143,28 +143,23 @@ public class Login extends JFrame  implements ConstantVars
 	public boolean login(String user_auth_ip_addr, String username, String passwd, String user_type)
 	{
 				boolean result = false;
-				// We could not use tryLock() becuase the SwingUtilities the same thread even if
-				// we call it manay times.Note that, the tryLock() could not detect the same thead
-				if(!working_lock.isLocked())
-				{
-					working_lock.lock();
-				}
-				else
-				{
-					return result;
-				}		
-				
+
+				System.out.println("USER IP" + user_auth_ip_addr);
+				System.out.println("username" + username);
+				System.out.println("passwd" + passwd);
+				System.out.println("user_type" + user_type);
+
+
 				// Validate User Authority's IP address, username and password
 				if(!validate_inputs(user_auth_ip_addr, username, passwd))
 				{
-					working_lock.unlock();
 					return result;
 				}
 
 				// Check for existence of a user authority's public key if it does not exist then load it
 				if(!load_user_authority_pub_key_main(user_auth_ip_addr))  // Call to backend (C function)
 				{
-					working_lock.unlock();
+					System.out.println("SAD");
 					return result;
 				}
 
@@ -223,8 +218,6 @@ public class Login extends JFrame  implements ConstantVars
 		//				user_auth_ip_addr_textfield.requestFocus();
 					}
 				}
-
-				working_lock.unlock();
 
 				return result;
 	}

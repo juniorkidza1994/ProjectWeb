@@ -15,6 +15,28 @@
     //================================================
     // Check if the user is connected
     //================================================
+
+    var interceptor = ['$rootScope', '$q', "Base64", function (scope, $q, Base64) {
+        function success(response) {
+            return response;
+        }
+        function error(response) {
+            var status = response.status;
+            if (status == 401) {
+                //AuthFactory.clearUser();
+                //window.location = "/account/login?redirectUrl=" + Base64.encode(document.URL);
+                console.log("EIEI");
+
+                return;
+            }
+            // otherwise
+            return $q.reject(response);
+        }
+        return function (promise) {
+            return promise.then(success, error);
+        }
+    }];
+
     var checkLoggedin = function($q, $timeout, $http, $location, $rootScope){
       // Initialize a new promise
       var deferred = $q.defer();
@@ -337,7 +359,7 @@
     // Logout function is available in any pages
     $rootScope.logout = function(){
       $rootScope.message = 'Logged out.';
-      $http.post('/api/logout');
+      // $http.get('/api/logout');
     };
   });
 
@@ -348,15 +370,32 @@
       console.log("ISLOGGIN : " + $scope.isLoggin);
 
       $http.get('/api/loggedin').success(function(user){
+        console.log(user.type);
         // Authenticated
         if (user !== '0'){
           $scope.isLoggin = true;
           $scope.usertype = user.type;
+          console.log($scope.usertype);
         }
         // Not Authenticated
         else
           $scope.isLoggin = false;
       });
+
+      $scope.logout = function(){
+        $http.get('/api/logout').success(function(user){
+          console.log(user.type);
+          // Authenticated
+          if (user !== '0'){
+            $scope.isLoggin = true;
+            $scope.usertype = user.type;
+            console.log($scope.usertype);
+          }
+          // Not Authenticated
+          else
+            $scope.isLoggin = false;
+        });
+      }
     });
 
     // create the controller and inject Angular's $scope
@@ -619,6 +658,9 @@
         $scope.password = {};
         $scope.password.flag = false;
         var isClick = false;
+        $scope.password.curr_passwd = "";
+        $scope.password.new_passwd = "";
+        $scope.password.confirm_passwd = "";
 
         $scope.submit = function(){
           if(!isClick){
@@ -629,18 +671,27 @@
               confirm_new_passwd    : $scope.password.confirm_passwd,
               send_new_passwd_flag  : $scope.password.flag
             })
-            .success(function(user){
+            .success(function(res){
               // No error: authentication OK
               //console.log("SUCCESS");
               isClick = false;
-              alert("CHANGE PASSWORD SUCCESS !!");
-              $http.get('/api/loggedin')
-              .success(function(user){
-                if(user.type = "Admin")
-                  $location.path('/admin/info');
-                else if(user.type = "User")
-                  $location.path('/user/info');
-              })
+              console.log(res);
+
+              if(res[0]){
+                alert(res[1]);
+                $location.path('/');
+              }
+              else {
+                alert(res[1]);
+                // $location.path('/');
+              }
+              // $http.get('/api/loggedin')
+              // .success(function(user){
+              //   if(user.type = "Admin")
+              //     $location.path('/admin/info');
+              //   else if(user.type = "User")
+              //     $location.path('/user/info');
+              // })
             })
           }
         };
@@ -1371,7 +1422,6 @@
           //    console.log(user);
               $window.alert("LOGIN SUCCESS !!")
               $window.location.reload();
-
             })
             .error(function(){
               $window.alert("LOGIN FAILED !!!");

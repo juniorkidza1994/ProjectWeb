@@ -41,12 +41,10 @@
       <script src="lib/angular-ui-tree/source/directives/uiTreeNode.js"></script>
       <script src="lib/angular-ui-tree/source/directives/uiTreeNodes.js"></script>
       <script src="lib/angular-ui-tree/source/services/helper.js"></script>
-
-
 <!-- 
       <base href="/"> -->
     </head>
-    <body>
+    <body ng-controller="indexController">
 
         <!-- HEADER AND NAVBAR -->
             <nav class="navbar navbar-inverse">
@@ -59,8 +57,11 @@
                     </button>
                     <a class="navbar-brand" href="/#/">Multi-Authority Secure Personal Health Record (DEMO)</a>
                 </div>
+                <div class="navbar-right">
+                  <button ng-show="isLoggin == true " class="btn btn-danger" ng-click="logout()" > Logout </button>
+                </div>
 
-                <div class="collapse navbar-collapse" id="myNavbar" ng-controller="indexController">
+                <div class="collapse navbar-collapse" id="myNavbar" >
                   <ul class="nav navbar-nav navbar-right" ng-if="usertype=='User'">
 
                       <li ng-show="isLoggin == true "><a href="/#/user/info"><i class="fa fa-sign-in"></i> Info</a></li>
@@ -80,7 +81,7 @@
                             </li>
                           </ul>
                       </li>
-                        <li ng-show="isLoggin == true "><a class="btn btn-danger" href="/api/logout">Logout</a></li>
+
                   </ul>
 
                   <ul class="nav navbar-nav navbar-right" ng-if="usertype=='Admin'">
@@ -92,8 +93,6 @@
                       <li ng-show="isLoggin == true "><a href="/#/admin/authoritymanagement"><i class="fa fa-sign-in"></i> Authority Management</a></li>
 
                       <li ng-show="isLoggin == true "><a href="/#/admin/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li>
-                      
-                      <li ng-show="isLoggin == true "><a href="/#/admin/transaction"><i class="fa fa-sign-in"></i> Transaction Auditing</a></li><a class="btn btn-danger" hreg="/api/logout">Logout</a>
                   </ul>
                 </div>
             </div>
