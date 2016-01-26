@@ -665,6 +665,17 @@
         $scope.submit = function(){
           if(!isClick){
             isClick = true;
+
+            if($scope.password.curr_passwd == null){
+              $scope.password.curr_passwd = "";
+            }
+            if($scope.password.new_passwd == null){
+              $scope.password.new_passwd = "";
+            }
+            if($scope.password.confirm_passwd == null){
+              $scope.password.confirm_passwd = "";
+            }
+
             $http.post('/api/changepwd', {
               current_passwd        : $scope.password.curr_passwd,
               new_passwd            : $scope.password.new_passwd,
@@ -1074,6 +1085,8 @@
         $scope.data = {};
         $scope.info = {};
 
+        $scope.data.password = "";
+
         var type;
 
         $http.get('/api/loggedin')
@@ -1102,25 +1115,32 @@
         $scope.submit = function(){
           if(!isClick){
             isClick = true;
+
+            if($scope.data.email == null){
+              $scope.data.email = "";
+            }
+            if($scope.data.password == null){
+              $scope.data.password = "";
+            }
+
+
             $http.post('/api/change_email', {
               email                  : $scope.data.email,
-              confirm_new_passwd     : $scope.data.password,
+              confirm_new_passwd     : $scope.data.password
             })
-            .success(function(user){
+            .success(function(res){
               // No error: authentication OK
               //console.log("SUCCESS");
               isClick = false;
-              $window.alert("CHANGE EMAIL SUCCESS !!")
-              if(type == "Admin")
-                $location.path('/admin/info');
-              else if(type == "User")
-                $location.path('/user/info');
+              $window.alert(res[1])
+              if(res[0])
+                $location.path('/');
             })
           }
         };
 
         $scope.back = function(){
-          $location.path('/info');
+          $location.path('/');
         }
     });
 

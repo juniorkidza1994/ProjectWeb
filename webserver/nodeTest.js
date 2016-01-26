@@ -437,13 +437,25 @@ else
     objChangeEmail.change_emailSync(new_email_address, confirm_new_passwd);
 
     // Call java function
-    var result = objChangeEmail.get_resultSync();
+    var result      = [];
+    var result_flag = objChangeEmail.getResultFlagSync();
+    var result_msg  = objChangeEmail.getResultMsgSync();
 
-    if(result){
+    result[0] = result_flag;
+    result[1] = result_msg;
+
+    if(result_flag){
       console.log("UPDATE EMAIL");
 
       // Call java function
       m_main_class[req.user.name].updateNewEmailSync(new_email_address);
+      res.send(result);
+
+      console.log("---------------- END CHANGE EMAIL ---------------");
+    }
+    else {
+      console.log("Change Email Failed");
+
       res.send(result);
 
       console.log("---------------- END CHANGE EMAIL ---------------");

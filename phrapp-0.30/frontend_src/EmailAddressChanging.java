@@ -40,11 +40,12 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 	private String		   confirm_passwd;
 
 	// Return variable
-	private boolean        result_flag;
+	private boolean        m_result_flag;
+	private String		   m_result_msg;
 
 	public EmailAddressChanging(Component parent, boolean is_admin_flag, String current_email_address, String current_passwd)
 	{
-		result_flag                = false;
+		m_result_flag                = false;
 		this.is_admin_flag         = is_admin_flag;
 		this.current_email_address = current_email_address;
 		this.current_passwd        = current_passwd;
@@ -54,13 +55,14 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 		// setup_actions();
 	}
 
-
+	// WEB
 	public EmailAddressChanging( boolean is_admin_flag, String current_email_address, String current_passwd)
 	{
-		result_flag                = false;
+		m_result_flag                = false;
 		this.is_admin_flag         = is_admin_flag;
 		this.current_email_address = current_email_address;
 		this.current_passwd        = current_passwd;
+		m_result_msg 				   = "";
 	}
 
 	public String getCurrentEmail(){
@@ -76,12 +78,14 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 							// Call to C function
 			if(is_admin_flag && change_admin_email_address_main(new_email_address))
 			{
-				result_flag = true;
+				m_result_flag = true;
+				m_result_msg = "CHANGE EMAIL SUCCESSFULL";
 			}
 			else if(!is_admin_flag && change_user_email_address_main(new_email_address))
 			{
 				System.out.println("CHANGE EMAIL SUCCESSFULL");
-				result_flag = true;
+				m_result_msg = "CHANGE EMAIL SUCCESSFULL";
+				m_result_flag = true;
 			}
 		}
 	}
@@ -96,16 +100,18 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 		m = p.matcher(new_email_address);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the e-mail address");
+			//JOptionPane.showMessageDialog(this, "Please input correct format for the e-mail address");
+			m_result_msg = "Please input correct format for the e-mail address";
 			return false;
 		}
 
 		// Validate passwd
 		if(!(confirm_passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && confirm_passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
 		{
-			JOptionPane.showMessageDialog(this, "Please input the password's length between " + 
-				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
-
+			//JOptionPane.showMessageDialog(this, "Please input the password's length between " + 
+			//	PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+			m_result_msg = "Please input the password's length between " + 
+				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters";
 			return false;
 		}
 
@@ -113,21 +119,24 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 		m = p.matcher(confirm_passwd);
 		if(m.matches() == false)
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the password");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the password");
+			m_result_msg = "Please input correct format for the password";
 			return false;
 		}
 
 		// Do a password match with a current password?
 		if(!confirm_passwd.equals(current_passwd))
 		{
-			JOptionPane.showMessageDialog(this, "Invalid the password");
+			// JOptionPane.showMessageDialog(this, "Invalid the password");
+			m_result_msg = "Invalid the password";
 			return false;
 		}
 
 		// Check update
 		if(new_email_address.equals(current_email_address))
 		{
-			JOptionPane.showMessageDialog(this, "No any update");
+			//JOptionPane.showMessageDialog(this, "No any update");
+			m_result_msg = "No any update";
 			return false;
 		}
 
@@ -136,8 +145,19 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 
 	public boolean get_result()
 	{
-		return result_flag;
+		return m_result_flag;
 	}
+
+	public boolean getResultFlag()
+	{
+		return m_result_flag;
+	}
+
+	public String getResultMsg()
+	{
+		return m_result_msg;
+	}
+
 
 	public String get_email_address()
 	{
@@ -147,7 +167,10 @@ class EmailAddressChanging extends JDialog implements ConstantVars
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		//JOptionPane.showMessageDialog(main_panel, alert_msg);
+		if(alert_msg.equals("Sending an e-mail failed (SSL connect error)"))
+			m_result_flag = true;
+		m_result_msg = alert_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)
