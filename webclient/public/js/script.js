@@ -1841,23 +1841,24 @@
     phrApp.controller('registerAdminController', function($scope, $http, $location) {
         $scope.username = "";
         $scope.email = "";
+        var isClick = false;
 
         // get userinfo
         $scope.submit = function(){
-          $http.post('/api/registeradmin',{
-            username : $scope.username,
-            email   : $scope.email
-          })
-          .success(function(res){
-              if(res){
-                alert("Register Success !!");
-                $location.path('/admin/info');
+          if(!isClick){
+            isClick = true;
+            $http.post('/api/registeradmin',{
+              username : $scope.username,
+              email    : $scope.email
+            })
+            .success(function(res){
+              isClick = false;
+              alert(res[1]);
+              if(res[0]){
+                $location.path('/admin/adminmanagement');
               }
-              else {
-                alert("Register Faill !!");
-                $location.path('/admin/info');
-              }
-          })
+            })
+          }
         }
     });
 

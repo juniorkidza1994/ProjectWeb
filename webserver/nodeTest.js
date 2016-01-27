@@ -1309,9 +1309,14 @@ else
     var registrationAdminClass = m_main_class[req.user.name].getRegisterAdminClassSync();
     registrationAdminClass.registerAdminSync(req.body.username, req.body.email);
 
-    var result = registrationAdminClass.getResultSync();
+    var result = [];
+    var result_flag = registrationAdminClass.getResultFlagSync();
+    var result_msg  = registrationAdminClass.getResultMsgSync();
+    result[0] = result_flag;
+    result[1] = result_msg ;
 
-    m_main_class[req.user.name].updateAdminListSync();
+    if(result_flag)
+      m_main_class[req.user.name].updateAdminListSync();
 
     res.send(result);
 

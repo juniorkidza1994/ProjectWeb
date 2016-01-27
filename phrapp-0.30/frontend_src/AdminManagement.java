@@ -41,6 +41,7 @@ class AdminManagement extends JDialog implements ConstantVars
 
 	// Return variable
 	private boolean    result_flag;
+	private String	   result_msg;
 
 	// WEB
 	private	String	   m_username;
@@ -63,6 +64,7 @@ class AdminManagement extends JDialog implements ConstantVars
 	public AdminManagement()       // Registration mode
 	{
 		result_flag               = false;
+		result_msg 				  = "";
 		is_registration_mode_flag = true;
 
 		// Load JNI backend library
@@ -89,6 +91,7 @@ class AdminManagement extends JDialog implements ConstantVars
 	public AdminManagement(String username, String current_email_address)       // Editing mode
 	{
 		result_flag                = false;
+		result_msg				   = "";
 		is_registration_mode_flag  = false;
 		m_current_username		   = username;
 		this.current_email_address = current_email_address;
@@ -233,6 +236,7 @@ class AdminManagement extends JDialog implements ConstantVars
 			if(register_admin_main(username, email_address))
 			{
 				result_flag = true;
+				result_msg  = "Register Admin Success !!";
 			}
 		}
 	}
@@ -247,6 +251,7 @@ class AdminManagement extends JDialog implements ConstantVars
 			if(edit_admin_email_address_main(username, email_address))
 			{
 				result_flag = true;
+				result_msg  = "Edit Admin Success !!";
 			}
 		}
 	}
@@ -270,7 +275,8 @@ class AdminManagement extends JDialog implements ConstantVars
 		m = p.matcher(m_username);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the username");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the username");
+			result_msg = "Please input correct format for the username";
 			return false;
 		}
 
@@ -280,7 +286,8 @@ class AdminManagement extends JDialog implements ConstantVars
 		m = p.matcher(m_email_address);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the email address");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the email address");
+			result_msg = "Please input correct format for the email address";
 			return false;
 		}
 
@@ -299,14 +306,16 @@ class AdminManagement extends JDialog implements ConstantVars
 		m = p.matcher(email_address);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the email address");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the email address");
+			result_msg = "Please input correct format for the email address";
 			return false;
 		}
 
 		// Check update
 		if(email_address.equals(current_email_address))
 		{
-			JOptionPane.showMessageDialog(this, "No any update");
+			// JOptionPane.showMessageDialog(this, "No any update");
+			result_msg = "No any update";
 			return false;
 		}
 
@@ -318,15 +327,22 @@ class AdminManagement extends JDialog implements ConstantVars
 		return result_flag;
 	}
 
-	public boolean getResult()
+	public boolean getResultFlag()
 	{
 		return result_flag;
+	}
+	public String getResultMsg()
+	{
+		return result_msg;
 	}
 
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
+		if(alert_msg.equals("Sending an e-mail failed (SSL connect error)"))
+			result_flag = true;
+		result_msg = alert_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)
