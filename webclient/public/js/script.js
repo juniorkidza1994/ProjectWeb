@@ -1809,12 +1809,16 @@
                         isClick = false;
                           if(res){
                             alert("Delete Success !!");
-                            $location.path('/admin/info');
+                            $http.post('/api/adminlist')
+                            .success(function(res){
+                                $scope.admin_list  = res;
+                                //console.log($scope.admin_list);
+                            })
                           }
                           else {
                             alert("Delete Faill !!");
-                            $location.path('/admin/info');
                           }
+                          $location.path('/admin/adminmanagement');
                       })
                 }
                 else{
