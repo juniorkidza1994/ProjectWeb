@@ -1770,7 +1770,7 @@
             else {
               $http.post('/api/initeditadmin',{
                 username : $scope.admin_list[$scope.selectedRow][0],
-                email : $scope.admin_list[$scope.selectedRow][1]
+                email    : $scope.admin_list[$scope.selectedRow][1]
               })
               .success(function(res){
                 if(res){
@@ -1866,6 +1866,8 @@
         $scope.username = "";
         $scope.email = "";
 
+        var isClick = false;
+
         $http.post('/api/info_editadmin')
         .success(function(res){
           $scope.username = res.username;
@@ -1874,20 +1876,26 @@
 
         // get userinfo
         $scope.submit = function(){
-          $http.post('/api/editadmin',{
-            username : $scope.username,
-            email   : $scope.email
-          })
-          .success(function(res){
-              if(res){
-                alert("Edit Success !!");
-                $location.path('/admin/info');
+          if(!isClick){
+            isClick = true;
+            if($scope.username == null){
+              $scope.username = "";
+            }
+            if($scope.email == null){
+              $scope.email = "";
+            }
+            $http.post('/api/editadmin',{
+              username : $scope.username,
+              email    : $scope.email
+            })
+            .success(function(res){
+              isClick = false;
+              alert(res[1]);
+              if(res[0]){
+                $location.path('/admin/adminmanagement');
               }
-              else {
-                alert("Edit Faill !!");
-                $location.path('/admin/info');
-              }
-          })
+            })
+          }
         }
     });
 
