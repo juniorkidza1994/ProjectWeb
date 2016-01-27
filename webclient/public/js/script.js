@@ -1752,6 +1752,8 @@
         $scope.admin_list = {};
         $scope.selectedRow = -1;
 
+        var isClick = false;
+
         $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
         }
@@ -1764,77 +1766,89 @@
           })
 
           $scope.edit = function(){
-            if($scope.selectedRow == -1){
-              alert("Choose row !!");
-            }
-            else {
-              $http.post('/api/initeditadmin',{
-                username : $scope.admin_list[$scope.selectedRow][0],
-                email    : $scope.admin_list[$scope.selectedRow][1]
-              })
-              .success(function(res){
-                if(res){
-                  $location.path('/admin/editadmin');
-                }
-                else {
-                  alert("Error Can't not edit admin");
-                  $location.path('/admin/adminmanagement');
-                }
-              })
+            if(!isClick){
+              isClick = true;
+              if($scope.selectedRow == -1){
+                alert("Choose row !!");
+                isClick = false;
+              }
+              else {
+                $http.post('/api/initeditadmin',{
+                  username : $scope.admin_list[$scope.selectedRow][0],
+                  email    : $scope.admin_list[$scope.selectedRow][1]
+                })
+                .success(function(res){
+                  isClick = false;
+                  if(res){
+                    $location.path('/admin/editadmin');
+                  }
+                  else {
+                    alert("Error Can't not edit admin");
+                    $location.path('/admin/adminmanagement');
+                  }
+                })
+              }
             }
           }
 
           $scope.delete = function(){
-            var r = confirm("Are you sure to remove this admin?\n");
-           
-            if(r == true) {
-               if($scope.selectedRow == -1){
-                  alert("Choose row !!");
-               }
-               else {
-
-                  $http.post('/api/deleteadmin',{
-                    username : $scope.admin_list[$scope.selectedRow][0]
-                  })
-                  .success(function(res){
-                      if(res){
-                        alert("Delete Success !!");
-                        $location.path('/admin/info');
-                      }
-                      else {
-                        alert("Delete Faill !!");
-                        $location.path('/admin/info');
-                      }
-                  })
-               }
-            } 
+            if(!isClick){
+              isClick = true;
+              if($scope.selectedRow == -1){
+                    alert("Choose row !!");
+                    isClick = false;
+              }
+              else {
+                var r = confirm("Are you sure to remove this admin?\n");
+               
+                if(r == true) {
+                      $http.post('/api/deleteadmin',{
+                        username : $scope.admin_list[$scope.selectedRow][0]
+                      })
+                      .success(function(res){
+                        isClick = false;
+                          if(res){
+                            alert("Delete Success !!");
+                            $location.path('/admin/info');
+                          }
+                          else {
+                            alert("Delete Faill !!");
+                            $location.path('/admin/info');
+                          }
+                      })
+                }
+                else{
+                  isClick = false;
+                }
+              } 
+            }
           }
 
           $scope.reset = function(){
-            var r = confirm("Removing the attribute may affect to an attribute list of some users!!!\n" + 
-              "Are you sure to remove this attribute?");
-           
+            if(!isClick){
+              if($scope.selectedRow == -1){
+                alert("Choose row !!");
+                isClick = false;
+              }
+              else {
+                var r = confirm("Removing the attribute may affect to an attribute list of some users!!!\n" + 
+                  "Are you sure to remove this attribute?");
 
-            if(r == true) {
-               if($scope.selectedRow == -1){
-                  alert("Choose row !!");
-               }
-               else {
-                  $http.post('/api/resetpasswordadmin',{
-                    username : $scope.admin_list[$scope.selectedRow][0]
-                  })
-                  .success(function(res){
-                      if(res){
-                        alert("Reset Password Success !!");
-                        $location.path('/admin/info');
-                      }
-                      else {
-                        alert("Reset Password Faill !!");
-                        $location.path('/admin/info');
-                      }
-                  })
-               }
-            } 
+                if(r == true) {
+                      $http.post('/api/resetpasswordadmin',{
+                        username : $scope.admin_list[$scope.selectedRow][0]
+                      })
+                      .success(function(res){
+                        isClick = false;
+                        alert(res[1]);
+                        $location.path('/admin/adminmanagement')
+                      })
+                }
+                else {
+                  isClick = false;
+                }
+              } 
+            }
           }
     });
 

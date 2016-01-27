@@ -152,7 +152,12 @@ public class AdminMain extends JFrame implements ConstantVars
 	private String            authority_email_passwd;
 
 	// WEB
-	private ArrayList<String> 			  m_user_tree							= new ArrayList<String>();// 100 Max element
+	private ArrayList<String> m_user_tree								   = new ArrayList<String>();// 100 Max element
+	private boolean			  m_is_reset_admin_pwd;
+
+	private boolean 		  m_result_reset_flag_user_pwd 				   = false;
+	private boolean 		  m_result_reset_flag_admin_pwd 			   = false;
+	private String 			  m_result_msg ;
 
 	public AdminMain(String username, String passwd, String email_address, String authority_name, String user_auth_ip_addr, String audit_server_ip_addr, 
 		String phr_server_ip_addr, String emergency_server_ip_addr, String mail_server_url, String authority_email_address, String authority_email_passwd, 
@@ -2763,11 +2768,14 @@ public class AdminMain extends JFrame implements ConstantVars
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
 
-		if(alert_msg.indexOf("Sending an e-mail") != -1){
-			System.out.println("Sending an e-mail failed");
-			m_result_reset_pwd = true;
-			m_result_msg = "Sending an e-mail failed";
+		if(alert_msg.equals("Sending an e-mail failed (SSL connect error)")){
+			if(m_is_reset_admin_pwd)
+				m_result_reset_flag_admin_pwd = true;
+			else
+				m_result_reset_flag_user_pwd = true;
 		}
+
+		m_result_msg = alert_msg;
 
 		//JOptionPane.showMessageDialog(main_panel, alert_msg);
 	}
@@ -3187,16 +3195,23 @@ public class AdminMain extends JFrame implements ConstantVars
 		}
 	}
 
-	public boolean resetPasswordAdmin(String username){
-	
+	public void resetPasswordAdmin(String username){
+		m_is_reset_admin_pwd = true;
 		// Call to C functions
 		if(reset_admin_passwd_main(username))
 		{
 			update_admin_list_main();
-			return true;
+			m_result_reset_flag_admin_pwd = true;
+			m_result_msg = "The new admin's password " + "was sent to the admin's e-mail address already";
 		}
-		else
-			return false;
+		else {
+			m_result_reset_flag_admin_pwd = false;
+			//m_result_msg = "Can't Send new password to email address";
+		}
+	}
+
+	public boolean getResultFlagResetAdminPwd(){
+		return m_result_reset_flag_admin_pwd;
 	}
 
 	AdminManagement admin_editing;
@@ -3331,29 +3346,29 @@ public class AdminMain extends JFrame implements ConstantVars
 		return m_user_manage;
 	}
 
-	private boolean m_result_reset_pwd = false;
-	private String m_result_msg ;
-
 	public void resetPasswordUser(String username){
+		m_is_reset_admin_pwd = false;
 		if(reset_user_passwd_main(username))
 		{
 			update_attribute_list_main();
 			update_user_list_main();
 
-			m_result_reset_pwd = true;
+			m_result_reset_flag_user_pwd = true;
 
 			m_result_msg = "The new user's password " + "was sent to the user's e-mail address already";
 		}	
-		else
-			m_result_reset_pwd = false;
+		else {
+			m_result_reset_flag_user_pwd = false;
+			//m_result_msg = "Can't Send new password to email address";
+		}
 	}
 
 	public String getResultMsg(){
 		return m_result_msg;
 	}
 
-	public boolean getResultPwd(){
-		return m_result_reset_pwd;
+	public boolean getResultFlagResetUserPwd(){
+		return m_result_reset_flag_user_pwd;
 	}
 
 	public boolean removeUser(int selected_row){

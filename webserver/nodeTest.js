@@ -1340,7 +1340,14 @@ else
 
     console.log("-------------- Reset Password Admin---------------");
 
-    var result = m_main_class[req.user.name].resetPasswordAdminSync(req.body.username);
+    var result = [];
+    m_main_class[req.user.name].resetPasswordAdminSync(req.body.username);
+
+    var result_flag = m_main_class[req.user.name].getResultFlagResetAdminPwdSync();
+    var result_msg  = m_main_class[req.user.name].getResultMsgSync();
+
+    result[0] = result_flag;
+    result[1] = result_msg;
 
     res.send(result);
 
