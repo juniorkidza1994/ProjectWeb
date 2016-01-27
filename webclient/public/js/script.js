@@ -1473,6 +1473,8 @@
         $scope.info = {};
         $scope.password = "";
 
+        var isClick = false;
+
         // get userinfo
         $http.get('/api/admininfo')
         .success(function(res){
@@ -1481,23 +1483,38 @@
         })
 
         $scope.submit = function(){
-          $http.post('/api/changeConfig',{
-              audit : $scope.info.audit_server_ip_addr,
-              phr   : $scope.info.phr_server_ip_addr,
+          if(!isClick){
+            isClick = true;
+
+            if($scope.info.audit_server_ip_addr == null){
+              $scope.info.audit_server_ip_addr = "";
+            }
+            if($scope.info.phr_server_ip_addr == null){
+              $scope.info.phr_server_ip_addr = "";
+            }
+            if($scope.info.emergency_server_ip_addr == null){
+              $scope.info.emergency_server_ip_addr = "";
+            }
+            if($scope.info.password == null){
+              $scope.info.password = "";
+            }
+
+            $http.post('/api/changeConfig',{
+              audit     : $scope.info.audit_server_ip_addr,
+              phr       : $scope.info.phr_server_ip_addr,
               emergency : $scope.info.emergency_server_ip_addr,
-              passwd : $scope.password
-          })
-          .success(function(res){
-            if(res){
-              alert("CHANGE IP SUCCESS !!");
-              $location.path("/admin/info");
-            }
-            else{
-              alert("CHANGE IP FAILED !!");
-              $location.path("/admin/info");
-            }
-          })
+              passwd    : $scope.password
+            })
+            .success(function(res){
+              alert(res[1]);
+              isClick = false;
+              if(res[0]){
+                $location.path("/admin/info");
+              }
+            })
+          }
         }
+
     });
 
         // create the controller and inject Angular's $scope
@@ -1508,6 +1525,8 @@
         $scope.confirm_passwd = "";
         $scope.changepwd = false;
 
+        var isClick = false;
+
         // get userinfo
         $http.get('/api/admininfo')
         .success(function(res){
@@ -1516,24 +1535,47 @@
         })
 
         $scope.submit = function(){
-          $http.post('/api/changemailserver',{
-              mailserver : $scope.info.mail_server_url,
-              authorityemail   : $scope.info.authority_email_address,
-              newpasswd : $scope.new_passwd,
-              confirmpasswd : $scope.confirm_passwd,
-              changepwd   : $scope.changepwd,
-              password    : $scope.password 
-          })
-          .success(function(res){
-            if(res){
-              alert("CHANGED SUCCESS !!");
-              $location.path("/admin/info");
+          if(!isClick){      
+            isClick = true;    
+
+            if($scope.info.mail_server_url == null){
+              $scope.info.mail_server_url = "";
             }
-            else{
-              alert("CHANGED FAILED !!");
-              $location.path("/admin/info");
+            if($scope.info.authority_email_address == null){
+              $scope.info.authority_email_address = "";
             }
-          })
+            if($scope.new_passwd == null){
+              $scope.new_passwd = "";
+            }
+            if($scope.confirm_passwd == null){
+              $scope.confirm_passwd = "";
+            }
+            if($scope.password == null){
+              $scope.password = "";
+            }
+
+            console.log("New Password : " + $scope.new_passwd);
+            console.log("Confirm New Password : " + $scope.confirm_passwd);
+            console.log("Password : " + $scope.password);
+
+            $http.post('/api/changemailserver',{
+                  mailserver      : $scope.info.mail_server_url,
+                  authorityemail  : $scope.info.authority_email_address,
+                  newpasswd       : $scope.new_passwd,
+                  confirmpasswd   : $scope.confirm_passwd,
+                  changepwd       : $scope.changepwd,
+                  password        : $scope.password 
+              })
+              .success(function(res){
+                isClick = false;
+
+                alert(res[1]);
+
+                if(res[0]){
+                  $location.path("/admin/info");
+                }
+              })
+          }
         }
     });
 
@@ -1571,12 +1613,17 @@
                   .success(function(res){
                       if(res){
                         alert("Delete Success !!");
-                        $location.path('/admin/info');
+                        $http.post('/api/adminattribute')
+                        .success(function(res){
+                            $scope.attribute_table  = res;
+                            console.log($scope.attribute_table);
+                        })
+                        $scope.selectedRow = -1;
                       }
                       else {
                         alert("Delete Faill !!");
-                        $location.path('/admin/info');
                       }
+                      $location.path('/admin/attribute');
                   })
                }
             } 
@@ -1587,22 +1634,25 @@
         $scope.attributename = "";
         $scope.isnumerical = false;
 
+        var isClick = false;
+
         // get userinfo
         $scope.submit = function(){
-          $http.post('/api/registerattribute',{
-            attributename : $scope.attributename,
-            isnumerical   : $scope.isnumerical
-          })
-          .success(function(res){
-              if(res){
-                alert("Register Success !!");
-                $location.path('/admin/info');
+
+          if(!isClick){
+            isClick = true;
+            $http.post('/api/registerattribute',{
+              attributename : $scope.attributename,
+              isnumerical   : $scope.isnumerical
+            })
+            .success(function(res){
+              isClick = false;
+              alert(res[1]);
+              if(res[0]){
+                $location.path('/admin/attribute');
               }
-              else {
-                alert("Register Faill !!");
-                $location.path('/admin/info');
-              }
-          })
+            })
+          }
         }
     });
 

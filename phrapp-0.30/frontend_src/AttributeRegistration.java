@@ -35,6 +35,7 @@ class AttributeRegistration extends JDialog implements ConstantVars
 
 	// Return variable
 	private boolean    registration_result_flag;
+	private String     registration_result_msg;
 
 	// WEB
 	private String 	   m_attribute_name;
@@ -190,6 +191,7 @@ class AttributeRegistration extends JDialog implements ConstantVars
 				if(register_attribute_main(attribute_name, is_numerical_attribute_flag.booleanValue()))
 				{
 					registration_result_flag = true;
+					registration_result_msg = "Register Attribute Success";
 				}
 			}
 
@@ -206,7 +208,8 @@ class AttributeRegistration extends JDialog implements ConstantVars
 
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the attribute name");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the attribute name");
+			registration_result_msg = "Please input correct format for the attribute name";
 			return false;
 		}
 
@@ -218,15 +221,20 @@ class AttributeRegistration extends JDialog implements ConstantVars
 		return registration_result_flag;
 	}
 
-	public boolean getRegistrationResult()
+	public boolean getRegistrationResultFlag()
 	{
 		return registration_result_flag;
+	}
+	public String getRegistrationResultMsg()
+	{
+		return registration_result_msg;
 	}
 
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		//JOptionPane.showMessageDialog(main_panel, alert_msg);
+		registration_result_msg = alert_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)

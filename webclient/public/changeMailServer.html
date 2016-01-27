@@ -27,18 +27,17 @@
                   <label class="col-sm-5 control-label"><input type="checkbox" value="true" ng-model="changepwd"> Change an e-mail password</label>
                 </div>
             </div>
-
             <div ng-if="changepwd == true">
               <div class="form-group">
                 <label for="inputPassword" class="col-sm-2 control-label">New e-mail password </label>
                 <div class="col-sm-10">
-                    <input type="text" id="Emergency" class="form-control" placeholder="New password"  required ng-model="new_passwd">
+                    <input type="password" id="Emergency" class="form-control" placeholder="New password"  required ng-model="$parent.new_passwd">
                 </div>
               </div>
               <div class="form-group">
                 <label for="inputPassword" class="col-sm-2 control-label">Confirm new e-mail password  </label>
                 <div class="col-sm-10">
-                    <input type="password" id="ConfirmPassword" class="form-control" placeholder="Confirm new password" required ng-model="confirm_passwd">
+                    <input type="password" id="ConfirmPassword" class="form-control" placeholder="Confirm new password" required ng-model="$parent.confirm_passwd">
                 </div>
               </div>
             </div>

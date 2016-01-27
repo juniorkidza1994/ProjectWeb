@@ -49,6 +49,7 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 
 	// Return variable
 	private boolean        result_flag;
+	private String		   result_msg;
 
 	public ServerAddressesConfigurationChanging(Component parent, String audit_server_ip_addr, String phr_server_ip_addr, String emergency_server_ip_addr, String passwd)
 	{
@@ -63,6 +64,7 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 		setup_actions();
 	}
 
+	// WEB
 	public ServerAddressesConfigurationChanging(String audit_server_ip_addr, String phr_server_ip_addr, String emergency_server_ip_addr, String passwd)
 	{
 		result_flag                      = false;
@@ -150,6 +152,7 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 			// Call to C function
 			if(change_server_addresses_configuration(audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr))
 			{
+				result_msg  = "Change Server Config Success !!";
 				result_flag = true;
 			}
 		}
@@ -223,21 +226,24 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 		m = p.matcher(audit_server_ip_addr);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the Audit server's IP address");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the Audit server's IP address");
+			result_msg = "Please input correct format for the Audit server's IP address";
 			return false;
 		}
 
 		m = p.matcher(phr_server_ip_addr);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the PHR server's IP address");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the PHR server's IP address");
+			result_msg = "Please input correct format for the PHR server's IP address";
 			return false;
 		}
 
 		m = p.matcher(emergency_server_ip_addr);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the Emergency server's IP address");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the Emergency server's IP address");
+			result_msg = "Please input correct format for the Emergency server's IP address";
 			return false;
 		}
 
@@ -245,15 +251,19 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 		if(audit_server_ip_addr.equals(current_audit_server_ip_addr) && phr_server_ip_addr.equals(current_phr_server_ip_addr) 
 			&& emergency_server_ip_addr.equals(current_emergency_server_ip_addr))
 		{
-			JOptionPane.showMessageDialog(this, "No any address update");
+			// JOptionPane.showMessageDialog(this, "No any address update");
+			result_msg =  "No any address update";
 			return false;
 		}
 
 		// Validate passwd
 		if(!(passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
 		{
-			JOptionPane.showMessageDialog(this, "Please input the admin password's length between " + 
-				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+			// JOptionPane.showMessageDialog(this, "Please input the admin password's length between " + 
+			//	PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+
+			result_msg = "Please input the admin password's length between " + 
+				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters";
 
 			return false;
 		}
@@ -262,14 +272,17 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 		m = p.matcher(passwd);
 		if(m.matches() == false)
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the admin's password");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the admin's password");
+			result_msg = "Please input correct format for the admin's password";
+
 			return false;
 		}
 
 		// Do a password match a current password?
 		if(!passwd.equals(passwd_cmp))
 		{
-			JOptionPane.showMessageDialog(this, "Invalid the admin's password");
+			// JOptionPane.showMessageDialog(this, "Invalid the admin's password");
+			result_msg = "Invalid the admin's password";
 			return false;
 		}
 
@@ -281,9 +294,14 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 		return result_flag;
 	}
 
-	public boolean getResult()
+	public boolean getResultFlag()
 	{
 		return result_flag;
+	}
+
+	public String getResultMsg()
+	{
+		return result_msg;
 	}
 
 	// public String get_updated_audit_server_ip_address()
@@ -319,7 +337,10 @@ class ServerAddressesConfigurationChanging extends JDialog implements ConstantVa
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
+		if(alert_msg.equals("Sending an e-mail failed (SSL connect error)"))
+			result_flag = true;
+		result_msg = alert_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)

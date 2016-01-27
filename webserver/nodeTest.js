@@ -1135,18 +1135,25 @@ else
     console.log("-------------- Change Config ---------------");
 
     var changeConfigClass ;
-    var result ;
+    var result = [] ;
 
     changeConfigClass =  m_main_class[req.user.name].getServerAddressConfigClassSync(); 
     changeConfigClass.changeSync(req.body.audit, req.body.phr,
       req.body.emergency, req.body.passwd); 
 
-    result = changeConfigClass.getResultSync();
 
-    m_main_class[req.user.name].updateServerAddressConfigSync(changeConfigClass);
+    var result_flag = changeConfigClass.getResultFlagSync();
+    var result_msg = changeConfigClass.getResultMsgSync();
 
+    if(result_flag)
+      m_main_class[req.user.name].updateServerAddressConfigSync(changeConfigClass);
+
+    result[0] = result_flag;
+    result[1] = result_msg;
 
     res.send(result);
+
+    console.log("--------------End Change Config ---------------");
 
   });
 
@@ -1155,15 +1162,20 @@ else
     console.log("-------------- Change Email Server ---------------");
 
     var changeMailServerClass ;
-    var result ;
+    var result = [];
 
     changeMailServerClass =  m_main_class[req.user.name].getMailServerConfigClassSync(); 
     changeMailServerClass.changeSync(req.body.mailserver, req.body.authorityemail,
       req.body.newpasswd, req.body.confirmpasswd, req.body.password, req.body.changepwd); 
 
-    result = changeMailServerClass.getResultSync();
+    var result_flag = changeMailServerClass.getResultFlagSync();
+    var result_msg  = changeMailServerClass.getResultMsgSync();
 
-    m_main_class[req.user.name].updateMailServerSync(changeMailServerClass);
+    result[0] = result_flag;
+    result[1] = result_msg;
+
+    if(result_flag)
+      m_main_class[req.user.name].updateMailServerSync(changeMailServerClass);
     
     res.send(result);
 
@@ -1193,9 +1205,15 @@ else
     var registrationAttribClass = m_main_class[req.user.name].getRegistrationAttributeSync();
     registrationAttribClass.registerSync(req.body.attributename, req.body.isnumerical);
 
-    var result = registrationAttribClass.getRegistrationResultSync();
+    var result = [];
+    var result_flag = registrationAttribClass.getRegistrationResultFlagSync();
+    var result_msg  = registrationAttribClass.getRegistrationResultMsgSync();
 
-    m_main_class[req.user.name].updateAttributeTableSync();
+    result[0] = result_flag;
+    result[1] = result_msg;
+
+    if(result)
+      m_main_class[req.user.name].updateAttributeTableSync();
 
     res.send(result);
 

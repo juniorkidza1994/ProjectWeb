@@ -43,6 +43,7 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 
 	// Return variable
 	private boolean        result_flag;
+	private String 		   m_result_msg;
 
 	// WEB
 	private String 		   m_confirm_authority_email_passwds;
@@ -65,6 +66,7 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		setup_actions();
 	}
 
+	// WEB
 	public MailServerConfigurationChanging(String mail_server_url, String authority_email_address, String authority_email_passwd, String passwd)
 	{
 		result_flag                     = false;
@@ -238,6 +240,7 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 
 			if(change_mail_server_configuration(mail_server_url, authority_email_address, authority_email_passwd))
 			{
+				m_result_msg = "Change mail server success";
 				result_flag = true;	
 			}
 		}
@@ -257,14 +260,16 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		m = p.matcher(mail_server_url);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the Mail server url");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the Mail server url");
+			m_result_msg = "Please input correct format for the Mail server url";
 			return false;
 		}
 
 		int port_number = Integer.parseInt(mail_server_url.substring(mail_server_url.lastIndexOf(":") + 1));
 		if(port_number < 0 || port_number > 65535)
 		{
-			JOptionPane.showMessageDialog(this, "Port number must be in range between 0 and 65535");
+			// JOptionPane.showMessageDialog(this, "Port number must be in range between 0 and 65535");
+			m_result_msg = "Port number must be in range between 0 and 65535";
 			return false;
 		}
 
@@ -274,7 +279,8 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		m = p.matcher(authority_email_address);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the authority's e-mail address");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the authority's e-mail address");
+			m_result_msg = "Please input correct format for the authority's e-mail address";
 			return false;
 		}
 
@@ -286,9 +292,10 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 			// Validate new authority's e-mail password
 			if(!(new_authority_email_passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && new_authority_email_passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
 			{
-				JOptionPane.showMessageDialog(this, "Please input a length of the new authority's e-mail password between " + 
-					PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
-
+				// JOptionPane.showMessageDialog(this, "Please input a length of the new authority's e-mail password between " + 
+				//	PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+				m_result_msg = "Please input a length of the new authority's e-mail password between " + 
+					PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters";
 				return false;
 			}
 
@@ -296,7 +303,8 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 			m = p.matcher(new_authority_email_passwd);
 			if(m.matches() == false)
 			{
-				JOptionPane.showMessageDialog(this, "Please input correct format for the new authority's e-mail password");
+				// JOptionPane.showMessageDialog(this, "Please input correct format for the new authority's e-mail password");
+				m_result_msg = "Please input correct format for the new authority's e-mail password";
 				return false;
 			}
 
@@ -304,9 +312,10 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 			if(!(confirm_new_authority_email_passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && 
 				confirm_new_authority_email_passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
 			{
-				JOptionPane.showMessageDialog(this, "Please input a length of the confirm new authority's e-mail password between " + 
-					PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
-
+				// JOptionPane.showMessageDialog(this, "Please input a length of the confirm new authority's e-mail password between " + 
+				// 	PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+				m_result_msg = "Please input a length of the confirm new authority's e-mail password between " + 
+					PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters";
 				return false;
 			}
 
@@ -314,21 +323,24 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 			m = p.matcher(confirm_new_authority_email_passwd);
 			if(m.matches() == false)
 			{
-				JOptionPane.showMessageDialog(this, "Please input correct format for the confirm new authority's e-mail password");
+				// JOptionPane.showMessageDialog(this, "Please input correct format for the confirm new authority's e-mail password");
+				m_result_msg = "Please input correct format for the confirm new authority's e-mail password";
 				return false;
 			}
 
 			// Do a new authority's e-mail password and a confirm new authority's e-mail password match?
 			if(!new_authority_email_passwd.equals(confirm_new_authority_email_passwd))
 			{
-				JOptionPane.showMessageDialog(this, "The new authority's e-mail password and confirm new authority's e-mail password do not match");
+				// JOptionPane.showMessageDialog(this, "The new authority's e-mail password and confirm new authority's e-mail password do not match");
+				m_result_msg = "The new authority's e-mail password and confirm new authority's e-mail password do not match";
 				return false;
 			}
 
 			// Check update
 			if(current_authority_email_passwd.equals(new_authority_email_passwd))
 			{
-				JOptionPane.showMessageDialog(this, "No update for the authority's e-mail password");
+				// JOptionPane.showMessageDialog(this, "No update for the authority's e-mail password");
+				m_result_msg = "No update for the authority's e-mail password";
 				return false;
 			}
 		}
@@ -337,16 +349,18 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		if(!m_changepwd && mail_server_url.equals(current_mail_server_url) && 
 			authority_email_address.equals(current_authority_email_address))
 		{
-			JOptionPane.showMessageDialog(this, "No any update");
+			// JOptionPane.showMessageDialog(this, "No any update");
+			m_result_msg = "No any update";
 			return false;
 		}
 
 		// Validate passwd
 		if(!(passwd.length() >= PASSWD_LENGTH_LOWER_BOUND && passwd.length() <= PASSWD_LENGTH_UPPER_BOUND))
 		{
-			JOptionPane.showMessageDialog(this, "Please input the admin password's length between " + 
-				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
-
+			// JOptionPane.showMessageDialog(this, "Please input the admin password's length between " + 
+			//	PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+			m_result_msg = "Please input the admin password's length between " + 
+				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters";
 			return false;
 		}
 
@@ -354,14 +368,16 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		m = p.matcher(passwd);
 		if(m.matches() == false)
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the admin's password");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the admin's password");
+			m_result_msg = "Please input correct format for the admin's password";
 			return false;
 		}
 
 		// Do a password match a current password?
 		if(!passwd.equals(passwd_cmp))
 		{
-			JOptionPane.showMessageDialog(this, "Invalid the admin's password");
+			// JOptionPane.showMessageDialog(this, "Invalid the admin's password");
+			m_result_msg = "Invalid the admin's password";
 			return false;
 		}
 
@@ -373,9 +389,14 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 		return result_flag;
 	}
 
-	public boolean getResult()
+	public boolean getResultFlag()
 	{
 		return result_flag;
+	}
+
+	public String getResultMsg()
+	{
+		return m_result_msg;
 	}
 
 	// public String get_updated_mail_server_url()
@@ -417,7 +438,10 @@ class MailServerConfigurationChanging extends JDialog implements ConstantVars
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
+		if(alert_msg.equals("Sending an e-mail failed (SSL connect error)"))
+			result_flag = true;
+		m_result_msg = alert_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)
