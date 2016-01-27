@@ -1262,27 +1262,60 @@ else
     }
     else {
       // call java function
-      m_main_class[req.user.name].setPeriodLog( req.body.transaction_log_type, req.body.start_year_index, req.body.start_month_index, 
-            req.body.start_day_index, req.body.start_hour_index, req.body.start_minute_index, req.body.end_year_index, req.body.end_month_index, req.body.end_day_index, req.body.end_hour_index,  
-            req.body.end_minute_index, function(err,result){
-        if(result) {
-          //console.log("result 1 : " + result);
-          m_main_class[req.user.name].getLog( function(err,result){
-            if(result) {
-              //console.log("RESULT 2 :");
-              //console.log(result);
-              res.send(result);
-              console.log("-------------- End Transaction table ---------------");
-            }
-            else {
-              console.log("ERROR : " + err);
-            }
-          });
+      // m_main_class[req.user.name].setPeriodLog( req.body.transaction_log_type, req.body.start_year_index, req.body.start_month_index, 
+      //       req.body.start_day_index, req.body.start_hour_index, req.body.start_minute_index, req.body.end_year_index, req.body.end_month_index, req.body.end_day_index, req.body.end_hour_index,  
+      //       req.body.end_minute_index, function(err,result){
+      //   if(result) {
+      //     //console.log("result 1 : " + result);
+
+      //     m_main_class[req.user.name].getLog( function(err,result){
+      //       if(result) {
+      //         //console.log("RESULT 2 :");
+      //         //console.log(result);
+      //         res.send(result);
+      //         console.log("-------------- End Transaction table ---------------");
+      //       }
+      //       else {
+      //         console.log("ERROR : " + err);
+      //       }
+      //     });
+      //   }
+      //   else {
+      //     console.log("ERROR : " + err);
+      //   }
+      // });
+    
+      var resultSetPeriodLog = m_main_class[req.user.name].setPeriodLogSync( req.body.transaction_log_type, req.body.start_year_index, req.body.start_month_index, 
+           req.body.start_day_index, req.body.start_hour_index, req.body.start_minute_index, req.body.end_year_index, req.body.end_month_index, req.body.end_day_index, req.body.end_hour_index,  
+             req.body.end_minute_index);
+      console.log(resultSetPeriodLog);
+
+      if(!resultSetPeriodLog){
+        var result_msg = m_main_class[req.user.name].getResultMsgValidateTransactionSync();
+        res.send(result_msg);
+      }
+      else {
+        var result_msg = m_main_class[req.user.name].getResultMsgTransactionSync();
+
+        console.log(result_msg);
+
+        if(result_msg != ""){
+          res.send(result_msg);
         }
         else {
-          console.log("ERROR : " + err);
+          m_main_class[req.user.name].getLog( function(err,result){
+              if(result) {
+                //console.log("RESULT 2 :");
+                //console.log(result);
+                res.send(result);
+                console.log("-------------- End Transaction table ---------------");
+              }
+              else {
+                console.log("ERROR : " + err);
+              }
+          });
         }
-      });
+      }
     }
   });
 

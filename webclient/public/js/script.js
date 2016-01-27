@@ -1680,7 +1680,7 @@
       var isClick = false;
 
       $scope.search = function(){
-        //if(!isClick){
+        if(!isClick){
 
           isClick = true;
           
@@ -1716,14 +1716,22 @@
                  end_minute_index      : $scope.Date.endTime.getMinutes() 
                })
                .success(function(res){
+                isClick = false;
+                //console.log(res);
+                //console.log(angular.isArray(res));
                  // No error: authentication OK
                  //console.log("SUCCESS");
-                 $scope.logs = res;
-                 $scope.bigTotalItems = $scope.logs.length;
-                 console.log($scope.bigTotalItems);
-                 $scope.chooseTable = $scope.transaction_log_type;
-                 isClick = false;
-                 $location.path('/admin/transaction');
+                  if(angular.isArray(res)){
+                     $scope.logs = res;
+                     $scope.bigTotalItems = $scope.logs.length;
+                     console.log($scope.bigTotalItems);
+                     $scope.chooseTable = $scope.transaction_log_type;
+                     isClick = false;
+                     $location.path('/admin/transaction');
+                  }
+                  else {
+                    alert(res);
+                  }
                })
              //}
            }
@@ -1733,6 +1741,7 @@
                transaction_log_type  : $scope.transaction_log_type
              })
              .success(function(res){
+              isClick = false;
                // No error: authentication OK
                //console.log("SUCCESS");
                $scope.logs = res;
@@ -1743,7 +1752,7 @@
                $location.path('/admin/transaction');
              })
            }
-         //}
+         }
       }
 
     });

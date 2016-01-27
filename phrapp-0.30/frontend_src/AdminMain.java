@@ -2675,6 +2675,7 @@ public class AdminMain extends JFrame implements ConstantVars
 		return true;
 	}
 
+
 	// Run on another thread
 	private void audit_all_transaction_logs(final TransactionLogType transaction_log_type)
 	{
@@ -3083,6 +3084,13 @@ public class AdminMain extends JFrame implements ConstantVars
 		return transaction_auditing_dialog.getTableLog();
 	}
 
+	public String getResultMsgTransaction(){
+		
+		// Call transaction auditing object
+
+		return transaction_auditing_dialog.getResultMsg();
+	}
+
 	public boolean setPeriodLog(String transaction_log_type, final int start_year_index, final int start_month_index, 
 		final int start_day_index, final int start_hour_index, final int start_minute_index, final int end_year_index, final int end_month_index, 
 		final int end_day_index, final int end_hour_index, final int end_minute_index){
@@ -3100,41 +3108,113 @@ public class AdminMain extends JFrame implements ConstantVars
 		System.out.println(end_hour_index);
 		System.out.println(end_minute_index);
 
-		if(transaction_log_type.equals(transaction_admin_login_log_type))
-		{
-			transaction_type = TransactionLogType.ADMIN_LOGIN_LOG;
-			// Call transaction auditing object
-			transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
+		if(validate_transaction_log_search_input_web(start_year_index, start_month_index, 
 					start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
-					end_minute_index);
-		}
-		else if(transaction_log_type.equals(transaction_admin_event_log_type))
-		{
-			transaction_type = TransactionLogType.ADMIN_EVENT_LOG;
-			// Call transaction auditing object
-			transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
-					start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
-					end_minute_index);
-		}
-		else if(transaction_log_type.equals(transaction_system_login_log_type))
-		{
-			transaction_type = TransactionLogType.SYSTEM_LOGIN_LOG;
-			// Call transaction auditing object
-			transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
-					start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
-					end_minute_index);
-		}
-		else if(transaction_log_type.equals(transaction_system_event_log_type))
-		{
-			transaction_type = TransactionLogType.SYSTEM_EVENT_LOG;
-			// Call transaction auditing object
-			transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
-					start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
-					end_minute_index);
-		}
+					end_minute_index)){
 
-		return true;
+			if(transaction_log_type.equals(transaction_admin_login_log_type))
+			{
+				transaction_type = TransactionLogType.ADMIN_LOGIN_LOG;
+				// Call transaction auditing object
+				transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
+						start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
+						end_minute_index);
+			}
+			else if(transaction_log_type.equals(transaction_admin_event_log_type))
+			{
+				transaction_type = TransactionLogType.ADMIN_EVENT_LOG;
+				// Call transaction auditing object
+				transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
+						start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
+						end_minute_index);
+			}
+			else if(transaction_log_type.equals(transaction_system_login_log_type))
+			{
+				transaction_type = TransactionLogType.SYSTEM_LOGIN_LOG;
+				// Call transaction auditing object
+				transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
+						start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
+						end_minute_index);
+			}
+			else if(transaction_log_type.equals(transaction_system_event_log_type))
+			{
+				transaction_type = TransactionLogType.SYSTEM_EVENT_LOG;
+				// Call transaction auditing object
+				transaction_auditing_dialog = new AdminTransactionAuditing(transaction_type, start_year_index, start_month_index, 
+						start_day_index, start_hour_index, start_minute_index, end_year_index, end_month_index, end_day_index, end_hour_index, 	
+						end_minute_index);
+			}
+
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
+
+	private String result_msg_validate_transaction;
+
+	public String getResultMsgValidateTransaction(){
+		return result_msg_validate_transaction;
+	}
+
+	private boolean validate_transaction_log_search_input_web(final int start_year_index, final int start_month_index, 
+		final int start_day_index, final int start_hour_index, final int start_minute_index, final int end_year_index, final int end_month_index, 
+		final int end_day_index, final int end_hour_index, final int end_minute_index)
+	{
+			// Validate years of start and end
+			if(start_year_index > end_year_index)
+			{
+				//JOptionPane.showMessageDialog(this, "The start year must less than or equal to the end year");
+				result_msg_validate_transaction = "The start year must less than or equal to the end year";
+				return false;
+			}
+			else if(start_year_index < end_year_index)
+				return true;
+	
+			// Validate months of start and end
+			if(start_month_index > end_month_index)
+			{
+				// JOptionPane.showMessageDialog(this, "The start month must less than or equal to the end month");
+				result_msg_validate_transaction = "The start month must less than or equal to the end month";
+				return false;
+			}
+			else if(start_month_index < end_month_index)
+				return true;
+
+			// Validate days of start and end
+			if(start_day_index > end_day_index)
+			{
+				// JOptionPane.showMessageDialog(this, "The start day must less than or equal to the end day");
+				result_msg_validate_transaction = "The start day must less than or equal to the end day";
+				return false;
+			}
+			else if(start_day_index < end_day_index)
+				return true;
+
+			// Validate hours of start and end
+			if(start_hour_index > end_hour_index)
+			{
+				// JOptionPane.showMessageDialog(this, "The start hour must less than or equal to the end hour");
+				result_msg_validate_transaction = "The start hour must less than or equal to the end hour";
+				return false;
+			}
+			else if(start_hour_index < end_hour_index)
+				return true;
+
+			// Validate minutes of start and end
+			if(start_minute_index > end_minute_index)
+			{
+				// JOptionPane.showMessageDialog(this, "The start minute must less than or equal to the end minute");
+				result_msg_validate_transaction = "The start minute must less than or equal to the end minute";
+				return false;
+			}
+			else if(start_minute_index < end_minute_index)
+				return true;
+
+			return true;
+	}
+
 
 	public boolean initAdminTable(){		
 
