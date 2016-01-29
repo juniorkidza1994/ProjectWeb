@@ -1464,9 +1464,15 @@ else
     var registrationAuthorityClass = m_main_class[req.user.name].getAuthorityManagementRegisterClassSync();
     registrationAuthorityClass.authorityManagementSync(req.body.authorityname, req.body.ipaddress);
 
-    var result = registrationAuthorityClass.getResultSync();
+    var result      = [];
+    var result_flag = registrationAuthorityClass.getResultFlagSync();
+    var result_msg  = registrationAuthorityClass.getResultMsgSync();
 
-    m_main_class[req.user.name].updateAuthorityListSync();
+    result[0] = result_flag;
+    result[1] = result_msg;
+
+    if(result_flag)
+      m_main_class[req.user.name].updateAuthorityListSync();
 
     res.send(result);
 
@@ -1513,9 +1519,15 @@ else
 
     editAuthorityClass.authorityManagementSync(req.body.authority, req.body.ipaddress);
 
-    var result = editAuthorityClass.getResultSync();
+    var result      = [];
+    var result_flag = editAuthorityClass.getResultFlagSync();
+    var result_msg  = editAuthorityClass.getResultMsgSync();
 
-    m_main_class[req.user.name].updateAuthorityListSync();
+    result[0] = result_flag;
+    result[1] = result_msg;
+
+    if(result_flag)
+      m_main_class[req.user.name].updateAuthorityListSync();
 
     res.send(result);
 

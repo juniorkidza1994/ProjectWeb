@@ -1726,7 +1726,6 @@
                      $scope.bigTotalItems = $scope.logs.length;
                      console.log($scope.bigTotalItems);
                      $scope.chooseTable = $scope.transaction_log_type;
-                     isClick = false;
                      $location.path('/admin/transaction');
                   }
                   else {
@@ -1748,7 +1747,6 @@
                $scope.chooseTable = $scope.transaction_log_type;
                $scope.bigTotalItems = $scope.logs.length;
                console.log($scope.bigTotalItems);
-               isClick = false;
                $location.path('/admin/transaction');
              })
            }
@@ -1931,6 +1929,8 @@
 
       $scope.selectedRow = -1;
 
+      var isClick = false;
+
       $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
       }
@@ -1966,13 +1966,14 @@
       }
 
       $scope.delete = function(){
+
+        if($scope.selectedRow == -1){
+          alert("Choose row !!");
+        }
+        else {
             var r = confirm("Are you sure to remove this authority?\n");
            
             if(r == true) {
-               if($scope.selectedRow == -1){
-                  alert("Choose row !!");
-               }
-               else {
 
                   $http.post('/api/deleteauthority',{
                     authorityname : $scope.authority_table[$scope.selectedRow][0]
@@ -1987,8 +1988,8 @@
                         $location.path('/admin/info');
                       }
                   })
-               }
             } 
+        }
       }
     });
 
@@ -1996,28 +1997,35 @@
         $scope.authority_name = "";
         $scope.ip_address = "";
 
+        var isClick = false;
+
         // get userinfo
         $scope.submit = function(){
-          $http.post('/api/registerauthority',{
-            authorityname : $scope.authority_name,
-            ipaddress   : $scope.ip_address
-          })
-          .success(function(res){
-              if(res){
-                alert("Register Success !!");
-                $location.path('/admin/info');
+
+          if(!isClick){
+            isClick = true;
+
+            $http.post('/api/registerauthority',{
+              authorityname : $scope.authority_name,
+              ipaddress   : $scope.ip_address
+            })
+            .success(function(res){
+              isClick = false;
+              alert(res[1]);
+              
+              if(res[0]){          
+                $location.path('/admin/authoritymanagement');
               }
-              else {
-                alert("Register Faill !!");
-                $location.path('/admin/info');
-              }
-          })
+            })
+          }
         }
     });
 
     phrApp.controller('editAuthorityController', function($scope, $http, $location) {
         $scope.authority_name = "";
         $scope.ip_address = "";
+
+        var isClick = false;
 
         console.log("EDIT !!");
 
@@ -2030,56 +2038,23 @@
 
         // get userinfo
         $scope.submit = function(){
-          console.log($scope.ip_address+"");
 
-          $http.post('/api/editauthority',{
-            authority   : $scope.authority_name,
-            ipaddress   : $scope.ip_address
-          })
-          .success(function(res){
-              if(res){
-                alert("Edit Success !!");
-                $location.path('/admin/info');
-              }
-              else {
-                alert("Edit Faill !!");
-                $location.path('/admin/info');
-              }
-          })
-        }
-    });
+          if(!isClick){
+            isClick = true;
+            console.log($scope.ip_address+"");
 
-    phrApp.controller('editAuthorityController', function($scope, $http, $location) {
-        $scope.authority_name = "";
-        $scope.ip_address = "";
-
-        console.log("EDIT !!");
-
-        $http.post('/api/info_editauthority')
-        .success(function(res){
-          console.log("GET INFO ");
-          $scope.authority_name = res.authority;
-          $scope.ip_address = res.ipaddress;
-        })
-
-        // get userinfo
-        $scope.submit = function(){
-          console.log($scope.ip_address+"");
-
-          $http.post('/api/editauthority',{
-            authority   : $scope.authority_name,
-            ipaddress   : $scope.ip_address
-          })
-          .success(function(res){
-              if(res){
-                alert("Edit Success !!");
-                $location.path('/admin/info');
-              }
-              else {
-                alert("Edit Faill !!");
-                $location.path('/admin/info');
-              }
-          })
+            $http.post('/api/editauthority',{
+              authority   : $scope.authority_name,
+              ipaddress   : $scope.ip_address
+            })
+            .success(function(res){
+              isClick = false;
+              alert(res[1]);
+                if(res[0]){
+                  $location.path('/admin/authoritymanagement');
+                }
+            })
+          }
         }
     });
 

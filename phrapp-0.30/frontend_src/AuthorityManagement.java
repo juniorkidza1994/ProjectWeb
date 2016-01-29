@@ -41,6 +41,7 @@ class AuthorityManagement extends JDialog implements ConstantVars
 
 	// Return variable
 	private boolean    result_flag;
+	private String	   result_msg;
 
 	// WEB
 	private String		m_authority_name;
@@ -63,7 +64,7 @@ class AuthorityManagement extends JDialog implements ConstantVars
 	{
 		result_flag               = false;
 		is_registration_mode_flag = true;
-
+		result_msg 				  = "";
 		// Load JNI backend library
 		System.loadLibrary("PHRapp_Admin_JNI");
 	}
@@ -91,6 +92,7 @@ class AuthorityManagement extends JDialog implements ConstantVars
 		is_registration_mode_flag  = false;
 		this.current_ip_address    = current_ip_address;
 		m_authority_name		   = authority_name;
+		result_msg 				   = "";
 
 		// Load JNI backend library
 		System.loadLibrary("PHRapp_Admin_JNI");
@@ -226,6 +228,7 @@ class AuthorityManagement extends JDialog implements ConstantVars
 			if(register_authority_main(authority_name, ip_address))
 			{
 				result_flag = true;
+				result_msg = "Register Authority Success";
 			}
 		}
 		else if(!is_registration_mode_flag && validate_input_editing_mode())
@@ -234,7 +237,7 @@ class AuthorityManagement extends JDialog implements ConstantVars
 			if(edit_authority_ip_address_main(authority_name, ip_address))
 			{
 				result_flag = true;
-		        					
+		        result_msg = "Edit Authority Success";
 			}
 		}
 	}
@@ -259,7 +262,8 @@ class AuthorityManagement extends JDialog implements ConstantVars
 		m = p.matcher(m_authority_name);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the authority name");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the authority name");
+			result_msg = "Please input correct format for the authority name";
 			return false;
 		}
 
@@ -270,7 +274,8 @@ class AuthorityManagement extends JDialog implements ConstantVars
 		m = p.matcher(m_ip_address);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the IP address");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the IP address");
+			result_msg = "Please input correct format for the IP address";
 			return false;
 		}
 
@@ -288,14 +293,16 @@ class AuthorityManagement extends JDialog implements ConstantVars
 		m = p.matcher(ip_address);
 		if(!m.matches())
 		{
-			JOptionPane.showMessageDialog(this, "Please input correct format for the IP address");
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the IP address");
+			result_msg = "Please input correct format for the IP address";
 			return false;
 		}
 
 		// Check update
 		if(ip_address.equals(current_ip_address))
 		{
-			JOptionPane.showMessageDialog(this, "No any update");
+			// JOptionPane.showMessageDialog(this, "No any update");
+			result_msg = "No any update";
 			return false;
 		}
 
@@ -309,9 +316,14 @@ class AuthorityManagement extends JDialog implements ConstantVars
 
 	// WEB
 
-	public boolean getResult()
+	public boolean getResultFlag()
 	{
 		return result_flag;
+	}
+
+	public String getResultMsg()
+	{
+		return result_msg;
 	}
 
 	public String getAuthorityName()
@@ -328,7 +340,10 @@ class AuthorityManagement extends JDialog implements ConstantVars
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
+		if(alert_msg.equals("Sending an e-mail failed (SSL connect error)"))
+			result_flag = true;
+		result_msg = alert_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)
