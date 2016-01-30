@@ -1675,7 +1675,9 @@ else
 
     console.log("-------------- Set Edit User ---------------");
 
-    m_main_class[req.user.name].setEditUserClassSync(req.body.ID);
+    var result = m_main_class[req.user.name].setEditUserClassSync(req.body.ID);
+
+    res.send(result);
 
     console.log("--------------End Set Edit User ---------------");
 
@@ -1701,7 +1703,7 @@ else
 
   app.post('/api/edituser', function (req, res) {
 
-    console.log("-------------- Register User---------------");
+    console.log("-------------- Edit User---------------");
 
     var editUserClass = m_main_class[req.user.name].getUserManagementSync();
 
@@ -1709,7 +1711,7 @@ else
     
     for(x in req.body.attributeTable){
 
-      console.log(req.body.attributeTable[x]);
+      console.log("x = " + req.body.attributeTable[x]);
 
       flag = flag +req.body.attributeTable[x][0].toString() + " ";
     }
@@ -1727,7 +1729,7 @@ else
 
     // return value
 
-    console.log("--------------End Register User---------------");
+    console.log("--------------End Edit User---------------");
 
   });
 

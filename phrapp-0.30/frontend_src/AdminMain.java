@@ -3498,7 +3498,7 @@ public class AdminMain extends JFrame implements ConstantVars
 			return false;
 	}
 
-	public void setEditUserClass(int selected_row){
+	public boolean setEditUserClass(int selected_row){
 		System.out.println(selected_row);
 		if(selected_row >= 0)
 		{
@@ -3508,6 +3508,7 @@ public class AdminMain extends JFrame implements ConstantVars
 				// Call user management object
 				UserManagement user_editing_dialog = new UserManagement(attribute_table_model, user_tree_table, selected_row);
 				m_user_manage = user_editing_dialog;
+				return true;
 			}
 			else if(is_selected_row_editable_attribute(selected_row))
 			{
@@ -3518,10 +3519,14 @@ public class AdminMain extends JFrame implements ConstantVars
 				// Call numerical attribute value editing object
 				attribute_value_editing_dialog = new NumericalAttributeValueEditing(main_panel, user_tree_table, selected_row);
 				m_user_manage = attribute_value_editing_dialog;
+				return true;
 			}
 		}
-		else
+		else {
 			m_user_manage = null;
+			return false;
+		}
+		return false;
 	}
 
 	private Object m_editAttribute;

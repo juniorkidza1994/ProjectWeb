@@ -2149,29 +2149,39 @@
          $location.path('/admin/registeruser');
         }
 
+        var isClickEdit = false;
+
         $scope.edit =  function(){
 
           console.log($scope.selectedRow);
-
-          if($scope.selectedRow != null){
-            if($scope.selectedRow['Type'] == "User"){
-              $http.post('/api/setedituser',{
-                ID   : $scope.selectedRow['ID']
-              })
-              .success(function(res){
-                console.log("EDIT USER");
-                 $location.path('/admin/edituser');
-              })
-               
-            }
-            else if($scope.selectedRow['Name'].indexOf(" = ") != -1 && $scope.selectedRow['Type'] == "Attribute"){
-              $http.post('/api/seteditattribute',{
-                ID   : $scope.selectedRow['ID']
-              })
-              .success(function(res){
-                console.log("EDIT ATTRIBUTE");
-                $location.path('/admin/editattribute');
-              })
+          if(!isClickEdit){
+            isClickEdit = true;
+            if($scope.selectedRow != null){
+              if($scope.selectedRow['Type'] == "User"){
+                console.log("Edit User");
+                $http.post('/api/setedituser',{
+                  ID   : $scope.selectedRow['ID']
+                })
+                .success(function(res){
+                  isClickEdit = false;
+                  console.log("EDIT USER");
+                  if(res)
+                    $location.path('/admin/edituser');
+                  else
+                    alert("Edit failed");
+                })
+                 
+              }
+              else if($scope.selectedRow['Name'].indexOf(" = ") != -1 && $scope.selectedRow['Type'] == "Attribute"){
+                console.log("Edit Attribute");
+                $http.post('/api/seteditattribute',{
+                  ID   : $scope.selectedRow['ID']
+                })
+                .success(function(res){
+                  console.log("EDIT ATTRIBUTE");
+                  $location.path('/admin/editattribute');
+                })
+              }
             }
           }
         }
@@ -2186,7 +2196,7 @@
           }
         }
 
-        $scope.isEdit =     function(){
+        $scope.isEdit = function(){
         //  console.log($scope.selectedRow);
           if($scope.selectedRow != null){
             if($scope.selectedRow['Type'] == "User" || ($scope.selectedRow['Name'].indexOf(" = ") != -1 && $scope.selectedRow['Type'] == "Attribute"))
@@ -2299,6 +2309,8 @@
                 $scope.username = "";
                 $scope.email = "";
 
+                isClicked = false;
+
                 for(var i = 0 ; i < $scope.attribute_table.length;i++){
                   $scope.attribute_table[i][0] = false;
                   if($scope.attribute_table[i][2] != "(none)")
@@ -2343,6 +2355,7 @@
 
       $scope.submit = function(){
         if(!isClicked){
+          isClicked = true;
           if($scope.email == null)
             $scope.email = "";
           if($scope.username == null)
@@ -2354,6 +2367,7 @@
             attributeTable : $scope.attribute_table
           })
           .success(function(res){
+            isClicked = false;
               console.log("SADAS");
           })
         }

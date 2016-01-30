@@ -385,6 +385,9 @@ class UserManagement extends JDialog implements ConstantVars
 	}
 
 	public void editUser(String username ,String email_address){
+
+		System.out.println("USERNAME :" + username);
+		System.out.println("Email Address :" + email_address);
 		
 		if(!is_registering_mode_flag && validate_input_editing_web_mode(email_address)){
 
@@ -451,6 +454,8 @@ class UserManagement extends JDialog implements ConstantVars
 
 	    int pos = 0;
 
+	    System.out.println("Start Set table Attribute");
+
 	    for (String str: flag.split(",")){
 		    for (String r: str.split(" ")){
 		    		System.out.println(r);
@@ -472,6 +477,8 @@ class UserManagement extends JDialog implements ConstantVars
 		    i = 0;
 		    pos = 2;
 		}
+
+		System.out.println("In attribute_table_model :");
 
 	    for (int j = 0 ; j < attribute_table_model.getRowCount() ; j++)
 	            System.out.println(attribute_table_model.getValueAt(j,0).toString());
