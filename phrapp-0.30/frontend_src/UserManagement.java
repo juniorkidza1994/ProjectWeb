@@ -263,6 +263,10 @@ class UserManagement extends JDialog implements ConstantVars
 						else if(!is_registering_mode_flag && validate_input_editing_mode())
 						{
 							String username = username_textfield.getText();
+							
+							for (int j = 0 ; j < attribute_table_model.getRowCount() ; j++)
+	            				System.out.println(attribute_table_model.getValueAt(j,0).toString() + " " + attribute_table_model.getValueAt(j,2));
+
 							if(is_email_address_edited_flag && is_attribute_list_edited_flag)
 							{
 								String email_address = email_address_textfield.getText();
@@ -389,34 +393,43 @@ class UserManagement extends JDialog implements ConstantVars
 		System.out.println("USERNAME :" + username);
 		System.out.println("Email Address :" + email_address);
 		
+		for (int j = 0 ; j < attribute_table_model.getRowCount() ; j++)
+	       	System.out.println(attribute_table_model.getValueAt(j,0).toString() + " " + attribute_table_model.getValueAt(j,2));
+
 		if(!is_registering_mode_flag && validate_input_editing_web_mode(email_address)){
 
 			if(is_email_address_edited_flag && is_attribute_list_edited_flag)
 			{
 
+				System.out.println("Email & Attribute");
+
 				// Call to C function
 				if(edit_user_email_address_and_attribute_list_main(username, email_address))
 				{
 					result_flag = true;
-										
+					result      = result      = "Edit Email & Attribute Success";
 				}
 			}
 			else if(is_email_address_edited_flag)
 			{
+				System.out.println("Email");
 									
 				// Call to C function
 				if(edit_user_email_address_only_main(username, email_address))
 				{
-					result_flag = true;
-					
+					result_flag = true;	
+					result      = "Edit Email Success";
 				}
 			}
 			else if(is_attribute_list_edited_flag)
 			{
+
+				System.out.println("Attribute");
 				// Call to C function
 				if(edit_user_attribute_list_only_main(username))
 				{	
 					result_flag = true;
+					result      = "Edit Attribute Success";
 				}
 			}
 		}
@@ -454,18 +467,18 @@ class UserManagement extends JDialog implements ConstantVars
 
 	    int pos = 0;
 
-	    System.out.println("Start Set table Attribute");
+	    System.out.println("Start Set table Attribute"); 
 
 	    for (String str: flag.split(",")){
 		    for (String r: str.split(" ")){
-		    		System.out.println(r);
+		    		System.out.println("R : " + r);
 		    		if(pos == 0){
 			    		if(r.equals("true")){
-			            	System.out.println("TRUE");
+			            	System.out.println("Set in TRUE");
 			            	attribute_table_model.setValueAt(true,i,pos);
 			            }
 			            else if(r.equals("false")){
-			            	System.out.println("FALSE");
+			            	System.out.println("Set in FALSE");
 			            	attribute_table_model.setValueAt(false,i,pos);
 			            }
 		        	}
@@ -481,7 +494,7 @@ class UserManagement extends JDialog implements ConstantVars
 		System.out.println("In attribute_table_model :");
 
 	    for (int j = 0 ; j < attribute_table_model.getRowCount() ; j++)
-	            System.out.println(attribute_table_model.getValueAt(j,0).toString());
+	            System.out.println(attribute_table_model.getValueAt(j,0).toString() + " " + attribute_table_model.getValueAt(j,2));
 
 	    System.out.println("End set table");
 
@@ -859,7 +872,7 @@ class UserManagement extends JDialog implements ConstantVars
 
 		if(noRowChecked == 0)
 		{
-			JOptionPane.showMessageDialog(this, "Please select at least 1 attribute");
+			//JOptionPane.showMessageDialog(this, "Please select at least 1 attribute");
 			
 			result = "Please select at least 1 attribute";
 
@@ -1031,7 +1044,8 @@ class UserManagement extends JDialog implements ConstantVars
 		if(is_email_address_edited_flag || is_attribute_list_edited_flag)
 			return true;
 
-		JOptionPane.showMessageDialog(this, "No any update");
+		// JOptionPane.showMessageDialog(this, "No any update");
+		result = "No any update";
 		return false;
 	}
 
@@ -1056,8 +1070,9 @@ class UserManagement extends JDialog implements ConstantVars
 		if(alert_msg.indexOf("Sending an e-mail") != -1){
 			System.out.println("Sending an e-mail failed");
 			result_flag = true;
-			result = "Sending an e-mail failed ";
 		}
+		
+		result = alert_msg;
 
 		// JOptionPane.showMessageDialog(main_panel, alert_msg);
 	}
@@ -1119,6 +1134,7 @@ class UserManagement extends JDialog implements ConstantVars
 		return buffer_ret;
 	}
 }
+
 
 
 

@@ -810,16 +810,23 @@ else
         var access_permission_management_class = result;
 
         // call java function
-        access_permission_management_class.editAccessPermission(req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
+        access_permission_management_class.editAccessPermission(req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,flag){
         if(!err){
-          var result_flag = result;
+          var result_flag = flag;
+          var result_msg  = access_permission_management_class.getResultMsgSync();
+
+          var result = [];
+          result[0] = result_flag;
+          result[1] = result_msg;
 
             // call java function
             m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
-              if(!err){
-                res.send(result_flag);
+              if(err){
+               console.log(err); 
               }
             });
+
+            res.send(result);
         }
         else
           console.log(err);
@@ -839,15 +846,25 @@ else
         var access_permission_management_class = result;
 
           // call java function
-          access_permission_management_class.assignAccessPermission(req.body.authority, req.body.username ,
-            req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,result){
+          access_permission_management_class.assignAccessPermission(req.body.index, req.body.username ,
+            req.body.uploadflag, req.body.downloadflag, req.body.deleteflag, function(err,flag){
               if(!err){
-                  var result_flag = result;
-                  m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
-                    if(!err){
-                        res.send(result_flag);
-                    }
-                  });
+                  var result_flag = flag;
+                  var result_msg  = access_permission_management_class.getResultMsgSync();
+
+                  var result = [];
+                  result[0] = result_flag;
+                  result[1] = result_msg;
+
+                  if(result_flag){
+                    m_main_class[req.user.name].update_assigned_access_permission_list(function(err,result){
+                      if(err){
+                        console.log("ERROR : " + err);
+                      }
+                    });
+                  }
+
+                  res.send(result);
               }
               else
                 console.log(err);
@@ -1685,7 +1702,7 @@ else
 
   app.post('/api/info_for_edit_user', function (req, res) {
 
-    console.log("-------------- Edit User---------------");
+    console.log("--------------Get info for Edit User---------------");
 
     var editUserClass = m_main_class[req.user.name].getUserManagementSync();
 
@@ -1697,7 +1714,7 @@ else
     result[1]    = editUserClass.getEmailEditSync();
 
     res.send(result);
-    console.log("--------------End Edit User ---------------");
+    console.log("--------------End Get info for Edit User ---------------");
 
   });
 
@@ -1723,11 +1740,26 @@ else
       flag = flag +req.body.attributeTable[x][2].toString() + " ";
     }
 
+    console.log(flag);
+
     editUserClass.setTableAttributeSync(flag);
 
     editUserClass.editUserSync(req.body.username, req.body.email);
 
     // return value
+    var result_flag = editUserClass.getResultFlagSync();
+    var result_msg  = editUserClass.getResultMsgSync();
+
+    var result = [];
+    result[0] = result_flag;
+    result[1] = result_msg;
+
+    if(result_flag){
+      m_main_class[req.user.name].updateAttributeTableSync();
+      m_main_class[req.user.name].updateUserListSync();
+    }
+
+    res.send(result);
 
     console.log("--------------End Edit User---------------");
 
@@ -1773,8 +1805,10 @@ else
 
     result[0] = editAttributeClass.getResultSync();
 
-    m_main_class[req.user.name].updateAttributeTableSync();
-    m_main_class[req.user.name].updateUserListSync();
+    if(result[0]){
+      m_main_class[req.user.name].updateAttributeTableSync();
+      m_main_class[req.user.name].updateUserListSync();
+    }
 
     result[1] = editAttributeClass.getResultMsgSync();
 

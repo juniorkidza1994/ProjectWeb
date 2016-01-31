@@ -54,6 +54,7 @@ class AccessPermissionManagement extends JDialog implements ConstantVars
 
 	// Return variable
 	private boolean           result_flag;
+	private String			  result_msg;
 
 	public AccessPermissionManagement(Component parent, String phr_owner_authority_name, String phr_owner_name, ArrayList<String> authority_name_list)  // Assigning mode
 	{
@@ -92,6 +93,7 @@ class AccessPermissionManagement extends JDialog implements ConstantVars
 		setup_actions();
 	}
 
+	// WEB
 	public AccessPermissionManagement(String phr_owner_authority_name, String phr_owner_name, ArrayList<String> authority_name_list)  // Assigning mode
 	{
 		is_assigning_mode_flag        = true;
@@ -105,6 +107,7 @@ class AccessPermissionManagement extends JDialog implements ConstantVars
 
 	}
 
+	// WEB
 	public AccessPermissionManagement(String assigned_user_authority_name, String assigned_username, boolean current_upload_permission_flag, 
 		boolean current_download_permission_flag, boolean current_delete_permission_flag)  // Editing mode
 	{
@@ -144,20 +147,28 @@ class AccessPermissionManagement extends JDialog implements ConstantVars
 		return current_delete_permission_flag;
 	}
 
-	public boolean assignAccessPermission(String authority_name, String username, Boolean up, Boolean down, Boolean del){
+	public boolean assignAccessPermission(Integer index_web, String username, Boolean up, Boolean down, Boolean del){
 
 		boolean upload_permission_flag = up.booleanValue();
 		boolean download_permission_flag = down.booleanValue();
 		boolean delete_permission_flag = del.booleanValue();
-								// Call to C function
-		if(assign_access_permission_main(authority_name, username, 
-		upload_permission_flag, download_permission_flag, delete_permission_flag))
-		{
-			System.out.println("ASSIGN SUCCESS");
-			return true;
-		        				
+
+		int index = index_web.intValue();
+		
+		if(is_assigning_mode_flag && validate_input_assigning_web_mode(index, username, upload_permission_flag, 
+			download_permission_flag, delete_permission_flag)){
+
+			String authority_name = authority_name_list.get(index);
+
+			// Call to C function
+			if(assign_access_permission_main(authority_name, username, 
+				upload_permission_flag, download_permission_flag, delete_permission_flag))
+				{
+					System.out.println("ASSIGN SUCCESS (JAVA)");
+					result_msg = "ASSIGN SUCCESS";
+					return true;   				
+				}
 		}
-		System.out.println("ASSIGN FAILL");
 
 		return false;
 	}
@@ -167,12 +178,16 @@ class AccessPermissionManagement extends JDialog implements ConstantVars
 		boolean upload_permission_flag = Boolean.parseBoolean(up);
 		boolean download_permission_flag = Boolean.parseBoolean(down);
 		boolean delete_permission_flag = Boolean.parseBoolean(del);
-								// Call to C function
-		if(edit_access_permission_main(assigned_user_authority_name, assigned_username, 
-		upload_permission_flag, download_permission_flag, delete_permission_flag))
-		{
-			return true;
-
+		
+		if(!is_assigning_mode_flag && validate_input_editing_web_mode(upload_permission_flag, 
+			download_permission_flag, delete_permission_flag)){
+			// Call to C function
+			if(edit_access_permission_main(assigned_user_authority_name, assigned_username, 
+			upload_permission_flag, download_permission_flag, delete_permission_flag))
+			{	
+				result_msg = "EDIT SUCCESS";
+				return true;
+			}
 		}
 
 		return false;
@@ -414,6 +429,54 @@ class AccessPermissionManagement extends JDialog implements ConstantVars
 		return true;
 	}
 
+	private boolean validate_input_assigning_web_mode(int index, String  username, boolean upload_permission, 
+		boolean download_permission, boolean delete_permission)
+	{
+		Pattern p;
+		Matcher m;
+		
+		String authority_name;
+
+		// Validate authority name
+		if(index == -1)
+		{
+			// JOptionPane.showMessageDialog(this, "Please select the authority name");
+			result_msg = "Please select the authority name";
+			return false;
+		}
+
+		authority_name = authority_name_list.get(index);
+
+		// Validate username
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
+
+		m = p.matcher(username);
+		if(!m.matches())
+		{
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the username");
+			result_msg = "Please input correct format for the username";
+
+			return false;
+		}
+
+		if(authority_name.equals(phr_owner_authority_name) && username.equals(phr_owner_name))
+		{
+			// JOptionPane.showMessageDialog(this, "You have access permissions to your own data already");
+			result_msg = "You have access permissions to your own data already";
+			return false;
+		}
+ 
+		// Validate access permissions
+		if(!upload_permission && !download_permission && !delete_permission)
+		{
+			// JOptionPane.showMessageDialog(this, "Please select at least 1 access permission");
+			result_msg = "Please select at least 1 access permission";
+			return false;
+		}
+
+		return true;
+	}
+
 	private boolean validate_input_editing_mode()
 	{
 		// Validate access permissions
@@ -435,9 +498,38 @@ class AccessPermissionManagement extends JDialog implements ConstantVars
 		return true;
 	}
 
+	private boolean validate_input_editing_web_mode(boolean upload_permission, 
+		boolean download_permission, boolean delete_permission)
+	{
+		// Validate access permissions
+		if(!upload_permission && !download_permission && !delete_permission)
+		{
+			result_msg = "Please select at least 1 access permission";
+			// JOptionPane.showMessageDialog(this, "Please select at least 1 access permission");
+			return false;
+		}
+
+		// Check update
+		if(upload_permission == current_upload_permission_flag && 
+			download_permission == current_download_permission_flag && 
+			delete_permission == current_delete_permission_flag)
+		{
+			// JOptionPane.showMessageDialog(this, "No any update");
+			result_msg =  "No any update";
+			return false;
+		}
+
+		return true;
+	}
+
 	public boolean get_result()
 	{
 		return result_flag;
+	}
+
+	public String getResultMsg()
+	{
+		return result_msg;
 	}
 
 	// Callback methods (Returning from C code)

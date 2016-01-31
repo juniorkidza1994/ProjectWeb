@@ -1,7 +1,7 @@
 'use strict';
 
     // create the module and name it phrApp
-    	// also include ngRoute for all our routing needs
+      // also include ngRoute for all our routing needs
 
     var myClass;
 
@@ -1146,19 +1146,42 @@
 
     phrApp.controller('accessPermisController', function($scope, $http, $location, $window) {
         $scope.access_permission_list = {};
-        $scope.selectedRow = null;
+        $scope.selectedRow = -1;
         $scope.checked = {};
+
+        var indexEdit = -1;
+        var beforeEdit = [[false,false],[false,false]];
 
         // get access permission list
         $http.post('/api/access_permission_management_list')
         .success(function(res){
             $scope.access_permission_list = res;
-            //console.log(res);
+
+            for(var x in res){
+              beforeEdit[x][0] = res[x][1];
+              beforeEdit[x][1] = res[x][2];
+            }
+
+            console.log(beforeEdit);
         })     
 
         // set click row
         $scope.setClickedRow = function(index){
+
+          if(index != indexEdit){
             $scope.selectedRow = index;
+            console.log("Row " + $scope.selectedRow);
+            console.log(beforeEdit);
+            console.log(indexEdit);
+            console.log($scope.access_permission_list)
+
+            if(indexEdit != -1){
+              $scope.access_permission_list[indexEdit][1] = beforeEdit[indexEdit][0];
+              $scope.access_permission_list[indexEdit][2] = beforeEdit[indexEdit][1];
+            }
+
+            indexEdit= $scope.selectedRow;
+          }
         }
 
         // change location to assign
@@ -1166,13 +1189,13 @@
           $location.path('/user/assignPermission');
         }
 
-        var isClick = false;
+        var isClickEdit = false;
 
         // edit permission
         $scope.edit = function(){
           //console.log($scope.selectedRow);
-          if(!isClick){
-            isClick = true;
+          if(!isClickEdit){
+            isClickEdit = true;
             if($scope.selectedRow != null ){
               //console.log("EDIT " + $scope.access_permission_list[$scope.selectedRow]);
               $http.post('/api/edit_access_permission', {
@@ -1182,46 +1205,74 @@
                 deleteflag      : $scope.access_permission_list[$scope.selectedRow][3]
               })
               .success(function(res){
-                if(res == true){
+                alert(res[1]);
+                isClickEdit = false;
+                if(res[0]){
                   //console.log("EDIT SUCCESS");
-                  isClick = false;
-                  $window.alert("EDIT PERMISSION SUCCESS !!")
-                  $location.path('/accessPermissionManagement');
+                  $http.post('/api/access_permission_management_list')
+                  .success(function(res){
+                      $scope.access_permission_list = res;
+
+                      for(var x in res){
+                        beforeEdit[x][0] = res[x][1];
+                        beforeEdit[x][1] = res[x][2];
+                      }
+
+                      console.log(beforeEdit);
+                  })    
                 }
               })
             }
           }
         }
 
+        var isClickDelete = false;
+
         // delete access permission
         $scope.delete = function(){
-          //console.log($scope.selectedRow);
-          if($scope.selectedRow != null && !isClick){
+          console.log($scope.selectedRow)
+          console.log("DELETE");
+          if($scope.selectedRow == null){
+            alert("Select one row");
+          }
 
-            isClick = true;
-            //console.log("Delete " + $scope.access_permission_list[$scope.selectedRow]);
-            $http.post('/api/delete_access_permission', {
-              delete_user      : $scope.access_permission_list[$scope.selectedRow][0],
-            })
-            .success(function(res){
-              if(res == true){
-                //console.log("Delete SUCCESS");
-                 $http.post('/api/access_permission_management_list')
-                 .success(function(res){
-                     $scope.access_permission_list = res;
-                    // console.log(res);
-                 })   
-                 isClick = false;
-                 $window.alert("DELETE SUCCESS !!")
-                $location.path('/accessPermissionManagement');
+          else {
+
+            if(!isClickDelete){
+              isClickDelete = true;
+
+              var r = confirm("Are you sure to delete this row ?");
+              
+              if(r == true) {
+
+                //console.log("Delete " + $scope.access_permission_list[$scope.selectedRow]);
+                $http.post('/api/delete_access_permission', {
+                  delete_user      : $scope.access_permission_list[$scope.selectedRow][0],
+                })
+                .success(function(res){
+                  if(res == true){
+                    //console.log("Delete SUCCESS");
+                     $http.post('/api/access_permission_management_list')
+                     .success(function(res){
+                         $scope.access_permission_list = res;
+                        // console.log(res);
+                     })   
+                     isClickDelete = false;
+                     $window.alert("DELETE SUCCESS !!")
+                    $location.path('/user/accessPermissionManagement');
+                  }
+                })
               }
-            })
+              else{
+                isClickDelete = false;
+              }
+            }
           }
         }
     });
 
     phrApp.controller('assignAccessPermissionController', function($scope, $http, $location, $window) {
-        $scope.authorityList = {};
+        $scope.authorityList = [];
         $scope.assign = {};
         $scope.assign.uploadflag = false;
         $scope.assign.downloadflag = false;
@@ -1231,44 +1282,53 @@
         $http.post('/api/authority_name_list')
         .success(function(res){
             $scope.authorityList = res;
+            // console.log($scope.authorityList);
         })
 
-        $scope.selectedAuthority = null;
+        
+
+        $scope.selectedAuthority = -1;
         $scope.assign.username = null;
 
         var isClick = false;
 
-        $scope.submit = function(index){
-          if(($scope.assign.uploadflag || $scope.assign.downloadflag || $scope.assign.deleteflag &&
-            ($scope.selectedAuthority != null && $scope.assign.username != null))  && !isClick){
+        $scope.submit = function(){
+
+          if(!isClick){
             //console.log("SUCCESS");
             isClick = true;
+
+            console.log($scope.selectedAuthority);
+
+            if($scope.assign.username == null)
+              $scope.assign.username = "";
+
             $http.post('/api/assign_access_permission', {
-                authority : $scope.selectedAuthority,
+                index : $scope.selectedAuthority,
                 username : $scope.assign.username,
                 uploadflag : $scope.assign.uploadflag,
                 downloadflag : $scope.assign.downloadflag,
                 deleteflag : $scope.assign.deleteflag,
             })
             .success(function(res){
-              if(res == true){
-                isClick = false;
-              //  console.log("Assign SUCCESS");
-                $window.alert("ASSIGN SUCCESS !!")
-                $location.path('/accessPermissionManagement');
+
+              alert(res[1]);
+
+              if(res[0]){
+                $location.path('/user/accessPermissionManagement');
               }
+
+              isClick = false;
             })
           }
-          //else
-          //  console.log("FAIL");
         }
 
          $scope.check = function(){
-           return ($scope.assign.uploadflag || $scope.assign.downloadflag || $scope.assign.deleteflag);
+           return ($scope.assign.uploadflag || $scope.assign.downloadflag);
          }
 
          $scope.back =  function(){
-            $location.path('/accessPermissionManagement');
+            $location.path('/user/accessPermissionManagement');
          }
     });
 
@@ -2367,8 +2427,12 @@
             attributeTable : $scope.attribute_table
           })
           .success(function(res){
+
             isClicked = false;
-              console.log("SADAS");
+            alert(res[1]);
+            
+            if(res[0])
+              $location.path('/admin/usermanagement');
           })
         }
       }

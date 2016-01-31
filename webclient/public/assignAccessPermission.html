@@ -11,7 +11,7 @@
             <div class="form-group">
               <label  class="col-sm-2 control-label">Authority</label>
               <div class="col-sm-2">
-                 <select ng-model="selectedAuthority" ng-options="authority for authority in authorityList" required></select>
+                 <select ng-model="selectedAuthority" ng-options="authorityList.indexOf(selectedAuthority) as selectedAuthority for selectedAuthority in authorityList" required></select>
               </div>
             </div>
 
