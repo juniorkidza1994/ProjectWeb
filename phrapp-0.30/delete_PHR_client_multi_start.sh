@@ -1,0 +1,1 @@
+sudo rm -rf $client_dir_main
