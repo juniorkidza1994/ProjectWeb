@@ -559,15 +559,25 @@
               .success(function(res){
                 // No error: authentication OK
                 //console.log("SUCCESS");
-                $scope.logs = res;
-                $scope.bigTotalItems = $scope.logs.length;
-                console.log($scope.bigTotalItems);
                 isClick = false;
-                $location.path('/user/transaction');
+
+                if(angular.isArray(res)){
+                  $scope.logs = res;
+                  $scope.bigTotalItems = $scope.logs.length;
+                  console.log($scope.bigTotalItems);
+                  $scope.chooseTable = $scope.transaction_log_type;
+                  $location.path('/user/transaction');
+                }
+                else {
+                  alert(res);
+                  $scope.logs = {};
+                }
               })
             }
           }
           else {
+
+            console.log("SSSSSS");
             $http.post('/api/transaction_auditing', {
               allFlag               : $scope.allFlag,
               transaction_log_type  : $scope.transaction_log_type
@@ -575,11 +585,25 @@
             .success(function(res){
               // No error: authentication OK
               //console.log("SUCCESS");
-              $scope.logs = res;
-              $scope.bigTotalItems = $scope.logs.length;
-              console.log($scope.bigTotalItems);
+              // $scope.logs = res;
+              // $scope.bigTotalItems = $scope.logs.length;
+              // console.log($scope.bigTotalItems);
+              // isClick = false;
+              // $location.path('/user/transaction');
+
               isClick = false;
-              $location.path('/user/transaction');
+
+              if(angular.isArray(res)){
+                $scope.logs = res;
+                $scope.bigTotalItems = $scope.logs.length;
+                console.log($scope.bigTotalItems);
+                $scope.chooseTable = $scope.transaction_log_type;
+                $location.path('/user/transaction');
+              }
+              else {
+                alert(res);
+                $scope.logs = {};
+              }
             })
           }
           // console.log("Start date: " + $scope.startDate);
@@ -1790,6 +1814,7 @@
                   }
                   else {
                     alert(res);
+                    $scope.logs = {};
                   }
                })
              //}
@@ -1803,11 +1828,17 @@
               isClick = false;
                // No error: authentication OK
                //console.log("SUCCESS");
-               $scope.logs = res;
-               $scope.chooseTable = $scope.transaction_log_type;
-               $scope.bigTotalItems = $scope.logs.length;
-               console.log($scope.bigTotalItems);
-               $location.path('/admin/transaction');
+               if(angular.isArray(res)){
+                     $scope.logs = res;
+                     $scope.bigTotalItems = $scope.logs.length;
+                     console.log($scope.bigTotalItems);
+                     $scope.chooseTable = $scope.transaction_log_type;
+                     $location.path('/admin/transaction');
+                  }
+                  else {
+                    alert(res);
+                    $scope.logs = {};
+                  }
              })
            }
          }

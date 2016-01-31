@@ -35,6 +35,10 @@ class UserTransactionAuditing extends JDialog implements ConstantVars
 	private TransactionLogType transaction_log_type;
 	private ConfirmSignal      confirm_dialg_exiting;
 
+	// return variable
+
+	private String 			   m_result_msg;
+
 	public UserTransactionAuditing(Component parent, TransactionLogType transaction_log_type, ConfirmSignal confirm_dialg_exiting)
 	{
 		this.transaction_log_type  = transaction_log_type;
@@ -65,6 +69,8 @@ class UserTransactionAuditing extends JDialog implements ConstantVars
 	// WEB
 	public UserTransactionAuditing(TransactionLogType transaction_log_type)
 	{
+		m_result_msg = "";
+
 		this.transaction_log_type  = transaction_log_type;
 		
 		// Load JNI backend library
@@ -222,6 +228,8 @@ class UserTransactionAuditing extends JDialog implements ConstantVars
 		int start_hour_index, int start_minute_index, int end_year_index, int end_month_index, int end_day_index, int end_hour_index, 
 		int end_minute_index)
 	{
+		m_result_msg = "";
+
 		this.transaction_log_type  = transaction_log_type;
 
 		// Load JNI backend library
@@ -568,7 +576,13 @@ class UserTransactionAuditing extends JDialog implements ConstantVars
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
+		m_result_msg = alert_msg;
+		System.out.println(alert_msg);
+	}
+
+	public String getResultMsg(){
+		return m_result_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)

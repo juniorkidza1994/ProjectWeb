@@ -81,6 +81,7 @@ class AdminTransactionAuditing extends JDialog implements ConstantVars
 
 	public AdminTransactionAuditing(TransactionLogType transaction_log_type)
 	{
+		m_result_msg = "";
 		this.transaction_log_type  = transaction_log_type;
 
 		init_transaction_log_table();
