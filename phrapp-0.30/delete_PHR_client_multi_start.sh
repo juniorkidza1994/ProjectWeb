@@ -1,1 +1,2 @@
-sudo rm -rf $client_dir_main
+cd ../webserver
+rm -rf Client_cache*

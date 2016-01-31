@@ -14,14 +14,47 @@ if(cluster.isMaster){
 
   var workers = [];
 
+  var spawn = require('child_process').spawn,
+      ls    = spawn('../phrapp-0.30/delete_PHR_client_multi_start.sh',{
+      stdio:['ipc','pipe','pipe']
+  });
+
   // Create a worker for each CPU
   for (var i = 1; i <= 2; i += 1) {
-    workers[i] = cluster.fork();
-    status_server.set((port_worker + i) + "", 0);
-        
-    workers[i].send(port_worker+i);
 
-    console.log("PROCESS ID : " +  workers[i].process.pid);
+    console.log(process.cwd());
+
+    var spawn = require('child_process').spawn,
+      ls    = spawn('../phrapp-0.30/PHR_client_multi_start.sh',{
+      stdio:['ipc','pipe','pipe']
+    });
+
+    ls.stdout.on('data', function (data) {
+      var dir = data + "";
+      dir = dir.replace(/\s+/, "") ;
+      var num = 0;
+      num = parseInt(dir);
+
+      dir = './Client_cache'+dir;
+      process.chdir(dir);
+
+      workers[num] = cluster.fork();
+      status_server.set((port_worker + num) + "", 0);
+
+      workers[num].send(port_worker+num);
+
+      console.log("PROCESS ID : " +  workers[num].process.pid);
+
+      process.chdir('../');
+
+    });
+
+    // workers[i] = cluster.fork();
+    // status_server.set((port_worker + i) + "", 0);
+        
+    // workers[i].send(port_worker+i);
+
+    // console.log("PROCESS ID : " +  workers[i].process.pid);
   }
 
   app.get('/',function(req,res){
@@ -55,6 +88,8 @@ if(cluster.isMaster){
 }
 else
 {
+  console.log("CHILD PROCESS : " + process.cwd());
+
   var java = require('java');
   var path = require('path');
   var express = require('express');
@@ -139,18 +174,29 @@ else
   app.use(passport.session());
   app.use(bodyParser.json()); // support json encoded bodies
   app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(express.static(path.join(__dirname,'..','webclient/public')));
+  app.use(express.static(path.join(__dirname,'../','webclient/public')));
 
-  // SET PACKAGE USE IN JAVA
-  java.classpath.push("../phrapp-0.30/bin/");
-  java.classpath.push("../phrapp-0.30/bin/commons-lang3-3.1.jar");
-  java.classpath.push("../phrapp-0.30/bin/paillier.jar");
-  java.classpath.push("../phrapp-0.30/bin/swingx-all-1.6.3.jar");
-  java.classpath.push("../phrapp-0.30/bin/paillier.jar");
-  java.classpath.push("../phrapp-0.30/bin/org-json.jar");
+    // SET PACKAGE USE IN JAVA
+  java.classpath.push("../../phrapp-0.30/bin/");
+  java.classpath.push("../../phrapp-0.30/bin/commons-lang3-3.1.jar");
+  java.classpath.push("../../phrapp-0.30/bin/paillier.jar");
+  java.classpath.push("../../phrapp-0.30/bin/swingx-all-1.6.3.jar");
+  java.classpath.push("../../phrapp-0.30/bin/paillier.jar");
+  java.classpath.push("../../phrapp-0.30/bin/org-json.jar");
 
   // SET OPTION TO COMPLIE JAVA
-  java.options.push('-Djava.library.path=../phrapp-0.30/bin/ -classpath *:../phrapp-0.30/bin/');
+  java.options.push('-Djava.library.path=../../phrapp-0.30/bin/ -classpath *:../../phrapp-0.30/bin/');
+
+  // // SET PACKAGE USE IN JAVA
+  // java.classpath.push("../phrapp-0.30/bin/");
+  // java.classpath.push("../phrapp-0.30/bin/commons-lang3-3.1.jar");
+  // java.classpath.push("../phrapp-0.30/bin/paillier.jar");
+  // java.classpath.push("../phrapp-0.30/bin/swingx-all-1.6.3.jar");
+  // java.classpath.push("../phrapp-0.30/bin/paillier.jar");
+  // java.classpath.push("../phrapp-0.30/bin/org-json.jar");
+
+  // // SET OPTION TO COMPLIE JAVA
+  // java.options.push('-Djava.library.path=../phrapp-0.30/bin/ -classpath *:../phrapp-0.30/bin/');
 
   // CLASS TEST LOGIN
   var m_instance = java.newInstanceSync("Login");
@@ -1687,7 +1733,7 @@ else
 
     m_main_class[req.user.name].resetPasswordUserSync(req.body.username);
 
-    result[0] = m_main_class[req.user.name].getResultPwdSync();
+    result[0] = m_main_class[req.user.name].getResultFlagResetUserPwdSync();
     result[1] = m_main_class[req.user.name].getResultMsgSync();
 
     console.log(result);
