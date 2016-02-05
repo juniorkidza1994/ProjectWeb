@@ -37,7 +37,7 @@
 							<p class="col-sm-offset-1 col-sm-2 form-control-static">Authority :</p>
 								
 								<div class="col-sm-4"> 
-									<select class="form-control" ng-model="selectedAuthority" ng-options="authority for authority in authorityList" ></select> 
+									<select class="form-control" ng-model="selectedAuthority" ng-options="idx as choice for (idx, choice) in authorityList" ></select> 
 								</div>							
 				</div>
 	    		<div class="form-group row">

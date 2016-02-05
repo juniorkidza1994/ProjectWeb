@@ -188,9 +188,12 @@ public class AdminMain extends JFrame implements ConstantVars
 
 		// WEB
 		initUserTable();
-
-		init_ui();
-		setup_actions();
+		initAttributeTable();
+		initAdminTable();
+		initAuthorityTable();
+		
+		//init_ui();
+		//setup_actions();
 
 		// Call to C functions
 		update_attribute_list_main();
@@ -2794,8 +2797,8 @@ public class AdminMain extends JFrame implements ConstantVars
 		{
 			public void run()
 			{
-				attribute_removal_button.setEnabled(false);
-				user_registration_button.setEnabled(false);
+				// attribute_removal_button.setEnabled(false);
+				// user_registration_button.setEnabled(false);
 
 				attribute_table_model.getDataVector().removeAllElements();
 				attribute_table_model.fireTableDataChanged();

@@ -313,18 +313,24 @@ public class UserMain extends JFrame implements ConstantVars
 		store_variables_to_backend(ssl_cert_hash, cpabe_priv_key_hash, username, authority_name, 
 			passwd, user_auth_ip_addr, audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr);
 
-		update_authority_list_main();
+		// init_ui();
+		// init_actions_for_phr_uploading_mode();
+		// init_actions_for_phr_uploading_transaction_mode();
+		// init_actions_for_phr_downloading_mode();
+		// init_actions_for_phr_downloading_transaction_mode();
+		// init_actions_for_phr_deletion_mode();
+		// setup_actions();
 
-		init_ui();
-		init_actions_for_phr_uploading_mode();
-		init_actions_for_phr_uploading_transaction_mode();
-		init_actions_for_phr_downloading_mode();
-		init_actions_for_phr_downloading_transaction_mode();
-		init_actions_for_phr_deletion_mode();
-		setup_actions();
+		initTableDeletePHR();
+		initTableTrustedUsers();
+		initTableDelegate();
+		initTableRestricted();
+		initTableDownloadPHR();
+		initTableAccessPermissionPHR();
+		initTableUserAttribute();
 
 		// Call to C functions
-		update_user_attribute_list_main();
+		update_authority_list_main();
 		update_assigned_access_permission_list_main();
 		update_emergency_trusted_user_list_main();
 		update_emergency_phr_owner_list_main();
@@ -5270,6 +5276,25 @@ public class UserMain extends JFrame implements ConstantVars
 
 	}
 
+	public boolean initTableUserAttribute(){
+
+		user_attribute_table_model = new DefaultTableModel()
+		{
+			private static final long serialVersionUID = -1113582265865921793L;
+
+			@Override
+    			public boolean isCellEditable(int row, int column)
+			{
+       				return false;
+    			}
+		};
+
+    		user_attribute_table_model.setDataVector(null, new Object[] {"Attribute name"});
+    		user_attribute_table = new JTable(user_attribute_table_model);
+
+    		update_authority_list_main();
+    		return true;
+	}
 	// ACCESS PERMISSION MANAGER
 
 	public boolean initTableAccessPermissionPHR()
@@ -5413,16 +5438,15 @@ public class UserMain extends JFrame implements ConstantVars
 	    return tableData;
 	}
 
-	public boolean addTrustedUsers(String  username, String  authority_name){
+	public Object GetEmergencyTrustedUserAddingClass(){
+		EmergencyTrustedUserAdding emergency_trusted_user_adding_dialog;
+						emergency_trusted_user_adding_dialog = new EmergencyTrustedUserAdding(
+							authority_name, username, authority_name_list);
+		return emergency_trusted_user_adding_dialog;
+	}
 
-		System.out.println("ADD TURSTED USERS FUNCTION IN USERMAIN");
-		System.out.println("USER : " + username );
-		System.out.println("Authority name : " + authority_name );
-
-		EmergencyTrustedUserAdding emergency_trusted_user = new EmergencyTrustedUserAdding();
-		emergency_trusted_user.add_user(authority_name, username);
+	public void updateTrustedUserList(){
 		update_emergency_trusted_user_list_main();
-		return emergency_trusted_user.get_result();
 	}
 
 	// Delegate

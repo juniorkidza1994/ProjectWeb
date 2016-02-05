@@ -172,6 +172,8 @@ public class Login extends JFrame  implements ConstantVars
 						System.out.println("LOGIN SUCCESSFULL !!!!!");
 
 						System.out.println("Create User Class !!!!!");
+
+						long startTime = System.currentTimeMillis();
 							
 						// Call UserMain object
 						UserMain user_main = new UserMain(username, passwd, email_address, authority_name, user_auth_ip_addr, 
@@ -182,6 +184,12 @@ public class Login extends JFrame  implements ConstantVars
 						main_class = user_main;
 						
 						result = true;
+
+						long stopTime = System.currentTimeMillis();
+
+						long elapsedTime = stopTime - startTime;
+
+						System.out.println("TIME LOGIN : " + elapsedTime);
 					}
 					else
 					{
@@ -200,11 +208,18 @@ public class Login extends JFrame  implements ConstantVars
 
 						System.out.println("Create Admin Class !!!!!");
 						
+						long startTime = System.currentTimeMillis();
+
 						// Call AdminMain object
 						AdminMain admin_main = new AdminMain(username, passwd, email_address, authority_name, user_auth_ip_addr, 
 							audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr, mail_server_url, 
 							authority_email_address, authority_email_passwd, ssl_cert_hash);
-					
+						
+						long stopTime = System.currentTimeMillis();
+						
+						long elapsedTime = stopTime - startTime;
+
+						System.out.println("TIME LOGIN : " + elapsedTime);
 						
 						main_class = admin_main;
 						

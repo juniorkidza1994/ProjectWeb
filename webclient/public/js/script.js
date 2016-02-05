@@ -622,7 +622,8 @@
         $scope.trustedUsers = {};
         $scope.authorityList = {};
         $scope.username = "";
-        $scope.selectedAuthority ="";
+        $scope.selectedAuthority = -1;
+        $scope.selectedRow = -1;
 
         // get userinfo
         $http.post('/api/trusted_users_table')
@@ -638,7 +639,7 @@
 
         $scope.clickedSomewhereElse = function(){
         //  console.log("HIT !!")
-          $scope.selectedRow = null;
+          $scope.selectedRow = -1;
         };
 
         $http.post('/api/authority_name_list')
@@ -655,24 +656,21 @@
             isClick = true;
             $http.post('/api/add_trusted_user', {
               username        : $scope.username,
-              authorityName   : $scope.selectedAuthority,
+              index           : parseInt($scope.selectedAuthority),
             })
             .success(function(res){
               // No error: authentication OK
               //console.log("SUCCESS");
               isClick = false;
-              if(res){
+              alert(res[1]);
+              if(res[0]){
                 $http.post('/api/trusted_users_table')
                 .success(function(res){
                     $scope.trustedUsers = res;
-                    alert("Add User SUCCESS !!");
-                    $location.path('/trustedUsers');
+                    $location.path('/user/trustedUsers');
                     //console.log($scope.attribute_all);
                 })
               }
-              else
-                alert("Trusted user must be another user or Please input correct format for the username!!");
-              //$location.path('/info');
             })
           }
         };

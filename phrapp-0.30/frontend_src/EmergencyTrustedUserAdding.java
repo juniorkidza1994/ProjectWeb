@@ -39,6 +39,7 @@ class EmergencyTrustedUserAdding extends JDialog implements ConstantVars
 
 	// Return variable
 	private boolean           result_flag;
+	private String			  m_result_msg;
 
 	public EmergencyTrustedUserAdding(Component parent, String phr_owner_authority_name, String phr_owner_name, ArrayList<String> authority_name_list)
 	{
@@ -57,35 +58,33 @@ class EmergencyTrustedUserAdding extends JDialog implements ConstantVars
 
 	// USE IN WEB
 
-	public EmergencyTrustedUserAdding()
+	public EmergencyTrustedUserAdding(String phr_owner_authority_name, String phr_owner_name, ArrayList<String> authority_name_list)
 	{
-		// result_flag                   = false;
-		// this.phr_owner_authority_name = phr_owner_authority_name;
-		// this.phr_owner_name           = phr_owner_name;
-		// this.authority_name_list      = authority_name_list;
+		result_flag                   = false;
+		this.phr_owner_authority_name = phr_owner_authority_name;
+		this.phr_owner_name           = phr_owner_name;
+		this.authority_name_list      = authority_name_list;
 
-		// // Load JNI backend library
-		// System.loadLibrary("PHRapp_User_JNI");
-			
-		// //init_ui(parent);
-		// //init_authority_name_combobox(authority_name_list);
-		// setup_actions();
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_User_JNI");
 	}
 
-	public void add_user(String  authority_name, String  username ){
+	public void addUser(Integer  index, String  username ){
 
 
-		System.out.println("ADD TURSTED USERS FUNCTION IN EMS");
-		System.out.println("USER : " + username );
-		System.out.println("Authority name : " + authority_name );
+		System.out.println("ADD TURSTED USERS FUNCTION IN JAVA");
 
-		// Call to C function
-		if(add_emergency_trusted_user_main(authority_name, username))
-		{
-			result_flag = true;
-		}
-		else {
-			result_flag = false;		
+		if(validate_input_web_mode(index.intValue(), username)){
+			String  authority_name = authority_name_list.get(index);
+			// Call to C function
+			if(add_emergency_trusted_user_main(authority_name, username))
+			{
+				result_flag = true;
+				m_result_msg = "Add trusted user success !!";
+			}
+			else {
+				result_flag = false;		
+			}
 		}
 	}
 
@@ -253,15 +252,63 @@ class EmergencyTrustedUserAdding extends JDialog implements ConstantVars
 		return true;
 	}
 
+	private boolean validate_input_web_mode(int index, String username)
+	{
+		Pattern p;
+		Matcher m;
+		String  authority_name;
+
+		if(index == -1)
+		{
+			// JOptionPane.showMessageDialog(this, "Please select the authority name");
+			m_result_msg = "Please select the authority name";
+			return false;
+		}
+
+		authority_name = authority_name_list.get(index);
+
+		// Validate username
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
+
+		m = p.matcher(username);
+		if(!m.matches())
+		{
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the username");
+			m_result_msg = "Please input correct format for the username";
+			return false;
+		}
+
+		if(authority_name.equals(phr_owner_authority_name) && username.equals(phr_owner_name))
+		{
+			
+			// JOptionPane.showMessageDialog(this, "Trusted user must be another user");
+			m_result_msg = "Trusted user must be another user";
+			return false;
+		}
+
+		return true;
+	}
+
 	public boolean get_result()
 	{
 		return result_flag;
+	}
+
+	public boolean getResultFlag()
+	{
+		return result_flag;
+	}
+
+	public String getResultMsg()
+	{
+		return m_result_msg;
 	}
 
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
 		//JOptionPane.showMessageDialog(main_panel, alert_msg);
+		m_result_msg = alert_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)

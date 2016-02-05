@@ -1,7 +1,8 @@
 var cluster = require('cluster');
 
-if(cluster.isMaster){
 
+if(cluster.isMaster){
+  var sleep   = require('sleep');
   var express = require('express');
   var os = require('os');
   var app = express();
@@ -14,6 +15,8 @@ if(cluster.isMaster){
 
   var workers = [];
 
+  var host = "http://192.168.174.138:";
+
   var spawn = require('child_process').spawn,
       ls    = spawn('../phrapp-0.30/delete_PHR_client_multi_start.sh',{
       stdio:['ipc','pipe','pipe']
@@ -22,32 +25,36 @@ if(cluster.isMaster){
   // Create a worker for each CPU
   for (var i = 1; i <= 2; i += 1) {
 
-    console.log(process.cwd());
+    //console.log(process.cwd());
 
-    var spawn = require('child_process').spawn,
-      ls    = spawn('../phrapp-0.30/PHR_client_multi_start.sh',{
-      stdio:['ipc','pipe','pipe']
-    });
+    setTimeout( function(i){
+      var spawn = require('child_process').spawn,
+        ls    = spawn('../phrapp-0.30/PHR_client_multi_start.sh',{
+        stdio:['ipc','pipe','pipe']
+      });
 
-    ls.stdout.on('data', function (data) {
-      var dir = data + "";
-      dir = dir.replace(/\s+/, "") ;
-      var num = 0;
-      num = parseInt(dir);
+      ls.stdout.on('data', function (data) {
+        var dir = data + "";
+        dir = dir.replace(/\s+/, "") ;
+        var num = 0;
+        num = parseInt(dir);
 
-      dir = './Client_cache'+dir;
-      process.chdir(dir);
+        dir = './Client_cache'+dir;
+        process.chdir(dir);
 
-      workers[num] = cluster.fork();
-      status_server.set((port_worker + num) + "", 0);
+        workers[num] = cluster.fork();
+        status_server.set((port_worker + num) + "", 0);
 
-      workers[num].send(port_worker+num);
+        workers[num].send(port_worker+num);
 
-      console.log("PROCESS ID : " +  workers[num].process.pid);
+        console.log("PROCESS ID : " +  workers[num].process.pid);
 
-      process.chdir('../');
+        process.chdir('../');
 
-    });
+      });
+    }, 1300 * i)
+
+    
 
     // workers[i] = cluster.fork();
     // status_server.set((port_worker + i) + "", 0);
@@ -63,13 +70,14 @@ if(cluster.isMaster){
     var isBusy  = false;
 
     for(var i in array_key){
-   //   console.log("i = " + i);
-      console.log("port : " + array_key[i]);
+      //console.log("i = " + i);
+      //console.log("port : " + array_key[i]);
       if(status_server.get(array_key[i]) == 0){
-        console.log("FREE : " + array_key[i]);
+        //console.log("FREE : " + array_key[i]);
         status_server.set(array_key[i],1);
-        console.log("VALUE : " + status_server.get(array_key[i]));
-        res.redirect("http://192.168.174.138:"+ array_key[i]);
+        //console.log("VALUE : " + status_server.get(array_key[i]));
+        //console.log(host+ array_key[i]);
+        res.redirect(host+ array_key[i]);
         isBusy = false;
         break;
       }
@@ -250,7 +258,7 @@ else
   // USE TO LOGIN 
   app.post('/api/login', passport.authenticate('local'), function(req, res) {
   //  console.log("REQ USER : " + req.user.name);
-    console.log(req.user);
+    //console.log(req.user);
     res.send(req.user);
   });
 
@@ -269,7 +277,6 @@ else
       console.log(password);
       console.log(req.body.type);
      // console.log("DONE : " + done);
-      
       // Call java function
       var bool = m_instance.loginSync("127.0.0.1",username,password,req.body.type);
 
@@ -284,25 +291,26 @@ else
         // Call java function
         main_class = m_instance.getMainClassSync();
 
-        console.log("CREATE MAIN CLASS : ");
-        console.log(main_class);
+        // console.log("CREATE MAIN CLASS : ");
+        // console.log(main_class);
+        console.time('login');
 
         var obj = {};
 
   /*      for(var index in m_test){
           console.log("INDEX : " + index + " VALUE: " + m_test[index]);
-        }
+        } 
   */
         obj[username] = main_class;
 
   //      console.log("OBJ : " + obj);
 
   //      console.log("IN OBJ2 : " + obj[username]);
-        console.log("USERNAME : ");
-        console.log(username);
+        // console.log("USERNAME : ");
+        // console.log(username);
 
         m_main_class[username] = main_class;
-        console.log(m_main_class[username]);
+//        console.log(m_main_class[username]);
 
       //  m_main_class.push(obj);
   /*
@@ -326,7 +334,7 @@ else
 
         });
 
-        console.log("LOGIN SUCCESS");
+  //      console.log("LOGIN SUCCESS");
 
         return done(null, {name: username, type:req.body.type});
       }
@@ -999,21 +1007,26 @@ else
   app.post('/api/add_trusted_user', function (req, res) {
 
     console.log("-------------- ADD TrustedUsers table ---------------");
-    var authority_name = m_main_class[req.user.name].getAuthorityNameSync();
-    if(req.body.username == req.user.name && req.body.authorityName == authority_name){
-      res.send(false);
-      console.log("-------------- END TrustedUsers table ---------------");
+    var EmergencyTrustedUserAddingClass = m_main_class[req.user.name].GetEmergencyTrustedUserAddingClassSync();
+
+    EmergencyTrustedUserAddingClass.addUserSync(req.body.index, req.body.username);
+
+    var result_flag = EmergencyTrustedUserAddingClass.getResultFlagSync();
+    var result_msg  = EmergencyTrustedUserAddingClass.getResultMsgSync();
+
+    var result = [];
+
+    result[0] = result_flag;
+    result[1] = result_msg;
+
+    if(result_flag){
+      m_main_class[req.user.name].updateTrustedUserList();
     }
-    else{
-    // call java function
-      m_main_class[req.user.name].addTrustedUsers(req.body.username, req.body.authorityName, function(err,result){
-        if(result) {
-          // call java function
-              res.send(result);
-              console.log("-------------- END TrustedUsers table ---------------");
-          }
-      });
-    }
+
+    res.send(result);
+
+    console.log("-------------- END ADD TrustedUsers table ---------------");
+
   });
 
   //--------------------------------------------------------------------//
@@ -1197,10 +1210,10 @@ else
       }
 
 
-      // INIT TABLE
-      m_main_class[req.user.name].initAttributeTableSync();
-      m_main_class[req.user.name].initAdminTableSync();
-      m_main_class[req.user.name].initAuthorityTableSync();
+      // // INIT TABLE
+      // m_main_class[req.user.name].initAttributeTableSync();
+      // m_main_class[req.user.name].initAdminTableSync();
+      // m_main_class[req.user.name].initAuthorityTableSync();
       
       res.send(admininfo);
 
