@@ -674,6 +674,10 @@
             })
           }
         };
+
+        $scope.remove = function(){
+          alert("No function");
+        }
     });
 
     phrApp.controller('changePwdController', function($scope, $http, $location) {
