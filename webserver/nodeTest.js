@@ -1,5 +1,6 @@
 var cluster = require('cluster');
 
+// cluster.schedulingPolicy = cluster.SCHED_RR;
 
 if(cluster.isMaster){
   var sleep   = require('sleep');
@@ -150,7 +151,9 @@ else
 
     destination: function (req, file, cb) {
 
-      var path_files_upload = '/home/bright/Desktop/Project/webserver/Upload/' + req.body.phr_owner_name + '/';
+      // var path_files_upload = '/home/bright/Desktop/Project/webserver/Upload/' + req.body.phr_owner_name + '/';
+      var path_files_upload = process.cwd() + '/Upload';
+      console.log("PATH : " + path_files_upload);
 
       if(rmDir( path_files_upload)){
 
@@ -262,11 +265,44 @@ else
     res.send(req.user);
   });
 
+  app.post('/api/requestCode', function (req, res) {
+      
+      // Login and get account class (Admin, User)
+      var forgetPasswordClass = m_instance.getForgetPasswordClassSync();
+
+      forgetPasswordClass.requestCodeSync("127.0.0.1", req.body.username, req.body.type);
+
+      var result_msg  = forgetPasswordClass.getResultMsgSync();
+      var result_flag = forgetPasswordClass.getResultFlagSync();
+
+      var result = [];
+      result[0] = result_flag;
+      result[1] = result_msg;
+
+      res.send(result);
+  });
+
+  app.post('/api/resetPwd', function (req, res) {
+      
+      // Login and get account class (Admin, User)
+      var forgetPasswordClass = m_instance.getForgetPasswordClassSync();
+
+      forgetPasswordClass.resetPasswordSync("127.0.0.1", req.body.username, req.body.resettingCode, req.body.type);
+
+      var result_msg  = forgetPasswordClass.getResultMsgSync();
+      var result_flag = forgetPasswordClass.getResultFlagSync();
+
+      var result = [];
+      result[0] = result_flag;
+      result[1] = result_msg;
+
+      res.send(result);
+  });
+
   app.get('/api/logout', function(req, res){
     m_main_class[req.user.name].closeProgramSync();
     req.logout();
     res.redirect('/');
-
   });
 
   passport.use(new LocalStrategy(
@@ -325,14 +361,15 @@ else
         deleteFolderRecursive('Download/' + username);
         deleteFolderRecursive('Upload/' + username);
 
-        // CREATE UPLOAD FOLDER
-        fs.mkdir('Upload/' + username,function(err){
-        });
+        // // CREATE UPLOAD FOLDER
+        // fs.mkdir('Upload/' + username,function(err){
+        //   console.log(err);
+        // });
 
-        // CREATE DOWNLOAD FOLDER
-        fs.mkdir( 'Download/' + username,function(err){
-
-        });
+        // // CREATE DOWNLOAD FOLDER
+        // fs.mkdir( 'Download/' + username,function(err){
+        //   console.log(err);
+        // });
 
   //      console.log("LOGIN SUCCESS");
 
@@ -632,7 +669,8 @@ else
     var data_description = m_download_phr_list[username][index][0];
     var phr_id = parseInt(m_download_phr_list[username][index][3],10);
 
-    m_path_files[username] = '/home/bright/Desktop/Project/webserver/Download/' + username + '/';
+   // m_path_files[username] = '/home/bright/Desktop/Project/webserver/Download/' + username + '/';
+   m_path_files[username] = process.cwd() + '/Download';
 
     console.log("USER PATH FILES : " +  m_path_files[username]);
 
@@ -728,8 +766,8 @@ else
             if(confidentiality_level == "Restricted level"){
 
               // call java function
-              m_main_class.setThresholdValueSync(threshold);
-              m_main_class.setNoTrustedUsersSync(truted_users);
+              m_main_class[username].setThresholdValueSync(threshold);
+              m_main_class[username].setNoTrustedUsersSync(truted_users);
 
               // call java function
               m_main_class[username].uploadPHR(phr_owner_name, phr_owner_authority_name, 
@@ -783,13 +821,20 @@ else
     //console.log(req.body);
     //console.log(req.file);
 
-    var path_files_upload = '/home/bright/Desktop/Project/webserver/Upload/' + req.body.phr_owner_name + '/';
+    // var path_files_upload = '/home/bright/Desktop/Project/webserver/Upload/' + req.body.phr_owner_name + '/';
+    var path_files_upload = process.cwd() + '/Upload';
 
     console.log("PATH : " + path_files_upload);
 
          savefile(req.file.path, req.body.phr_owner_name, 
                 req.body.phr_owner_authority_name, req.body.data_description, req.body.confidentiality_level,
-                req.body.access_policy, req.body.threshold,  req.body.truted_users, req.user.name, function(result){
+                req.body.access_policy, req.body.threshold,  req.body.truted_users, req.user.name, function(result_flag){
+
+                  var result_msg = m_main_class[req.user.name].getResultMsgSync();
+                  var result = [];
+
+                  result[0] = result_flag;
+                  result[1] = result_msg;
                     res.send(result);
                 });   
 
@@ -960,22 +1005,18 @@ else
 
     console.log("-------------- get attribute table ---------------");
 
-    // call java function
-    m_main_class[req.user.name].initTableAttributePHR(authorityName, function(err,result){
-      if(result) {
-
         // call java function
         m_main_class[req.user.name].getTableAttribute(function(err,result){
-          if(result){
+          if(!err){
             attribute_table = result;
-            console.log("Attribute TABLE : " + result);
+            console.log("All Attribute TABLE : " + result);
 
             console.log("-------------- END attribute table ---------------");
             res.send(attribute_table);
           }
+          else
+            console.log(err);
         });
-      }
-    });
   });
 
   // --------------------------------------------//
@@ -987,9 +1028,6 @@ else
 
     console.log("-------------- get TrustedUsers table ---------------");
 
-    // call java function
-    m_main_class[req.user.name].initTableTrustedUsers( function(err,result){
-      if(result) {
         // call java function
         m_main_class[req.user.name].getTableTrustedUsers(function(err,result){
           if(result){
@@ -1000,8 +1038,6 @@ else
             res.send(trusted_users_table);
           }
         });
-      }
-    });
   });
 
   app.post('/api/add_trusted_user', function (req, res) {
@@ -1066,9 +1102,6 @@ else
 
     console.log("-------------- get Restricted table ---------------");
 
-    // call java function
-    m_main_class[req.user.name].initTableRestricted( function(err,result){
-      if(result) {
         // call java function
         m_main_class[req.user.name].getTableRestricted(function(err,result){
           if(result){
@@ -1079,8 +1112,6 @@ else
             res.send(restricted_table);
           }
         });
-      }
-    });
   });
 
   app.post('/api/approve_restricted', function (req, res) {
@@ -1091,8 +1122,13 @@ else
 
     // call java function
     m_main_class[req.user.name].approveRestricted( req.body.phr_ownername, req.body.phr_owner_authority_name, 
-        req.body.phr_id, req.body.phr_description, req.body.emergency_staff_name, req.body.emergency_unit_name, function(err,result){
-      if(result) {
+        req.body.phr_id, req.body.phr_description, req.body.emergency_staff_name, req.body.emergency_unit_name, function(err,result_flag){
+      if(!err) {
+        var result_msg = m_main_class[req.user.name].getResultMsgSync();
+        var result = [];
+
+        result[0] = result_flag;
+        result[1] = result_msg;
         res.send(result);
       }
     });

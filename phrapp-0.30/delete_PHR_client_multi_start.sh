@@ -1,2 +1,2 @@
 cd ../webserver
-rm -rf Client_cache*
+sudo rm -rf Client_cache*

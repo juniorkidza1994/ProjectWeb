@@ -24,6 +24,8 @@ done
 
 mkdir $client_dir_main
 mkdir -p $client_dir_main/$CERTS_AND_KEYS_POOL_DIR
+mkdir -p $client_dir_main/Upload
+mkdir -p $client_dir_main/Download
 
 # certs_and_keys_client_side:
 cp $CPABE_PUB_KEY_PATH $client_dir_main/$CERTS_AND_KEYS_POOL_DIR

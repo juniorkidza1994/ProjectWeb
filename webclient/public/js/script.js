@@ -53,7 +53,14 @@
             else if(user.type == "Admin" && ($location.path().indexOf("/user/") > -1 ))
               $location.url('/admin/info');      
           }
-          else{
+          else if($location.path() == '/' && $location.path() == '/forgetpwd'){
+            deferred.reject();
+            if(user.type == "User")
+              $location.url('/user/info');
+            else if(user.type == "Admin")
+              $location.url('/admin/info')
+          }
+          else {
             deferred.reject();
             if(user.type == "User")
               $location.url('/user/info');
@@ -62,15 +69,16 @@
           }
         }
         // Not Authenticated
-        else if($location.path() != '/'){
-          //console.log("NO LOGIN");
+        else if($location.path() == '/' || $location.path() == '/forgetpwd'){
+          console.log("NO LOGIN");
         //  $timeout(function(){deferred.reject();}, 0);
-
+          deferred.resolve();
+        }
+        else {
           deferred.reject();
           $location.url('/');
         }
-        else 
-          deferred.resolve();
+          
 
       });
 
@@ -102,9 +110,6 @@
     // Define all the routes
     //================================================
     $routeProvider
-      .when('/ab', {
-        templateUrl: '/views/main.html'
-      })
 
       .when('/admin/info', {
         templateUrl : 'adminInfo.html',
@@ -331,9 +336,18 @@
         }
       })
 
+      // ---------------- LOGIN --------------------
       .when('/', {
         templateUrl: 'login.html',
         controller: 'loginController',
+        resolve: {
+          loggedin: checkLoggedin
+        }
+      })
+
+      .when('/forgetpwd', {
+        templateUrl: 'forgetpwd.html',
+        controller: 'forgetPasswordController',
         resolve: {
           loggedin: checkLoggedin
         }
@@ -453,8 +467,8 @@
         // click row
         $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
-            var full_name = info.authorityName +'.' + info.username ;
-            if(full_name == restricted[index][1]){
+            var full_name = $scope.info.authorityName +'.' + $scope.info.username ;
+            if(full_name == $scope.restricted[index][1]){
               $scope.isShowCancel = true;
             }
         }
@@ -467,13 +481,15 @@
           }
           else {
             if(!isClickApprove){
+              console.log("APPROVE");
               isClickApprove = true;
+              var full_emergency_staff_name = $scope.restricted[$scope.selectedRow][0];
+              var full_phr_ownername = $scope.restricted[$scope.selectedRow][1];
               $http.post('/api/approve_restricted', {
                   full_emergency_staff_name : $scope.restricted[$scope.selectedRow][0],
                   full_phr_ownername        : $scope.restricted[$scope.selectedRow][1],
                   phr_description           : $scope.restricted[$scope.selectedRow][2],
                   phr_id                    : parseInt($scope.restricted[$scope.selectedRow][5],10),
-
                   emergency_unit_name       : full_emergency_staff_name.substring(0, full_emergency_staff_name.indexOf(".")),
                   emergency_staff_name      : full_emergency_staff_name.substring(full_emergency_staff_name.indexOf(".") + 1),
 
@@ -484,18 +500,14 @@
                 // No error: authentication OK
                 //console.log("SUCCESS");
                 isClickApprove = false;
-                if(res){
+                alert(res[1]);
+                if(res[0]){
                   $http.post('/api/restricted_table')
                   .success(function(res){
                       $scope.restricted = res;
-                      alert("Approve SUCCESS !!");
                       $location.path('/restricted');
                   })
                 }
-                else
-                  // ERROR
-                  alert(" .... ");
-                //$location.path('/info');
               })
             }
           }
@@ -720,15 +732,7 @@
               }
               else {
                 alert(res[1]);
-                // $location.path('/');
               }
-              // $http.get('/api/loggedin')
-              // .success(function(user){
-              //   if(user.type = "Admin")
-              //     $location.path('/admin/info');
-              //   else if(user.type = "User")
-              //     $location.path('/user/info');
-              // })
             })
           }
         };
@@ -745,13 +749,14 @@
         $scope.userinfo = {} ;
         $scope.description = "";
         $scope.con_level = "";
-        $scope.threshold = -1;
-        $scope.truted_users = -1;
+        $scope.threshold = 0;
+        $scope.trusted_users = 0;
         $scope.tree_string = "";
         $scope.parent = ""; 
         $scope.canUpload = false;
         $scope.search_selectedAuthority = "";
         $scope.search_username  = "";
+        $scope.trustedUsersTable = {};
 
         // Cancle upload
         $http.post('/api/cancelUploadPHR')
@@ -760,6 +765,12 @@
         $http.post('/api/authority_name_list')
         .success(function(res){
             $scope.authorityList = res;
+        })
+
+        // get table
+        $http.post('/api/trusted_users_table')
+        .success(function(res){
+            $scope.trustedUsersTable = res;
         })
 
         // get userinfo
@@ -790,7 +801,7 @@
 
             // validation tree
             if(!($scope.tree.length != 0 &&  $scope.description != "" && $scope.con_level != "") && 
-              !($scope.con_level == "Restricted level" && $scope.threshold > 0 && $scope.truted_users > 0)){
+              !($scope.con_level == "Restricted level" && $scope.threshold > 0 && $scope.trusted_users > 0)){
                 console.log("WRONG TREE");
                 $scope.isClick = false;
             }
@@ -870,6 +881,9 @@
       // verify user permission
       $scope.search = function(){
           if(!isClickSearch){
+            $scope.trusted_users = $scope.trustedUsersTable.length;
+            console.log("No trusted Users : " + $scope.trusted_users)
+
             console.log("SEARCH UPLOAD");
             console.log("SEARCH USERNAME : " + $scope.search_username);
             console.log("SEARCH Authority : " + $scope.search_selectedAuthority);
@@ -920,8 +934,8 @@
                 $scope.userinfo = {} ;
                 $scope.description = "";
                 $scope.con_level = "";
-                $scope.threshold = -1;
-                $scope.truted_users = -1;
+                $scope.threshold = 0;
+                $scope.trusted_users = 0;
                 $scope.tree_string = "";
                 $scope.parent = ""; 
                 $scope.canUpload = false;
@@ -943,19 +957,21 @@
       // upload on file select or drop
       $scope.upload = function (file) {
         var isSuccess = false;
-
+        var msg = "";
         file.upload =  Upload.upload({
                 url: 'api/uploadPHR',
                 data: {'phr_owner_name': $scope.userinfo.username, file: file, 'phr_owner_authority_name': $scope.userinfo.authorityName, 
                 'data_description': $scope.description,
                 'confidentiality_level': $scope.con_level, 'access_policy': $scope.tree_string,
-                'threshold' : $scope.threshold, 'truted_users': $scope.truted_users
+                'threshold' : $scope.threshold, 'truted_users': $scope.trusted_users
               }
 
             })
         file.upload.then(function (resp) {
                 console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);
-                isSuccess = true;
+                console.log(resp);
+                isSuccess = resp.data[0];
+                msg       = resp.data[1];
             }, function (resp) {
                 console.log('Error status: ' + resp.status);
                 $scope.file.upload.abort();
@@ -964,31 +980,33 @@
             }, function (evt) {
                 var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
                 $scope.progressBar = progressPercentage;
-                //console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+                console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
             })
             .finally(function(){
-              if(isSuccess){
-                alert("UPLOAD SUCCESS !!");
+              alert(msg);
+              re_value();
+              $location.path('/user/uploadPHR')
+              // if(isSuccess){
+              //   alert("UPLOAD SUCCESS !!");
 
-                // $scope.canUpload = false;
-                // $scope.search_username = "";
-                // $scope.search_selectedAuthority = "";
+              //   // $scope.canUpload = false;
+              //   // $scope.search_username = "";
+              //   // $scope.search_selectedAuthority = "";
 
-                // RE VALUE
-                re_value();
+              //   // RE VALUE
+              //   re_value();
 
-                $location.path('/user/info');
-              }
-              else {
-                alert("UPLOAD FAILED !!");
-                $location.path('/user/info');
-              }
+              //   $location.path('/user/info');
+              // }
+              // else {
+              //   alert("UPLOAD FAILED !!");
+              //   $location.path('/user/info');
+              // }
               $scope.isClick = false;
             });
             
             console.log(file);
             
-       
         };
 
         // CLICK ROW
@@ -1443,15 +1461,13 @@
             $http.post('/api/downloadPHR', {
               authorityName :  $scope.selectedAuthority,
               username      :  $scope.username,
-              index         : $scope.selectedRow,
+              index         :  $scope.selectedRow,
             })
             .success(function(res){
 
               re_value();
 
-              //console.log("RESULT : " + res);
                   if(res){
-                //  console.log("DOWNLOAD FILESS !!!");
                     $window.open('/api/downloadPHR');
                   }
                   else {
@@ -1529,15 +1545,102 @@
               $window.alert("LOGIN SUCCESS !!")
               $window.location.reload();
             })
-            .error(function(){
-              $window.alert("LOGIN FAILED !!!");
+            .error(function(err){
+              console.log(err);
+              $window.alert("Wrong username or password");
               $window.location.reload();
             })
           }
-          else{
-        //   console.log("WAIT LOGIN");
+        };
+
+        $scope.forget_pwd = function(){
+          $location.path('/forgetpwd');
+        }
+    });
+
+    phrApp.controller('forgetPasswordController', function($scope,$http,$location, $window, $route){
+        $scope.user = {};
+        $scope.isClickButton = false;
+        $scope.isReset = false;
+        var isClickRequest = false;
+        var isClickReset = false;
+
+        $scope.setReset = function(){
+          $scope.isClickButton = true;
+          $scope.isReset = true;
+        }
+
+        $scope.setRequest = function(){
+          $scope.isClickButton = true;
+          $scope.isReset = false;
+        }
+
+
+        $scope.requestCode = function(){
+          
+          if(!isClickRequest){
+         //   console.log("GO LOGIN");
+            isClickRequest = true;
+            if($scope.user.username == null){
+              $scope.user.username = "";
+            }
+            if($scope.user.type == null){
+              $scope.user.type = "";
+            }
+
+            $http.post('/api/requestCode', {
+              username: $scope.user.username,
+              type    : $scope.user.type
+            })
+            .success(function(res){
+              // No error: authentication OK
+          //    console.log("SUCCESS");
+          //    console.log(user);
+              isClickRequest = false;
+              alert(res[1]);
+
+              if(res[0]){
+                $location.path('/');
+              }
+              else {
+                $scope.user = {};
+              }
+            })
           }
-      };
+        };
+
+        $scope.resetPwd = function(){
+          if(!isClickReset){
+         //   console.log("GO LOGIN");
+            isClickReset = true;
+            if($scope.user.username == null){
+              $scope.user.username = "";
+            }
+            if($scope.user.type == null){
+              $scope.user.type = "";
+            }
+
+            $http.post('/api/resetPwd', {
+              username      : $scope.user.username,
+              resettingCode : $scope.user.resettingCode,
+              type          : $scope.user.type
+            })
+            .success(function(res){
+              // No error: authentication OK
+          //    console.log("SUCCESS");
+          //    console.log(user);
+              isClickReset = false;
+              alert(res[1]);
+
+              if(res[0]){
+                $location.path('/');
+              }
+              else {
+                $scope.user = {};
+              }
+            })
+          }
+        }
     });
 
     //----------------------- ADMIN ------------------------------

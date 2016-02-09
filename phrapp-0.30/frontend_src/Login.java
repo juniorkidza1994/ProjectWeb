@@ -48,7 +48,8 @@ public class Login extends JFrame  implements ConstantVars
 	private String         ssl_cert_hash;
 	private String         cpabe_priv_key_hash;
 
-	private Object 			main_class;
+	private Object 		   main_class;
+	private String		   m_result_msg;
 
 	public Login()
 	{
@@ -62,92 +63,21 @@ public class Login extends JFrame  implements ConstantVars
 		// Call to C function
 		init_backend();
 		main_class = null;
+		m_result_msg = "";
 	//	init_ui();
 	//	login_main("127.0.0.1","admin","bright23","Admin");
 
 //		working_lock.unlock();
 	}
 
-/*
-	private final void init_ui()
-	{
-		JLabel user_auth_ip_addr_label = new JLabel("IP address: ", JLabel.RIGHT);
-		JLabel username_label          = new JLabel("Username: ", JLabel.RIGHT);
-		JLabel passwd_label            = new JLabel("Password: ", JLabel.RIGHT);
-		JPanel upper_inner_panel = new JPanel(new SpringLayout());
-		upper_inner_panel.add(user_auth_ip_addr_label);
-		upper_inner_panel.add(user_auth_ip_addr_textfield);
-		upper_inner_panel.add(username_label);
-		upper_inner_panel.add(username_textfield);
-		upper_inner_panel.add(passwd_label);
-		upper_inner_panel.add(passwd_textfield);
-		SpringUtilities.makeCompactGrid(upper_inner_panel, 3, 2, 5, 10, 10, 10);
-		JPanel upper_outer_panel = new JPanel();
-		upper_outer_panel.setLayout(new BoxLayout(upper_outer_panel, BoxLayout.X_AXIS));
-		upper_outer_panel.setPreferredSize(new Dimension(300, 120));
-		upper_outer_panel.setMaximumSize(new Dimension(300, 120));
-		upper_outer_panel.setAlignmentX(0.5f);
-		upper_outer_panel.add(upper_inner_panel);
-		// User type
-        	user_type_radio_buttons[0] = new JRadioButton(login_as_user);
-        	user_type_radio_buttons[0].setActionCommand(login_as_user);
-        	user_type_radio_buttons[1] = new JRadioButton(login_as_admin);
-        	user_type_radio_buttons[1].setActionCommand(login_as_admin);
-		user_type_radio_buttons[0].setSelected(true);
-            	user_type_group.add(user_type_radio_buttons[0]);
-		user_type_group.add(user_type_radio_buttons[1]);
-		// User type panel
-		JPanel user_type_inner_panel = new JPanel();
-		user_type_inner_panel.setLayout(new BoxLayout(user_type_inner_panel, BoxLayout.Y_AXIS));
-		user_type_inner_panel.setBorder(new EmptyBorder(new Insets(10, 20, 10, 20)));
-		user_type_inner_panel.setPreferredSize(new Dimension(120, 70));
-		user_type_inner_panel.setMaximumSize(new Dimension(120, 70));
-		user_type_inner_panel.setAlignmentX(0.0f);
-		user_type_inner_panel.add(user_type_radio_buttons[0]);
-		user_type_inner_panel.add(user_type_radio_buttons[1]);
-		JPanel user_type_outer_panel = new JPanel(new GridLayout(0, 1));
-		user_type_outer_panel.setLayout(new BoxLayout(user_type_outer_panel, BoxLayout.Y_AXIS));
-    		user_type_outer_panel.setBorder(BorderFactory.createTitledBorder("Login as:"));
-		user_type_outer_panel.setAlignmentX(0.5f);
-		user_type_outer_panel.add(user_type_inner_panel);
-		// Login button
-		JPanel login_button_panel = new JPanel();
-		login_button_panel.setPreferredSize(new Dimension(250, 30));
-		login_button_panel.setMaximumSize(new Dimension(250, 30));
-		login_button_panel.setAlignmentX(0.5f);
-		login_button_panel.add(login_button);
-		// Forget passwd button
-		JPanel forget_passwd_button_panel = new JPanel();
-		forget_passwd_button_panel.setPreferredSize(new Dimension(250, 30));
-		forget_passwd_button_panel.setMaximumSize(new Dimension(250, 30));
-		forget_passwd_button_panel.setAlignmentX(0.5f);
-		forget_passwd_button_panel.add(forget_passwd_button);
-		// Main panel
-		main_panel.setLayout(new BoxLayout(main_panel, BoxLayout.Y_AXIS));
-		main_panel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
-		main_panel.add(upper_outer_panel);
-		main_panel.add(Box.createRigidArea(new Dimension(0, 10)));
-		main_panel.add(user_type_outer_panel);
-		main_panel.add(Box.createRigidArea(new Dimension(0, 10)));
-		main_panel.add(login_button_panel);
-		main_panel.add(Box.createRigidArea(new Dimension(0, 10)));
-		main_panel.add(forget_passwd_button_panel);
-		add(main_panel);
-		setSize(350, 370);
-		setLocationRelativeTo(null);
-		setResizable(false);
-		setVisible(true);
-	}
-*/
-
 	public boolean login(String user_auth_ip_addr, String username, String passwd, String user_type)
 	{
 				boolean result = false;
 
-				System.out.println("USER IP" + user_auth_ip_addr);
-				System.out.println("username" + username);
-				System.out.println("passwd" + passwd);
-				System.out.println("user_type" + user_type);
+				System.out.println("USER IP : " + user_auth_ip_addr);
+				System.out.println("username : " + username);
+				System.out.println("passwd : " + passwd);
+				System.out.println("user_type : " + user_type);
 
 
 				// Validate User Authority's IP address, username and password
@@ -170,6 +100,7 @@ public class Login extends JFrame  implements ConstantVars
 					{
 
 						System.out.println("LOGIN SUCCESSFULL !!!!!");
+						m_result_msg = "LOGIN SUCCESSFULL !!!!!";
 
 						System.out.println("Create User Class !!!!!");
 
@@ -205,6 +136,7 @@ public class Login extends JFrame  implements ConstantVars
 					{
 
 						System.out.println("LOGIN SUCCESSFULL !!!!!");
+						m_result_msg = "LOGIN SUCCESSFULL !!!!!";
 
 						System.out.println("Create Admin Class !!!!!");
 						
@@ -241,6 +173,18 @@ public class Login extends JFrame  implements ConstantVars
 		return main_class;
 	}
 
+	public String getResultMsg(){
+		return m_result_msg;
+	}
+
+	private ForgetPassword forget_password_dialog;
+
+	public Object getForgetPasswordClass(){
+		if(forget_password_dialog == null)
+			forget_password_dialog = new ForgetPassword();
+		return forget_password_dialog;
+	}
+
 	private boolean validate_inputs(String user_auth_ip_addr, String username, String passwd)
 	{
 		Pattern p;
@@ -253,6 +197,7 @@ public class Login extends JFrame  implements ConstantVars
 		if(m.matches() == false)
 		{
 //			JOptionPane.showMessageDialog(this, "Please input correct format for the IP address");
+			m_result_msg = "Please input correct format for the IP address";
 			return false;
 		}
 
@@ -263,6 +208,7 @@ public class Login extends JFrame  implements ConstantVars
 		if(m.matches() == false)
 		{
 //			JOptionPane.showMessageDialog(this, "Please input correct format for the username");
+			m_result_msg = "Please input correct format for the username";
 			return false;
 		}
 		
@@ -271,6 +217,8 @@ public class Login extends JFrame  implements ConstantVars
 		{
 //			JOptionPane.showMessageDialog(this, "Please input the password's length between " + 
 //				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters");
+			m_result_msg = "Please input the password's length between " + 
+				PASSWD_LENGTH_LOWER_BOUND + " and " + PASSWD_LENGTH_UPPER_BOUND + " characters";
 
 			return false;
 		}
@@ -280,6 +228,7 @@ public class Login extends JFrame  implements ConstantVars
 		if(m.matches() == false)
 		{
 //			JOptionPane.showMessageDialog(this, "Please input correct format for the password");
+			m_result_msg = "Please input correct format for the password";
 			return false;
 		}
 

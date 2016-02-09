@@ -203,7 +203,7 @@ public class AdminMain extends JFrame implements ConstantVars
 
 		working_lock.unlock();
 
-		automatic_relogin();
+		// automatic_relogin();
 	}
 
 	private final void init_ui()

@@ -284,6 +284,7 @@ public class UserMain extends JFrame implements ConstantVars
 	private String m_no_trusted_users ;
 	private boolean m_isFinish ;
 	private boolean m_result_download;
+	private String  m_result_msg;
 
 
 	public UserMain(String username, String passwd, String email_address, String authority_name, String user_auth_ip_addr, String audit_server_ip_addr, 
@@ -321,13 +322,20 @@ public class UserMain extends JFrame implements ConstantVars
 		// init_actions_for_phr_deletion_mode();
 		// setup_actions();
 
+		// Creat combobox
+		phr_owner_authority_name_combobox = new JComboBox();
+		phr_owner_authority_name_combobox.setPreferredSize(new Dimension(60, 25));
+		phr_owner_authority_name_combobox.setMaximumSize(new Dimension(60, 25));
+		init_phr_owner_authority_name_combobox();
+
+		initTableRestricted();
+		initTableUserAttribute();
+		initTableAttributePHR(authority_name);
 		initTableDeletePHR();
 		initTableTrustedUsers();
 		initTableDelegate();
-		initTableRestricted();
 		initTableDownloadPHR();
 		initTableAccessPermissionPHR();
-		initTableUserAttribute();
 
 		// Call to C functions
 		update_authority_list_main();
@@ -335,6 +343,7 @@ public class UserMain extends JFrame implements ConstantVars
 		update_emergency_trusted_user_list_main();
 		update_emergency_phr_owner_list_main();
 		update_restricted_phr_access_request_list_main();
+		update_user_attribute_list_main();
 
 		working_lock.unlock();
 
@@ -2955,6 +2964,94 @@ public class UserMain extends JFrame implements ConstantVars
 		return true;
 	}
 
+	private boolean validate_phr_uploading_web_input( String phr_owner_name, String phr_owner_authority_name, String phr_upload_from_path, String data_description, String confidentiality_level)
+	{
+		File    phr_file_object;
+		Pattern p;
+		Matcher m;
+
+		// Validate a PHR upload from path
+		if(phr_upload_from_path.equals(""))
+		{
+			// JOptionPane.showMessageDialog(this, "Please specify a PHR file/directory path");
+			m_result_msg = "Please specify a PHR file/directory path";
+			return false;
+		}
+
+		phr_file_object = new File(phr_upload_from_path);
+	  	if(!phr_file_object.exists())
+		{
+			// JOptionPane.showMessageDialog(this, "The PHR file/directory does not exist");
+			m_result_msg = "The PHR file/directory does not exist";
+			return false;
+		}
+
+		// Validate a data description
+		p = Pattern.compile("\\S");       // Input at least 1 non-white space
+
+		m = p.matcher(data_description);
+		if(!m.find())
+		{
+			// JOptionPane.showMessageDialog(this, "Please input at least 1 non-white space for the data description");
+			m_result_msg = "Please input at least 1 non-white space for the data description";
+			return false;
+		}
+
+		boolean is_phr_uploaded_by_its_owner = (phr_owner_name.equals(username) 
+									&& phr_owner_authority_name.equals(authority_name));
+
+
+		if(is_phr_uploaded_by_its_owner)
+		{
+			// Validate confidentiality level
+			for(Enumeration<AbstractButton> buttons = confidentiality_level_group.getElements(); buttons.hasMoreElements();)
+			{
+				AbstractButton button = buttons.nextElement();
+				if(button.isSelected())
+				{
+					if(confidentiality_level.equals(phr_restricted_level))
+					{
+						// Check for the user input of a threshold value
+						String threshold_value  = m_threshold_value;
+						String no_trusted_users = m_no_trusted_users;
+
+						// Validate a threshold value
+						p = Pattern.compile("^[0-9]+");
+						m = p.matcher(threshold_value);
+
+						if(!m.matches())
+						{
+							// JOptionPane.showMessageDialog(this, "Please input the positive integer for the threshold value");
+							m_result_msg = "Please input the positive integer for the threshold value";
+							return false;
+						}
+
+						if(Integer.parseInt(threshold_value) <= 0 || Integer.parseInt(threshold_value) > Integer.parseInt(no_trusted_users))
+						{
+							// JOptionPane.showMessageDialog(this, "The threshold value must be between 1 and " + 
+							// 	Integer.parseInt(no_trusted_users) + "(No. of trusted users)");
+							m_result_msg = "The threshold value must be between 1 and " + 
+								Integer.parseInt(no_trusted_users) + "(No. of trusted users)";
+
+							return false;
+						}
+					}
+
+					break;
+				}
+			}
+		}
+
+		// Validate access policy
+		if(!access_policy_tree.did_user_specified_access_policy())
+		{
+			JOptionPane.showMessageDialog(this, "Please specify an access policy");
+			return false;
+		}
+
+		return true;
+	}
+
 	private final void init_ui_for_phr_uploading_transaction_mode()
 	{
 		// PHR owner authority name
@@ -3448,6 +3545,9 @@ public class UserMain extends JFrame implements ConstantVars
 			threshold_value  = Integer.parseInt(m_threshold_value);
 			no_trusted_users = Integer.parseInt(m_no_trusted_users);
 
+			System.out.println("Threadhold value : " + threshold_value);
+			System.out.println("no trusted users : " + no_trusted_users);
+
 			// Generate the unique emergency attribute identity for the unique emergency key and password for encrypting the unique emergency key
 			unique_emergency_key_attribute = generate_random_unique_emergency_key_attribute(8);
 			unique_emergency_key_passwd    = generate_random_unique_emergency_key_passwd(16);    // For 3DES
@@ -3472,7 +3572,8 @@ public class UserMain extends JFrame implements ConstantVars
 				record_phr_encrypting_transaction_log_main(phr_owner_name, phr_owner_authority_name, data_description, false);
 
 				set_cancel_phr_uploading(false);
-				JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+				// JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+				m_result_msg = "Encrypting the PHR was aborted by a user";
 				return;
 			}
 
@@ -3490,6 +3591,7 @@ public class UserMain extends JFrame implements ConstantVars
 				{
 					set_cancel_phr_uploading(false);
 					//JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+					m_result_msg = "Encrypting the PHR was aborted by a user";
 				}
 
 				return;
@@ -3510,6 +3612,7 @@ public class UserMain extends JFrame implements ConstantVars
 				{
 					set_cancel_phr_uploading(false);
 					//JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+					m_result_msg = "Encrypting the PHR was aborted by a user";
 				}
 
 				return;
@@ -3525,6 +3628,7 @@ public class UserMain extends JFrame implements ConstantVars
 
 				set_cancel_phr_uploading(false);
 				//JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+				m_result_msg = "Encrypting the PHR was aborted by a user";
 				return;
 			}
 		}
@@ -3548,6 +3652,7 @@ public class UserMain extends JFrame implements ConstantVars
 			{
 				set_cancel_phr_uploading(false);
 				//JOptionPane.showMessageDialog(main_panel, "Encrypting the PHR was aborted by a user");
+				m_result_msg = "Encrypting the PHR was aborted by a user";
 			}
 
 			return;
@@ -3590,6 +3695,7 @@ public class UserMain extends JFrame implements ConstantVars
 			{
 				set_cancel_phr_uploading(false);
 				//JOptionPane.showMessageDialog(main_panel, "Uploading the PHR was aborted by a user");
+				m_result_msg = "Uploading the PHR was aborted by a user";
 			}
 
 			return;
@@ -3602,15 +3708,19 @@ public class UserMain extends JFrame implements ConstantVars
 
 		if(confidentiality_level.equals(phr_restricted_level))
 		{
-			int      threshold_value      = Integer.parseInt(threshold_value_textfield.getText());
+			int threshold_value  = Integer.parseInt(m_threshold_value);
 			String[] ea_trusted_user_list = converse_ea_trusted_user_table_to_list();
 
 			// Upload the encrypted unique emergency key and encrypted secret keys to the Emergency Server
 			if(!upload_unique_emergency_key_params_main(remote_site_phr_id, threshold_value, ea_trusted_user_list))  // Call to C function
 			{
-				JOptionPane.showMessageDialog(main_panel, "The restricted-level PHR was uploadded to the PHR server successfully. " + 
+				// JOptionPane.showMessageDialog(main_panel, "The restricted-level PHR was uploadded to the PHR server successfully. " + 
+				// 	"However, \nwe failed to upload the emergency key parameters to the Emergency server. Therefore, \n" + 
+				// 	"we must change the confidentiality level of the PHR from the restricted-level to the exclusive-level.");
+
+				m_result_msg = "The restricted-level PHR was uploadded to the PHR server successfully. " + 
 					"However, \nwe failed to upload the emergency key parameters to the Emergency server. Therefore, \n" + 
-					"we must change the confidentiality level of the PHR from the restricted-level to the exclusive-level.");
+					"we must change the confidentiality level of the PHR from the restricted-level to the exclusive-level.";
 
 				// Call to C function
 				remove_all_threshold_parameters_in_cache_main(Integer.parseInt(no_trusted_users_textfield.getText()));
@@ -3629,10 +3739,11 @@ public class UserMain extends JFrame implements ConstantVars
 			}
 
 			// Call to C function
-			remove_all_threshold_parameters_in_cache_main(Integer.parseInt(no_trusted_users_textfield.getText()));
+			remove_all_threshold_parameters_in_cache_main(Integer.parseInt(m_no_trusted_users));
 		}
 
 		//JOptionPane.showMessageDialog(main_panel, "Uploading the PHR succeeded");
+		m_result_msg = "Uploading the PHR succeeded";
 
 		System.out.println("FROM CLASS UPLOAD SUCCESS");
 	}
@@ -4769,7 +4880,15 @@ public class UserMain extends JFrame implements ConstantVars
 			set_phr_decrypting_progressbar_value(0);
 		}
 
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
+
+		System.out.println(alert_msg);
+
+		m_result_msg = alert_msg;
+	}
+
+	public String getResultMsg(){
+		return m_result_msg;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)
@@ -5092,10 +5211,15 @@ public class UserMain extends JFrame implements ConstantVars
 	{
 		boolean res;
 
-		res = run_phr_uploading_background_task(phr_owner_name, phr_owner_authority_name, 
-								phr_upload_from_path, data_description, confidentiality_level, access_policy);
+		// if(validate_phr_uploading_web_input(phr_owner_name, phr_owner_authority_name, 
+		// 		phr_upload_from_path, data_description, confidentiality_level)){
+			res = run_phr_uploading_background_task(phr_owner_name, phr_owner_authority_name, 
+				phr_upload_from_path, data_description, confidentiality_level, access_policy);
+			return res;
+
+		//return false;
 		
-		return res;
+		
 	}
 
 	public boolean verifyUploadPermissionMain(String phr_owner_name, String phr_owner_authority_name){
@@ -5500,12 +5624,11 @@ public class UserMain extends JFrame implements ConstantVars
     			}
 		};
 
+		System.out.println("INIT RESTRICTED TABLE");
     		ea_restricted_phr_access_request_table_model.setDataVector(null, new Object[] {"Requestor", "PHR owner", 
 			"Data description", "Approvals/Threshold value", "Request status", "PHR id"});
 
     		ea_restricted_phr_access_request_table = new JTable(ea_restricted_phr_access_request_table_model);
-
-			update_restricted_phr_access_request_list_main();
 
 			return true;
 	}

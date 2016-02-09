@@ -1,0 +1,76 @@
+
+    <div class="jumbotron text-center">
+
+      <h1>Forget Password</h2>
+    </div> <!-- /container -->
+
+    <div ng-show="isClickButton==false">
+      <button class="btn btn-lg btn-danger" ng-click ="setRequest()">Request Resetting Code</button>
+      <button class="btn btn-lg btn-danger" ng-click ="setReset()">Reset Password</button>
+    </div>
+
+    <div ng-show="isReset == true && isClickButton == true">
+      <form method="post" class="form-horizontal">
+        
+        <div class="form-group" >
+
+            <label for="inputUsername" class="col-sm-2 col-centered control-label center-block">Username</label>
+            <div class="col-sm-10 col-centered center-block">
+                <input type="text" id="inputUsername" class="form-control" placeholder="Username"  autofocus ng-model="user.username">
+            </div>
+        </div>
+
+           <div class="form-group">
+            <label for="inputPassword" class="col-sm-2 control-label">Resetting code</label>
+            <div class="col-sm-10">
+                <input type="password" id="inputPassword" class="form-control" placeholder="Resetting code"  ng-model="user.resettingCode">
+            </div>
+          </div>
+
+           <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <div class="checkbox">
+                <label>
+                  <input type="radio" value="Admin" ng-model="user.type">Admin
+                </label>
+               <br />
+                <label>
+                  <input type="radio" value="User" ng-model="user.type">User
+                </label>
+              </div>
+              <br />
+              <button class="btn btn-lg btn-primary" type="submit" ng-click ="resetPwd()">Reset Password</button>
+            </div>
+         </div>
+      </form>
+    </div>
+
+    <div ng-show="isReset == false && isClickButton == true">
+      <form method="post" class="form-horizontal">
+        
+        <div class="form-group" >
+
+            <label for="inputUsername" class="col-sm-2 col-centered control-label center-block">Username</label>
+            <div class="col-sm-10 col-centered center-block">
+                <input type="text" id="inputUsername" class="form-control" placeholder="Username"  autofocus ng-model="user.username">
+            </div>
+        </div>
+
+           <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <div class="checkbox">
+                <label>
+                  <input type="radio" value="Admin" ng-model="user.type">Admin
+                </label>
+               <br />
+                <label>
+                  <input type="radio" value="User" ng-model="user.type">User
+                </label>
+              </div>
+              <br />
+              <button class="btn btn-lg btn-primary" type="submit" ng-click ="requestCode()">Request a password resetting code</button>
+            </div>
+         </div>
+      </form>
+    </div>
+

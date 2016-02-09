@@ -59,9 +59,25 @@ class ForgetPassword extends JDialog implements ConstantVars
 	private ActionListener reset_passwd_button_actionlistener;
 	private ActionListener passwd_resetting_back_button_actionlistener;
 
+	private String 			m_result_msg;
+	private boolean 		m_result_flag;
+
 	public ForgetPassword(Component parent)
 	{
 		this.parent = parent;
+
+		// Load JNI backend library
+		System.loadLibrary("PHRapp_Login_JNI");
+			
+		init_ui_main();
+		setup_actions_for_main();
+		init_actions_for_passwd_resetting_code_requesting();
+		init_actions_for_passwd_resetting();
+	}
+
+	// WEB
+	public ForgetPassword()
+	{
 
 		// Load JNI backend library
 		System.loadLibrary("PHRapp_Login_JNI");
@@ -362,6 +378,102 @@ class ForgetPassword extends JDialog implements ConstantVars
 		code_requesting_back_button.removeActionListener(code_requesting_back_button_actionlistener);
 	}
 
+	public void requestCode(String user_auth_ip_addr, String username, String user_type){
+		if(validate_passwd_resetting_code_requesting_web_input(user_auth_ip_addr, username))
+		{
+
+			// Check for existence of a user authority's public key if it does not exist then load it
+			if(!load_user_authority_pub_key_main(user_auth_ip_addr))  // Call to backend (C function)
+			{
+				//request_code_button.setEnabled(true);
+				return;
+			}
+
+			if(user_type.equals(user_type_code_requesting))
+			{
+				// Call to backend (C function)
+				if(request_passwd_resetting_code_main(user_auth_ip_addr, username, false))
+				{
+		
+
+					// JOptionPane.showMessageDialog(main_panel, "The password resetting code is sent to the user's " + 
+					//	"e-mail address.\nYou can reset a password by entering a valid resetting code.");
+
+					m_result_msg = "The password resetting code is sent to the user's " + 
+						"e-mail address.\nYou can reset a password by entering a valid resetting code.";
+					m_result_flag = true;
+				}
+				else {
+					m_result_flag = false;
+				}
+			}
+			else if(user_type.equals(admin_type_code_requesting))
+			{
+				// Call to backend (C function)
+				if(request_passwd_resetting_code_main(user_auth_ip_addr, username, true))
+				{
+
+					// JOptionPane.showMessageDialog(main_panel, "The password resetting code is sent to the user's " + 
+					//	"e-mail address.\nYou can reset a password by entering a valid resetting code.");
+				
+					m_result_msg = "The password resetting code is sent to the user's " + 
+						"e-mail address.\nYou can reset a password by entering a valid resetting code.";
+					m_result_flag = true;
+				}
+				else {
+					m_result_flag = false;
+				}
+			}
+		}
+		else {
+			m_result_flag = false;
+		}
+	}
+
+	public void resetPassword(String user_auth_ip_addr, String username, String resetting_code, String user_type){
+		if(validate_passwd_resetting_web_input(user_auth_ip_addr, username, resetting_code))
+		{
+						
+			// Check for existence of a user authority's public key if it does not exist then load it
+			if(!load_user_authority_pub_key_main(user_auth_ip_addr))  // Call to backend (C function)
+			{
+								//reset_passwd_button.setEnabled(true);
+				return;
+			}
+
+			if(user_type.equals(user_type_passwd_resetting))
+			{
+				// Call to backend (C function)
+				if(reset_passwd_main(user_auth_ip_addr, username, false, resetting_code))
+				{
+					// JOptionPane.showMessageDialog(main_panel, "The password is sent to your e-mail address already");
+					m_result_msg = "The password is sent to your e-mail address already";
+					m_result_flag = true;
+				}
+				else {
+					m_result_flag = false;
+				}
+			}
+			else if(user_type.equals(admin_type_passwd_resetting))
+			{
+				// Call to backend (C function)
+				if(reset_passwd_main(user_auth_ip_addr, username, true, resetting_code))
+				{
+					//JOptionPane.showMessageDialog(main_panel, "The password is sent to your e-mail address already");
+					//				dispose();
+					m_result_msg = "The password is sent to your e-mail address already";
+					m_result_flag = true;
+				}
+				else {
+					m_result_flag = false;
+				}
+			}
+		}
+		else {
+			m_result_flag = false;
+		}
+	}
+
 	private boolean validate_passwd_resetting_code_requesting_input()
 	{
 		Pattern p;
@@ -389,6 +501,37 @@ class ForgetPassword extends JDialog implements ConstantVars
 		
 		return true;	
 	}
+
+	private boolean validate_passwd_resetting_code_requesting_web_input(String user_auth_ip_addr, String username)
+	{
+		Pattern p;
+		Matcher m;
+
+		// Validate IP address
+		p = Pattern.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
+
+		m = p.matcher(user_auth_ip_addr);
+		if(m.matches() == false)
+		{
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the IP address");
+			m_result_msg = "Please input correct format for the IP address";
+			return false;
+		}
+
+		// Validate username
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
+
+		m = p.matcher(username);
+		if(m.matches() == false)
+		{
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the username");
+			m_result_msg = "Please input correct format for the username";
+			return false;
+		}
+		
+		return true;	
+	}
+
 
 	private void pre_init_passwd_resetting_input(String assigned_user_auth_ip_addr, String assigned_username, boolean is_admin_flag)
 	{
@@ -645,10 +788,68 @@ class ForgetPassword extends JDialog implements ConstantVars
 		return true;	
 	}
 
+	private boolean validate_passwd_resetting_web_input(String user_auth_ip_addr, String username, String resetting_code)
+	{
+		Pattern p;
+		Matcher m;
+
+		// Validate IP address
+		p = Pattern.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
+
+		m = p.matcher(user_auth_ip_addr);
+		if(m.matches() == false)
+		{
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the IP address");
+			m_result_msg = "Please input correct format for the IP address";
+			return false;
+		}
+
+		// Validate username
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
+
+		m = p.matcher(username);
+		if(m.matches() == false)
+		{
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the username");
+			m_result_msg = "Please input correct format for the username";
+			return false;
+		}
+
+		// Validate resetting code
+
+		if(resetting_code.length() != PASSWD_RESETTING_CODE_LENGTH)
+		{
+			// JOptionPane.showMessageDialog(this, "The resetting code's length is " + PASSWD_RESETTING_CODE_LENGTH + " characters");
+			m_result_msg = "The resetting code's length is " + PASSWD_RESETTING_CODE_LENGTH + " characters";
+			return false;
+		}
+
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9\\_&$%#@*+-/]+");
+		m = p.matcher(resetting_code);
+		if(m.matches() == false)
+		{
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the resetting code");
+			m_result_msg = "Please input correct format for the resetting code";
+			return false;
+		}
+
+		return true;	
+	}
+
 	// Callback method (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
+
+		m_result_msg = alert_msg;
+	}
+
+	public String getResultMsg(){
+		return m_result_msg;
+	}
+
+	public boolean getResultFlag(){
+		return m_result_flag;
 	}
 }
 
