@@ -16,7 +16,7 @@
 </style>
 
 	<div class="jumbotron text-center">
-		<h1>Upload Page</h1>
+		<h2>Upload Page</h2>
 	</div>
 
 	<div class="container-fluid">
@@ -34,7 +34,7 @@
 		  </div>
 		  <h2 ng-if="progressBar == 100">Wait for encryp and upload file to phr server . . . . </h2>
 
-		<form method="post" class="form-horizontal" ng-show="isClick == false">
+		<form method="post" class="form-horizontal" ng-show="canUpload == false">
 			<div class="form-group row">
 				<label class="col-sm-3 control-label">Search </label>
 									
@@ -60,7 +60,7 @@
 		</form>
 
 
-			<form name="form" class="form-horizontol" ng-show="canUpload == true">
+			<form name="form" class="form-horizontol" ng-show="canUpload == true && isClick == false">
 					<div class="form-group row">
 						<label for="inputEmail3" class="col-sm-3 control-label">Authority Name : </label>
 						<div class="col-sm-9">

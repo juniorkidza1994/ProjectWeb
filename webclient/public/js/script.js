@@ -264,7 +264,7 @@
         }
       })
 
-      .when('/user/deleteSelfPHR', {
+      .when('/user/deletePHR', {
         templateUrl : 'deleteSelfPHR.html',
         controller: 'deleteController',
         resolve: {
@@ -757,6 +757,7 @@
         $scope.search_selectedAuthority = "";
         $scope.search_username  = "";
         $scope.trustedUsersTable = {};
+        $scope.isSearch = false;
 
         // Cancle upload
         $http.post('/api/cancelUploadPHR')
@@ -808,9 +809,6 @@
 
             // vaildation file & form
             else if ($scope.form.file.$valid && $scope.file && !$scope.file.$error) {
-
-              // hid form upload
-              $scope.canUpload = false;
 
               // add owner user to tree
               $scope.tree_string += " or (UsernameNode__SUB__" + $scope.userinfo.authorityName + "__SUB__" + $scope.userinfo.username + ')';
@@ -878,6 +876,8 @@
 
       var isClickSearch = false;
 
+      
+
       // verify user permission
       $scope.search = function(){
           if(!isClickSearch){
@@ -895,9 +895,9 @@
             .success(function(res){
                 isClickSearch = false;
                 // show form upload
-                $scope.canUpload = res;
-                if(!res){
-                  alert("Can't find this user Or You do not have the access permission");
+                $scope.canUpload = res[0];
+                if(!res[0]){
+                  alert(res[1]);
                 }
                // $location.path('/uploadPHR');
             })
@@ -960,7 +960,7 @@
         var msg = "";
         file.upload =  Upload.upload({
                 url: 'api/uploadPHR',
-                data: {'phr_owner_name': $scope.userinfo.username, file: file, 'phr_owner_authority_name': $scope.userinfo.authorityName, 
+                data: {'phr_owner_name': $scope.search_username, file: file, 'phr_owner_authority_name': $scope.search_selectedAuthority, 
                 'data_description': $scope.description,
                 'confidentiality_level': $scope.con_level, 'access_policy': $scope.tree_string,
                 'threshold' : $scope.threshold, 'truted_users': $scope.trusted_users
@@ -1075,19 +1075,28 @@
 
       // ADD TO TREE
       $scope.addToNode = function (type, scope) {
+        console.log($scope.tree);
           var title = "";
+
+          if(type == "Username"){
+              title = "User";
+          }
+          else if(type = "Attribute"){
+              title = "Attribute";
+          }
+
           if($scope.selectedNode != null){
 
             //console.log("ADD SUB NODE");
             var nodeData = $scope.selectedNode.$modelValue;
-            if(type == "Username"){
-              title = "User";
-            }
-            else if(type = "Attribute"){
-              title = "Attribute";
-            }
-            else
-              title = type;
+            // if(type == "Username"){
+            //   title = "User";
+            // }
+            // else if(type = "Attribute"){
+            //   title = "Attribute";
+            // }
+            // else
+
             nodeData.nodes.push({
               id : nodeData.id * 10 + nodeData.nodes.length,
               title: title,
@@ -1276,40 +1285,40 @@
         $scope.delete = function(){
           console.log($scope.selectedRow)
           console.log("DELETE");
-          if($scope.selectedRow == null){
-            alert("Select one row");
-          }
+          if(!isClickDelete){
+            isClickDelete = true;
+            if($scope.selectedRow == null){
+              alert("Select one row");
+              isClickDelete = false;
+            }
+            else {
 
-          else {
+                var r = confirm("Are you sure to delete this row ?");
+                
+                if(r == true) {
 
-            if(!isClickDelete){
-              isClickDelete = true;
-
-              var r = confirm("Are you sure to delete this row ?");
+                  //console.log("Delete " + $scope.access_permission_list[$scope.selectedRow]);
+                  $http.post('/api/delete_access_permission', {
+                    delete_user      : $scope.access_permission_list[$scope.selectedRow][0],
+                  })
+                  .success(function(res){
+                    if(res == true){
+                      //console.log("Delete SUCCESS");
+                       $http.post('/api/access_permission_management_list')
+                       .success(function(res){
+                           $scope.access_permission_list = res;
+                          // console.log(res);
+                       })   
+                       isClickDelete = false;
+                       $window.alert("DELETE SUCCESS !!")
+                      $location.path('/user/accessPermissionManagement');
+                    }
+                  })
+                }
+                else{
+                  isClickDelete = false;
+                }
               
-              if(r == true) {
-
-                //console.log("Delete " + $scope.access_permission_list[$scope.selectedRow]);
-                $http.post('/api/delete_access_permission', {
-                  delete_user      : $scope.access_permission_list[$scope.selectedRow][0],
-                })
-                .success(function(res){
-                  if(res == true){
-                    //console.log("Delete SUCCESS");
-                     $http.post('/api/access_permission_management_list')
-                     .success(function(res){
-                         $scope.access_permission_list = res;
-                        // console.log(res);
-                     })   
-                     isClickDelete = false;
-                     $window.alert("DELETE SUCCESS !!")
-                    $location.path('/user/accessPermissionManagement');
-                  }
-                })
-              }
-              else{
-                isClickDelete = false;
-              }
             }
           }
         }
@@ -1388,25 +1397,30 @@
         $http.post('/api/cancelDownloadPHR')
 
         var re_value = function(){
-                        $scope.isClick = false;
+              $scope.isClick = false;
               $scope.canDownload = false;
               $scope.phr_list = {};
               $scope.selectedRow = null;
               $scope.selectedRow = null;
               $scope.selectedAuthority = "";
-               $scope.username = "";
-             };
+              $scope.username = "";
+              isClickSearch = false;
+        };
+
+        var isCancle = false;
 
         $scope.cancel = function(){
           var r = confirm("Are you sure to cancel download ?");
           if(r == true) {
             console.log("CANCEL");
+            isCancle  = true;
             $http.post('/api/cancelDownloadPHR')
-            .success(function(){
-
-
+            .success(function(res){
               re_value();
-              $location.path('/downloadSelfPHR'); 
+              if(res){
+                alert("Cancel download");
+              }
+              $location.path('/user/downloadPHR'); 
             })
           }
         }
@@ -1430,6 +1444,11 @@
         // search
         $scope.search = function(){
           if(!isClickSearch){
+            if($scope.username == null)
+              $scope.username = "";
+            if($scope.selectedAuthority == null)
+              $scope.selectedAuthority = "";
+
             console.log("SEARCH DOWNLOAD");
             isClickSearch =true;
             $http.post('/api/download_phr_list',{
@@ -1437,14 +1456,15 @@
                 username      :  $scope.username
             })
             .success(function(res){
-                isClickSearch = false;
-                $scope.phr_list = res;
-
-                if(res == false){
-                  alert("CAN'T FIND USER");
+                // isClickSearch = false;
+                
+                if(res[0] == false){
+                  alert(res[1]);
+                  isClickSearch = false;
                 }
                 else{
                   $scope.canDownload = true;
+                  $scope.phr_list = res;
                 }
 
                 // console.log($scope.phr_list);
@@ -1464,13 +1484,15 @@
               index         :  $scope.selectedRow,
             })
             .success(function(res){
-
               re_value();
+              
+              console.log(res);
 
                   if(res){
                     $window.open('/api/downloadPHR');
+                    
                   }
-                  else {
+                  else if(!isCancle){
                     alert("DOWNLAOD FAILED (Decryption fail or can't verify user)");
                   }
             })
@@ -1498,23 +1520,101 @@
     phrApp.controller('deleteController', function($scope, $http, $location) {
         $scope.phr_list = {};
         $scope.selectedRow = null;
+        $scope.canDelete = false;
+        $scope.authorityList = "";
 
-        $http.post('/api/delete_self_phr_list')
+                // get authority_name_list
+        $http.post('/api/authority_name_list')
         .success(function(res){
-            $scope.phr_list = res;
-          //   console.log("DELETE LIST : " + res);
+            $scope.authorityList = res;
         })
+
+        // $http.post('/api/delete_self_phr_list')
+        // .success(function(res){
+        //     $scope.phr_list = res;
+        //   //   console.log("DELETE LIST : " + res);
+        // })
 
         // click row
         $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
         }
 
+        var isClickDelete = false;
+        var isClickSearch = false;
+
+        // Search
+        $scope.search = function(){
+          if(!isClickSearch){
+            if($scope.username == null)
+              $scope.username = "";
+            if($scope.selectedAuthority == null)
+              $scope.selectedAuthority = "";
+
+            console.log("SEARCH Delete");
+            isClickSearch =true;
+            $http.post('/api/delete_phr_list',{
+                authorityName :  $scope.selectedAuthority,
+                username      :  $scope.username
+            })
+            .success(function(res){
+                // isClickSearch = false;
+                if(res[0] == false){
+                  alert(res[1]);
+                  isClickSearch = false;
+                }
+                else{
+                  $scope.phr_list = res;
+                  $scope.canDelete = true;
+                }
+                console.log($scope.canDelete);
+                // console.log($scope.phr_list);
+                //$location.path('/downloadSelfPHR');
+            })
+          }
+        }
+
         // delete phr
         $scope.delete = function(){
-          $http.post('/api/deletePHR', {
-            index: $scope.selectedRow
-         })
+
+
+          if(!isClickDelete){
+            isClickDelete = true;
+            if($scope.selectedRow == -1){
+              alert("Choose row !!");
+              isClickDelete = false;
+            }
+            else {
+
+                var r = confirm("Do you want to delete this file ?");
+               
+                if(r == true) {
+                    $http.post('/api/deletePHR', {
+                      authorityName :  $scope.selectedAuthority,
+                      username      :  $scope.username,
+                      index         :  $scope.selectedRow
+                    })
+                    .success(function(res){
+                      alert(res[1]);
+                      isClickDelete = false;
+                      if(res[0]){
+                        $scope.phr_list = {};
+                        $scope.selectedRow = null;
+                        $scope.canDelete = false;
+                        $scope.selectedAuthority = "";
+                        $scope.username = "";
+                        isClickSearch = false;
+                        isClickDelete = false;
+                        $location.path('user/deletePHR')
+                      }
+                    })
+                }
+                else {
+                  isClickDelete = false;
+                }
+            }
+          } 
+
         }
     });
 
@@ -1562,31 +1662,35 @@
         $scope.user = {};
         $scope.isClickButton = false;
         $scope.isReset = false;
+        $scope.header = "";
         var isClickRequest = false;
         var isClickReset = false;
 
         $scope.setReset = function(){
           $scope.isClickButton = true;
           $scope.isReset = true;
+          $scope.header = "Password Resetting";
         }
 
         $scope.setRequest = function(){
           $scope.isClickButton = true;
           $scope.isReset = false;
+          $scope.header = "Password Resetting Code Requesting";
         }
 
 
         $scope.requestCode = function(){
           
-          if(!isClickRequest){
+          if($scope.user.type == null){
+              alert("CHOOSE TYPE USER");
+          }
+          else if(!isClickRequest){
          //   console.log("GO LOGIN");
             isClickRequest = true;
             if($scope.user.username == null){
               $scope.user.username = "";
             }
-            if($scope.user.type == null){
-              $scope.user.type = "";
-            }
+
 
             $http.post('/api/requestCode', {
               username: $scope.user.username,
@@ -1610,7 +1714,10 @@
         };
 
         $scope.resetPwd = function(){
-          if(!isClickReset){
+          if($scope.user.type == null){
+              alert("CHOOSE TYPE USER");
+          }
+          else if(!isClickReset){
          //   console.log("GO LOGIN");
             isClickReset = true;
             if($scope.user.username == null){
@@ -1783,40 +1890,48 @@
               console.log($scope.attribute_table);
           })
 
-
+          var isClickDelete = false;
 
           $scope.delete = function(){
-            var r = confirm("Removing the attribute may affect to an attribute list of some users!!!\n" + 
-              "Are you sure to remove this attribute?");
-           
+            if(!isClickDelete){
+              isClickDelete = true;
 
-            if(r == true) {
-               if($scope.selectedRow == -1){
-                  alert("Choose row !!");
-               }
-               else {
+              if($scope.selectedRow == -1){
+                alert("Choose row !!");
+                isClickDelete = false;
+              }
+              else {
+                  var r = confirm("Removing the attribute may affect to an attribute list of some users!!!\n" + 
+                  "Are you sure to remove this attribute?");
 
-                  $http.post('/api/deleteattribute',{
-                    attributename : $scope.attribute_table[$scope.selectedRow][0]
-                  })
-                  .success(function(res){
-                      if(res){
-                        alert("Delete Success !!");
-                        $http.post('/api/adminattribute')
-                        .success(function(res){
-                            $scope.attribute_table  = res;
-                            console.log($scope.attribute_table);
+                  if(r == true) {
+
+                        $http.post('/api/deleteattribute',{
+                          attributename : $scope.attribute_table[$scope.selectedRow][0]
                         })
-                        $scope.selectedRow = -1;
-                      }
-                      else {
-                        alert("Delete Faill !!");
-                      }
-                      $location.path('/admin/attribute');
-                  })
-               }
-            } 
-          }
+                        .success(function(res){
+                            if(res){
+                              alert("Delete Success !!");
+                              $http.post('/api/adminattribute')
+                              .success(function(res){
+                                  $scope.attribute_table  = res;
+                                  console.log($scope.attribute_table);
+                              })
+                              $scope.selectedRow = -1;
+                            }
+                            else {
+                              alert("Delete Faill !!");
+                            }
+                            isClickDelete = false;
+                            $location.path('/admin/attribute');
+                        })
+                  } 
+                  else {
+                    isClickDelete = false;
+                  }
+              }
+            }
+        }
     });
 
     phrApp.controller('registerAttributeController', function($scope, $http, $location) {
@@ -2038,8 +2153,7 @@
                 isClick = false;
               }
               else {
-                var r = confirm("Removing the attribute may affect to an attribute list of some users!!!\n" + 
-                  "Are you sure to remove this attribute?");
+                var r = confirm("Are you sure to reset password ?");
 
                 if(r == true) {
                       $http.post('/api/resetpasswordadmin',{
@@ -2161,30 +2275,40 @@
             }
       }
 
+      var isClickDelete = false;
+
       $scope.delete = function(){
 
-        if($scope.selectedRow == -1){
-          alert("Choose row !!");
-        }
-        else {
-            var r = confirm("Are you sure to remove this authority?\n");
-           
-            if(r == true) {
+        if(!isClickDelete){
+          isClickDelete = true;
+          if($scope.selectedRow == -1){
+            alert("Choose row !!");
+            isClickDelete = false;
+          }
+          else {
+              var r = confirm("Are you sure to remove this authority?\n");
+             
+              if(r == true) {
 
-                  $http.post('/api/deleteauthority',{
-                    authorityname : $scope.authority_table[$scope.selectedRow][0]
-                  })
-                  .success(function(res){
-                      if(res){
-                        alert("Delete Success !!");
-                        $location.path('/admin/info');
-                      }
-                      else {
-                        alert("Delete Faill !!");
-                        $location.path('/admin/info');
-                      }
-                  })
-            } 
+                    $http.post('/api/deleteauthority',{
+                      authorityname : $scope.authority_table[$scope.selectedRow][0]
+                    })
+                    .success(function(res){
+                        if(res){
+                          alert("Delete Success !!");
+                          $location.path('/admin/info');
+                        }
+                        else {
+                          alert("Delete Faill !!");
+                          $location.path('/admin/info');
+                        }
+                        isClickDelete  = false;
+                    })
+              } 
+              else {
+                isClickDelete = false;
+              }
+          }
         }
       }
     });
@@ -2407,15 +2531,27 @@
         $scope.resetPwd =     function(){
 
           if(!isClicked_resetPwd){
+
             isClicked_resetPwd = true;
-            $http.post('/api/resetpassworduser',{
-              username   : $scope.selectedRow['Name']
-            })
-            .success(function(res){
-              alert(res[1]);
-            })
-            isClicked_resetPwd = false;
+
+            var r = confirm("Are you sure to reset password " + $scope.selectedRow['Name'] + "?\n");
+             
+              if(r == true) {
+                    $http.post('/api/resetpassworduser',{
+                      username   : $scope.selectedRow['Name']
+                    })
+                    .success(function(res){
+
+                      isClicked_resetPwd = false;
+
+                       alert(res[1]);
+                    })
+              } 
+              else {
+                 isClicked_resetPwd = false;
+              }
           }
+
         }
 
         var isClicked_remove = false;

@@ -595,7 +595,12 @@ else
         }
         else{
           var empty_array = [];
-          res.send(false);
+          var result_msg = m_main_class[req.user.name].getResultMsgSync();
+          var result_flag = false;
+          var result_download = [];
+          result_download[0] = result_flag;
+          result_download[1] = result_msg;
+          res.send(result_download);
         }
       });
   });
@@ -666,6 +671,7 @@ else
 
     var username = req.user.name;
     var index = req.body.index;
+    console.log(m_download_phr_list);
     var data_description = m_download_phr_list[username][index][0];
     var phr_id = parseInt(m_download_phr_list[username][index][3],10);
 
@@ -705,10 +711,12 @@ else
 
     console.log("-------------- OPEN WINDOW DOWNLOAD ------------------");
     console.log("Download Files !!");
-    res.download( m_path_files[req.user.name] + m_files[req.user.name],function(err){
+    res.download( m_path_files[req.user.name] + '/' +  m_files[req.user.name],function(err){
       if(!err){
           console.log("-------------- END OPEN WINDOW DOWNLOAD ------------------");
-
+      }
+      else {
+        console.log(err);
       }
     });
   });
@@ -716,6 +724,37 @@ else
   //---------------------- DELETE PHR -----------------------//+
 
   var delete_phr_list = null;
+
+    // API GET LIST OF PHR
+  app.post('/api/delete_phr_list', function (req, res) {
+    console.log("------------------- GET DELETE PHR LIST ------------------------");
+
+    console.log("OLD PHR LIST : " + delete_phr_list);
+
+    // Call java function
+      m_main_class[req.user.name].initDeletePHRList(req.body.authorityName, req.body.username, function(err,result){
+        if(result) {
+          // Call java function
+          m_main_class[req.user.name].getTableDeletePHR(function(err,result){
+            if(!err){
+              console.log("RESULT : " + result);
+              delete_phr_list = result;
+              res.send(delete_phr_list);
+              console.log("------------------- END DELETE PHR LIST ------------------------");
+            }
+          });
+        }
+        else{
+          var empty_array = [];
+          var result_msg = m_main_class[req.user.name].getResultMsgSync();
+          var result_flag = false;
+          var result_delete = [];
+          result_delete[0] = result_flag;
+          result_delete[1] = result_msg;
+          res.send(result_delete);
+        }
+      });
+  });
 
   app.post('/api/delete_self_phr_list', function (req, res) {
 
@@ -747,8 +786,16 @@ else
       var phr_id = parseInt(delete_phr_list[index][3],10);
       var restricted_level_phr_flag  =  delete_phr_list[index][2] + "";
 
-      var result = m_main_class[req.user.name].deletePHRSync(data_description, phr_id, restricted_level_phr_flag);
-      console.log("RESULT FROM DOWNLOAD : " + result);
+      var result_flag = m_main_class[req.user.name].deletePHRSync(req.body.authorityName, 
+       req.body.username, data_description, phr_id, restricted_level_phr_flag);
+      var result_msg  = m_main_class[req.user.name].getResultMsgSync();
+
+      var result = [];
+      result[0] = result_flag;
+      result[1] = result_msg;
+
+      console.log("RESULT FROM DELETE : " + result);
+      res.send(result);
     }
 
   });
@@ -863,7 +910,12 @@ else
       m_main_class[req.user.name].verifyUploadPermissionMain(req.body.username, req.body.authorityName, function(err,result){
         if(!err) {
           
-          res.send(result);
+          var result_msg  = m_main_class[req.user.name].getResultMsgSync();
+          var result_upload = [];
+          result_upload[0] = result;
+          result_upload[1] = result_msg;
+
+          res.send(result_upload);
 
           console.log("----------------------END Verify upload permission---------------------");
         }

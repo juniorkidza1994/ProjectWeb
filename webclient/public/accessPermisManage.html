@@ -7,7 +7,7 @@
 </style>
 
 	<div class="jumbotron text-center">
-		<h1>Access Permission Management</h1>
+		<h2>Access Permission Management</h2>
 	</div>
 
 	<form method="post" class="form-horizontal">
@@ -17,11 +17,13 @@
 				<th>Name</th>
 				<th>Upload Permission</th>
 				<th>Download Permission</th>
+				<th>Delete Permission</th>
 			</tr>
 			<tr ng-repeat="item in access_permission_list" ng-class="{'selected':$index == selectedRow}" ng-click="setClickedRow($index)">
 				<td>{{item[0]}}</td>
 				<td> <input type="checkbox" ng-model="item[1]"  ng-true-value="'true'" ng-false-value="'false'"></td>
 				<td> <input type="checkbox" ng-model="item[2]"  ng-true-value="'true'" ng-false-value="'false'"></td>
+				<td> <input type="checkbox" ng-model="item[3]"  ng-true-value="'true'" ng-false-value="'false'"></td>
 			</tr>
 		</table>
 

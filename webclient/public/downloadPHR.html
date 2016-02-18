@@ -7,10 +7,10 @@
 }
 </style>
 	<div class="jumbotron text-center">
-		<h1>Download Your PHR Page</h1>
+		<h2>Download Your PHR Page</h2>
 	</div>
 
-	<form method="post" class="form-horizontal" ng-show="isClick == false">
+	<form method="post" class="form-horizontal" ng-show="canDownload == false && isClick == false">
 		<div class="form-group row">
 			<label class="col-sm-3 control-label">Search </label>
 								
@@ -58,6 +58,6 @@
          </div>
     </form>
 
-     <h2 ng-if="isClick == true" class="col-sm-12">Wait for decryption and download file to phr server . . . . </h2>
+     <h3 ng-if="isClick == true" class="col-sm-12">Wait for decryption and download file to phr server . . . . </h3>
      <button class="btn btn-lg btn-danger col-sm-offset-3 col-sm-3"  ng-if="isClick == true" ng-click ="cancel()">Cancel</button>
 

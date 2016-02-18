@@ -331,10 +331,10 @@ public class UserMain extends JFrame implements ConstantVars
 		initTableRestricted();
 		initTableUserAttribute();
 		initTableAttributePHR(authority_name);
-		initTableDeletePHR();
+		//initTableDeletePHR();
 		initTableTrustedUsers();
 		initTableDelegate();
-		initTableDownloadPHR();
+		//initTableDownloadPHR();
 		initTableAccessPermissionPHR();
 
 		// Call to C functions
@@ -347,7 +347,7 @@ public class UserMain extends JFrame implements ConstantVars
 
 		working_lock.unlock();
 
-		automatic_relogin();
+		// automatic_relogin();
 	}
 
 	private final void init_ui()
@@ -2039,6 +2039,35 @@ public class UserMain extends JFrame implements ConstantVars
 
 		JOptionPane.showMessageDialog(this, "Please select your desired transaction");
 		return false;
+	}
+
+	private boolean validate_phr_owner_search_input_web(String authority_name, String phr_owner_name)
+	{
+		Pattern p;
+		Matcher m;
+		// int     index;
+
+		// Validate PHR owner authority name
+		// index = phr_owner_authority_name_combobox.getSelectedIndex();
+		if(authority_name.equals(""))
+		{
+			// JOptionPane.showMessageDialog(this, "Please select the authority name");
+			m_result_msg = "Please select the authority name";
+			return false;
+		}
+
+		// Validate PHR owner name
+		p = Pattern.compile("^[^-]*[a-zA-Z0-9_]+");
+
+		m = p.matcher(phr_owner_name);
+		if(!m.matches())
+		{
+			// JOptionPane.showMessageDialog(this, "Please input correct format for the PHR ownername");
+			m_result_msg = "Please input correct format for the PHR ownername";
+			return false;
+		}
+ 
+		return true;
 	}
 
 	private boolean validate_user_adding_input()
@@ -4633,14 +4662,18 @@ public class UserMain extends JFrame implements ConstantVars
 			// Call to C function
 			if(!remove_restricted_level_phr_key_params_main(phr_owner_name, phr_owner_authority_name, phr_id))
 			{
-				JOptionPane.showMessageDialog(main_panel, "The restricted-level PHR was removed " + 
-					"successfully but \nwe failed to remove the emergency key parameters");
+				// JOptionPane.showMessageDialog(main_panel, "The restricted-level PHR was removed " + 
+				//	"successfully but \nwe failed to remove the emergency key parameters");
+
+				m_result_msg = "The restricted-level PHR was removed " + 
+					"successfully but \nwe failed to remove the emergency key parameters";
 
 				return;
 			}
 		}
 
-		JOptionPane.showMessageDialog(main_panel, "Deleting the PHR succeeded");
+		// JOptionPane.showMessageDialog(main_panel, "Deleting the PHR succeeded");
+		m_result_msg = "Deleting the PHR succeeded";
 	}
 
 	private void build_year_list(JComboBox year_combobox)
@@ -5225,13 +5258,14 @@ public class UserMain extends JFrame implements ConstantVars
 	public boolean verifyUploadPermissionMain(String phr_owner_name, String phr_owner_authority_name){
 		boolean res = false;
 
-		System.out.println("PHR OWNER NAME : " + phr_owner_name);
-		System.out.println("PHR OWNER Authority NAME : " + phr_owner_authority_name);
+		if(validate_phr_owner_search_input_web(phr_owner_authority_name, phr_owner_name)){
+			System.out.println("PHR OWNER NAME : " + phr_owner_name);
+			System.out.println("PHR OWNER Authority NAME : " + phr_owner_authority_name);
 
 
-		res  = verify_upload_permission_main(phr_owner_name, phr_owner_authority_name);
-		System.out.println("RESULT VERIFY : " + res);
-
+			res  = verify_upload_permission_main(phr_owner_name, phr_owner_authority_name);
+			System.out.println("RESULT VERIFY : " + res);
+		}
 		return res;
 	}
 
@@ -5246,20 +5280,48 @@ public class UserMain extends JFrame implements ConstantVars
 
 		//String phr_owner_authority_name = authority_name;
 		//String phr_owner_name           = username;
+		if(validate_phr_owner_search_input_web(phr_owner_authority_name, phr_owner_name)){
 			
-		if(verify_download_permission_main(phr_owner_name, phr_owner_authority_name))
-		{
-			System.out.println("ENTER DOWNLOAD MODE");
-			initTableDownloadPHR();
-		//	setup_actions_for_phr_downloading_mode();
+			if(verify_download_permission_main(phr_owner_name, phr_owner_authority_name))
+			{
+				System.out.println("ENTER DOWNLOAD MODE");
+				initTableDownloadPHR();
+			//	setup_actions_for_phr_downloading_mode();
+				
+				result = true;
+
+				System.out.println("USER IN DOWNLOAD : " + phr_owner_name);
+				System.out.println("Authority IN DOWNLOAD : " + phr_owner_authority_name);
+
+				// Call to C function
+				load_downloading_authorized_phr_list_main(phr_owner_name, phr_owner_authority_name);
+			}
+		}
+
+		return result;
+	}
+
+	public boolean initDeletePHRList(String phr_owner_authority_name, String phr_owner_name){
+		boolean result = false;
+
+		//String phr_owner_authority_name = authority_name;
+		//String phr_owner_name           = username;
+		if(validate_phr_owner_search_input_web(phr_owner_authority_name, phr_owner_name)){
 			
-			result = true;
+			if(verify_delete_permission_main(phr_owner_name, phr_owner_authority_name))
+			{
+				System.out.println("ENTER DELETE MODE");
+				initTableDeletePHR();
+			//	setup_actions_for_phr_downloading_mode();
+				
+				result = true;
 
-			System.out.println("USER IN DOWNLOAD : " + phr_owner_name);
-			System.out.println("Authority IN DOWNLOAD : " + phr_owner_authority_name);
+				System.out.println("USER IN DELETE : " + phr_owner_name);
+				System.out.println("Authority IN DELETE : " + phr_owner_authority_name);
 
-			// Call to C function
-			load_downloading_authorized_phr_list_main(phr_owner_name, phr_owner_authority_name);
+				// Call to C function
+				load_deletion_authorized_phr_list_main(phr_owner_name, phr_owner_authority_name);
+			}
 		}
 
 		return result;
@@ -5380,13 +5442,14 @@ public class UserMain extends JFrame implements ConstantVars
 		phr_deletion_table.removeColumn(phr_deletion_table.getColumnModel().getColumn(3));
 	}
 
-	public boolean deletePHR(String data_description, int phr_id, String restricted_level_phr_flag){
+	public boolean deletePHR(String phr_owner_authority_name, String phr_owner_name,
+		String data_description, int phr_id, String restricted_level_phr_flag){
 
 		//if(validate_phr_deletion_input())
-		//{
-			int     index                    = phr_owner_authority_name_combobox.getSelectedIndex();
-			String  phr_owner_authority_name = authority_name;
-			String  phr_owner_name           = username;
+		// //{
+		// 	int     index                    = phr_owner_authority_name_combobox.getSelectedIndex();
+		// 	String  phr_owner_authority_name = authority_name;
+		// 	String  phr_owner_name           = username;
 
 			boolean is_restricted_level_phr_flag = restricted_level_phr_flag.equals("restricted");
 
@@ -5652,6 +5715,7 @@ public class UserMain extends JFrame implements ConstantVars
 		{
 			// Call to C function
 			update_restricted_phr_access_request_list_main();
+			m_result_msg = "Approve Success!!";
 			return true;
 
 		}
