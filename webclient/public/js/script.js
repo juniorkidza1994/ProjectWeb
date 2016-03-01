@@ -731,6 +731,9 @@
                 $location.path('/');
               }
               else {
+                $scope.password.curr_passwd = "";
+                $scope.password.new_passwd = "";
+                $scope.password.confirm_passwd = "";
                 alert(res[1]);
               }
             })
@@ -742,7 +745,7 @@
         }
     });
 
-    phrApp.controller('uploadPHRController', ['$scope', 'Upload' , '$http' , '$location' , function ($scope, Upload, $http, $location) {
+    phrApp.controller('uploadPHRController', ['$scope', 'Upload' , '$http' , '$location' , '$uibModal' ,function ($scope, Upload, $http, $location, $uibModal) {
         $scope.authorityList = {};
         $scope.attribute_all = {};
         $scope.id_node = 1;
@@ -758,6 +761,7 @@
         $scope.search_username  = "";
         $scope.trustedUsersTable = {};
         $scope.isSearch = false;
+        $scope.tree = [];
 
         // Cancle upload
         $http.post('/api/cancelUploadPHR')
@@ -800,23 +804,54 @@
 
            // console.log("TREE STRING" + $scope.tree_string);
 
-            // validation tree
-            if(!($scope.tree.length != 0 &&  $scope.description != "" && $scope.con_level != "") && 
-              !($scope.con_level == "Restricted level" && $scope.threshold > 0 && $scope.trusted_users > 0)){
-                console.log("WRONG TREE");
-                $scope.isClick = false;
-            }
+           //console.log($scope.file);
+           //console.log($scope.form.file);
+
+           console.log($scope.tree.length);
+
+          if(!$scope.file){
+            alert("Choose 1 file");
+            $scope.isClick =  false;
+          }
+          else if($scope.description == "" || $scope.description == null){
+            alert("Please input description");
+            $scope.isClick =  false;
+          }
+          else if($scope.con_level == ""){
+            alert("Please select confidentiality level");
+            $scope.isClick =  false;
+          }
+          else if($scope.con_level == "Restricted level" && $scope.threshold <= 0){
+            alert("The threshold value must be between 1 and " + $scope.trusted_users + "(No. of trusted users)" );
+            $scope.isClick =  false;
+          }
+          else if($scope.tree.length == 0){
+            alert("Please specify access policy");
+            $scope.isClick =  false;
+          }
+          else {
+            $scope.upload($scope.file);
+            $scope.tree_string = "";
+          }
+          // if(!$scope.form.file.$valid || $scope.file  !$scope.file.$error){
+          //   alert("Choose 1 files");
+          // }
+          // if(!($scope.tree.length != 0 &&  $scope.description != "" && $scope.con_level != "") && 
+          //     !($scope.con_level == "Restricted level" && $scope.threshold > 0 && $scope.trusted_users > 0)){
+          //       console.log("WRONG TREE");
+          //       $scope.isClick = false;
+          // }
 
             // vaildation file & form
-            else if ($scope.form.file.$valid && $scope.file && !$scope.file.$error) {
+            // else if ($scope.form.file.$valid && $scope.file && !$scope.file.$error) {
 
-              // add owner user to tree
-              $scope.tree_string += " or (UsernameNode__SUB__" + $scope.userinfo.authorityName + "__SUB__" + $scope.userinfo.username + ')';
-              console.log("UPLOAD");
-              console.log($scope.file);
-              $scope.upload($scope.file);
-              $scope.tree_string = "";
-            }
+            //   // add owner user to tree
+            //   $scope.tree_string += " or (UsernameNode__SUB__" + $scope.userinfo.authorityName + "__SUB__" + $scope.userinfo.username + ')';
+            //   console.log("UPLOAD");
+            //   console.log($scope.file);
+            //   $scope.upload($scope.file);
+            //   $scope.tree_string = "";
+            // }
             // else {
                //console.log($scope.form.file.$valid);
             // }
@@ -888,6 +923,7 @@
             console.log("SEARCH USERNAME : " + $scope.search_username);
             console.log("SEARCH Authority : " + $scope.search_selectedAuthority);
             isClickSearch =true;
+
             $http.post('/api/verify_upload_permission_main',{
                 authorityName :  $scope.search_selectedAuthority,
                 username      :  $scope.search_username
@@ -897,12 +933,16 @@
                 // show form upload
                 $scope.canUpload = res[0];
                 if(!res[0]){
+                  $scope.search_selectedAuthority = "";
+                  $scope.search_username  = "";
                   alert(res[1]);
                 }
                // $location.path('/uploadPHR');
             })
             .error(function(err){
               isClickSearch = false;
+              $scope.search_selectedAuthority = "";
+              $scope.search_username  = "";
             })
           }
       }
@@ -942,16 +982,43 @@
                 $scope.search_selectedAuthority = "";
                 $scope.search_username  = "";
                  $scope.progressBar = 0;
+                 $scope.tree = [];
+
+                 // get authority_name_list
+        $http.post('/api/authority_name_list')
+        .success(function(res){
+            $scope.authorityList = res;
+        })
+
+        // get table
+        $http.post('/api/trusted_users_table')
+        .success(function(res){
+            $scope.trustedUsersTable = res;
+        })
+
+        // get userinfo
+        $http.get('/api/userinfo')
+        .success(function(res){
+            $scope.userinfo = res;
+        })
+
+        // get attribute list
+        $http.post('/api/attribute_table')
+        .success(function(res){
+            $scope.attribute_all = res;
+            //console.log($scope.attribute_all);
+        })
       }
 
       $scope.cancel = function(){
         var r = confirm("Are you sure to cancel Upload Files ?");
              if(r == true) {
                 // Cancle upload
+                $scope.isClick = false;
                 re_value();
                 $scope.file.upload.abort();
                 $http.post('/api/cancelUploadPHR')
-        }
+            }
       };
 
       // upload on file select or drop
@@ -976,7 +1043,8 @@
                 console.log('Error status: ' + resp.status);
                 $scope.file.upload.abort();
                 isSuccess = false;
-
+                msg = "Cancle upload";
+                re_value();
             }, function (evt) {
                 var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
                 $scope.progressBar = progressPercentage;
@@ -985,6 +1053,7 @@
             .finally(function(){
               alert(msg);
               re_value();
+              $scope.file = null;
               $location.path('/user/uploadPHR')
               // if(isSuccess){
               //   alert("UPLOAD SUCCESS !!");
@@ -1068,8 +1137,31 @@
 
       // ADD ATTRIBUTE TO TREE
       $scope.addAttribToTree = function(){
-        if($scope.selectedRow != null){
-          $scope.addToNode("Attribute", $scope.attribute_all[$scope.selectedRow][0]);
+        if($scope.selectedRow != null ){
+          var selectedRow = $scope.selectedRow;
+          console.log($scope.attribute_all[$scope.selectedRow][1]);
+          if($scope.attribute_all[$scope.selectedRow][1] == "true"){
+            console.log("Numeric");
+            var modalInstance = $uibModal.open({
+              animation: $scope.animationsEnabled,
+              templateUrl: 'numericAttrib.html',
+              controller: 'numericController'
+            });
+
+            modalInstance.result.then(function (selectedItem) {
+              $scope.value_numeric = selectedItem;
+              $scope.addToNode("Attribute", $scope.attribute_all[selectedRow][0] + " " + $scope.value_numeric.operation + " " + 
+                $scope.value_numeric.value);
+            }
+            );
+
+          }
+          else {
+            $scope.addToNode("Attribute", $scope.attribute_all[$scope.selectedRow][0]);
+          }
+        }
+        else {
+          alert("Choose 1 attribute");
         }
       }
 
@@ -1133,6 +1225,24 @@
 
     }]);
 
+    phrApp.controller('numericController', function($scope, $uibModalInstance) {
+      $scope.value_numeric = {};
+
+
+
+        $scope.ok = function () {
+          if($scope.value_numeric.operation == null )
+            alert("Choose 1 operation");
+          else if($scope.value_numeric.value == null || $scope.value_numeric.value == "")
+            alert("Please input correct format for the attribute value");
+          else 
+            $uibModalInstance.close($scope.value_numeric);
+        };
+
+        $scope.cancel = function () {
+          $uibModalInstance.dismiss('cancel');
+        };
+    });
   
     phrApp.controller('changeEmailController', function($scope, $http, $location, $window) {
         $scope.data = {};
@@ -1444,58 +1554,64 @@
         // search
         $scope.search = function(){
           if(!isClickSearch){
-            if($scope.username == null)
-              $scope.username = "";
-            if($scope.selectedAuthority == null)
-              $scope.selectedAuthority = "";
+            isClickSearch = true;
 
-            console.log("SEARCH DOWNLOAD");
-            isClickSearch =true;
-            $http.post('/api/download_phr_list',{
-                authorityName :  $scope.selectedAuthority,
-                username      :  $scope.username
-            })
-            .success(function(res){
-                // isClickSearch = false;
-                
-                if(res[0] == false){
-                  alert(res[1]);
-                  isClickSearch = false;
-                }
-                else{
-                  $scope.canDownload = true;
-                  $scope.phr_list = res;
-                }
+              console.log("SEARCH DOWNLOAD");
+              $http.post('/api/download_phr_list',{
+                  authorityName :  $scope.selectedAuthority,
+                  username      :  $scope.username
+              })
+              .success(function(res){
+                  // isClickSearch = false;
+                  
+                  if(res[0] == false){
+                    alert(res[1]);
+                    re_value();
+                    isClickSearch = false;
+                  }
+                  else{
+                    $scope.canDownload = true;
+                    $scope.phr_list = res;
+                  }
 
-                // console.log($scope.phr_list);
-                //$location.path('/downloadSelfPHR');
-            })
+                  // console.log($scope.phr_list);
+                  //$location.path('/downloadSelfPHR');
+              })
           }
         }
 
         // open download window
         $scope.download = function(){
           if(!$scope.isClick){
-            $scope.isClick = true;
-            $scope.canDownload = false;
-            $http.post('/api/downloadPHR', {
-              authorityName :  $scope.selectedAuthority,
-              username      :  $scope.username,
-              index         :  $scope.selectedRow,
-            })
-            .success(function(res){
-              re_value();
-              
-              console.log(res);
 
-                  if(res){
-                    $window.open('/api/downloadPHR');
-                    
-                  }
-                  else if(!isCancle){
-                    alert("DOWNLAOD FAILED (Decryption fail or can't verify user)");
-                  }
-            })
+            $scope.isClick = true;
+
+            if($scope.selectedRow == null){
+              alert("Choose 1 row for download");
+              $scope.isClick = false;
+            }
+            else {
+              $scope.isClick = true;
+              $scope.canDownload = false;
+              $http.post('/api/downloadPHR', {
+                authorityName :  $scope.selectedAuthority,
+                username      :  $scope.username,
+                index         :  $scope.selectedRow,
+              })
+              .success(function(res){
+                re_value();
+                
+                console.log(res);
+
+                    if(res){
+                      $window.open('/api/downloadPHR');
+                      
+                    }
+                    else if(!isCancle){
+                      alert("DOWNLAOD FAILED (Decryption fail or can't verify user)");
+                    }
+              })
+            }
           }
         }
 
@@ -1623,33 +1739,47 @@
        var isClick = false;
 
         $scope.login = function(){
+          if(!isClick){
 
-          if($scope.user.username == null || $scope.user.password == null ||
-            $scope.user.type == null){
-            $window.alert("LOGIN FAILED !!!");
-              $scope.user = {};
-              isClick = false;
-          }
-          else if(!isClick){
-         //   console.log("GO LOGIN");
             isClick = true;
-            $http.post('/api/login', {
-              username: $scope.user.username,
-              password: $scope.user.password,
-              type    : $scope.user.type
-            })
-            .success(function(user){
-              // No error: authentication OK
-          //    console.log("SUCCESS");
-          //    console.log(user);
-              $window.alert("LOGIN SUCCESS !!")
-              $window.location.reload();
-            })
-            .error(function(err){
-              console.log(err);
-              $window.alert("Wrong username or password");
-              $window.location.reload();
-            })
+
+            if($scope.user.username == null || $scope.user.username.length > 50 || $scope.user.username.length == 0){
+              alert("Please input username's length between 1 - 50 charecters");
+              isClick = false;
+              $scope.user = {};
+            } 
+            else if($scope.user.password == null || $scope.user.password.length < 8 || $scope.user.password.length > 50){
+              alert("Please input password's length between 1 - 50 charecters");
+              isClick = false;
+              $scope.user = {};
+            }
+            else if($scope.user.type == null){
+              alert("Please choose 1 account type");
+              isClick = false;
+              $scope.user = {};
+            }
+            else {
+           //   console.log("GO LOGIN");
+              $http.post('/api/login', {
+                username: $scope.user.username,
+                password: $scope.user.password,
+                type    : $scope.user.type
+              })
+              .success(function(user){
+                // No error: authentication OK
+            //    console.log("SUCCESS");
+            //    console.log(user);
+                $window.alert("LOGIN SUCCESS !!")
+                $window.location.reload();
+              })
+              .error(function(err){
+                console.log(err);
+                $window.alert("Wrong username or password");
+                $window.location.reload();
+                isClick = false;
+                $scope.user = {};
+              })
+            }
           }
         };
 

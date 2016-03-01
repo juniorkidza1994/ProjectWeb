@@ -584,14 +584,18 @@ else
       m_main_class[req.user.name].initDownloadPHRList(req.body.authorityName, req.body.username, function(err,result){
         if(result) {
           // Call java function
-          m_main_class[req.user.name].getTableDownloadPHR(function(err,result){
-            if(!err){
-              console.log("RESULT : " + result);
-              m_download_phr_list[req.user.name] = result;
-              res.send(m_download_phr_list[req.user.name]);
-              console.log("------------------- END DOWNLOAD PHR LIST ------------------------");
-            }
-          });
+          console.log("before wait");
+          setTimeout(function() {
+            console.log('test wait');
+            m_main_class[req.user.name].getTableDownloadPHR(function(err,result){
+              if(!err){
+                console.log("RESULT : " + result);
+                m_download_phr_list[req.user.name] = result;
+                res.send(m_download_phr_list[req.user.name]);
+                console.log("------------------- END DOWNLOAD PHR LIST ------------------------");
+              }
+            });
+          }, 1200);
         }
         else{
           var empty_array = [];

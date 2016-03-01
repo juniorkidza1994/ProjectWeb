@@ -49,7 +49,7 @@
 				<p class="col-sm-offset-3 col-sm-2 form-control-static">Username :</p>
 									
 				<div class="col-sm-7"> 
-					<input type="text" id="Username" class="form-control" placeholder="Username" ng-model="search_username">
+					<input type="text" id="Username" class="form-control" placeholder="Username" ng-model="search_username" maxlength="50">
 				</div>				
 
 				<div class="col-sm-offset-5 col-sm-3"> 
@@ -76,7 +76,7 @@
 					<div class="form-group row">
 						<label class="col-sm-3 control-label"> PHR FILES : </label>
 						
-							<input class="col-sm-6"type="file" ngf-select ng-model="file" name="file" >
+							<input class="col-sm-6"type="file" ngf-select ng-model="file" name="file" required  >
 										
 					</div>
 					<div class="form-group row">
@@ -98,9 +98,9 @@
 								<input type="radio" name="con_level" ng-model="con_level" value="Secure level" > Secure level
 							</label>		
 						</div>
-						<div class="col-sm-offset-3 col-sm-9 radio">
+						<div class="col-sm-offset-3 col-sm-9 radio" ng-show="trusted_users != 0">
 							<label>
-								<input type="radio" name="con_level" ng-model="con_level" value="Restricted level"> Restricted level
+								<input type="radio" name="con_level" ng-model="con_level" value="Restricted level" > Restricted level
 							</label>
 							
 						</div>

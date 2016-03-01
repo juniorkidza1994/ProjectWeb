@@ -11,7 +11,7 @@
             <div class="form-group">
               <label for="inputPassword" class="col-sm-2 control-label">Email</label>
               <div class="col-sm-10">
-                  <input type="text" id="CurrentPassword" class="form-control" required ng-model="data.email">
+                  <input type="text" id="CurrentPassword" class="form-control" required ng-model="data.email" maxlength="80">
 
               </div>
             </div>
@@ -19,7 +19,7 @@
              <div class="form-group">
               <label for="inputPassword" class="col-sm-2 control-label">Password</label>
               <div class="col-sm-10">
-                  <input type="password" id="NewPassword" class="form-control" placeholder="Confirm Password" required ng-model="data.password">
+                  <input type="password" id="NewPassword" class="form-control" placeholder="Confirm Password" required ng-model="data.password" maxlength="50">
               </div>
             </div>
 
