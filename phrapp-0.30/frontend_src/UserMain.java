@@ -5847,6 +5847,14 @@ public class UserMain extends JFrame implements ConstantVars
 			return true;
 	}
 
+	public void updateUserAttribute(){
+		update_user_attribute_list_main();
+	}
+
+	public void updateRestrictedRequest(){
+		update_restricted_phr_access_request_list_main();
+	}
+
 	public void closeProgram(){
 		System.exit(0);
 	}

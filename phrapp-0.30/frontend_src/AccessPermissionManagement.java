@@ -535,7 +535,9 @@ class AccessPermissionManagement extends JDialog implements ConstantVars
 	// Callback methods (Returning from C code)
 	private void backend_alert_msg_callback_handler(final String alert_msg)
 	{
-		JOptionPane.showMessageDialog(main_panel, alert_msg);
+		// JOptionPane.showMessageDialog(main_panel, alert_msg);
+		result_msg = alert_msg;
+		result_flag =false;
 	}
 
 	private void backend_fatal_alert_msg_callback_handler(final String alert_msg)

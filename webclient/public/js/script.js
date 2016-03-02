@@ -449,6 +449,7 @@
         $scope.restricted = {};
         $scope.info = {};
         $scope.isShowCancel = false;
+        $scope.isShowApprove = false;
         $scope.selectedRow = -1;
 
         // get table
@@ -468,8 +469,13 @@
         $scope.setClickedRow = function(index){
             $scope.selectedRow = index;
             var full_name = $scope.info.authorityName +'.' + $scope.info.username ;
+            //console.log(full_name);
             if(full_name == $scope.restricted[index][1]){
+              console.log("Equal");
               $scope.isShowCancel = true;
+            }
+            else {
+              $scope.isShowApprove = true;
             }
         }
 
@@ -500,12 +506,14 @@
                 // No error: authentication OK
                 //console.log("SUCCESS");
                 isClickApprove = false;
+                $scope.isShowCancel = false;
+                $scope.isShowApprove = false;
                 alert(res[1]);
                 if(res[0]){
                   $http.post('/api/restricted_table')
                   .success(function(res){
                       $scope.restricted = res;
-                      $location.path('/restricted');
+                      $location.path('user/restricted');
                   })
                 }
               })
@@ -516,6 +524,8 @@
         $scope.clickedSomewhereElse = function(){
         //  console.log("HIT !!")
           $scope.selectedRow = null;
+          $scope.isShowCancel = false;
+          $scope.isShowApprove = false;
         };
     });
 
@@ -540,6 +550,7 @@
       var isClick = false;
 
       $scope.search = function(){
+        console.log("CLICK SEARCH");
         if(!isClick){
 
           isClick = true;
@@ -586,7 +597,6 @@
                 }
               })
             }
-          }
           else {
 
             console.log("SSSSSS");
@@ -626,6 +636,7 @@
           // console.log("End Time: " + $scope.endTime);
           // console.log("Choice: " + $scope.transaction_type);
         }
+      };
       //}
 
     });
@@ -821,7 +832,7 @@
             alert("Please select confidentiality level");
             $scope.isClick =  false;
           }
-          else if($scope.con_level == "Restricted level" && $scope.threshold <= 0){
+          else if($scope.con_level == "Restricted level" && ($scope.threshold <= 0 || $scope.threshold > $scope.trusted_users)){
             alert("The threshold value must be between 1 and " + $scope.trusted_users + "(No. of trusted users)" );
             $scope.isClick =  false;
           }
@@ -1313,38 +1324,58 @@
         $scope.checked = {};
 
         var indexEdit = -1;
-        var beforeEdit = [[false,false],[false,false]];
+        var beforeEdit = [];
 
         // get access permission list
         $http.post('/api/access_permission_management_list')
         .success(function(res){
             $scope.access_permission_list = res;
-
+            // beforeEdit = res;
             for(var x in res){
-              beforeEdit[x][0] = res[x][1];
-              beforeEdit[x][1] = res[x][2];
+              beforeEdit.push([]);
+              beforeEdit[x].push(res[x][1]);
+              beforeEdit[x].push(res[x][2]);
+              beforeEdit[x].push(res[x][3]);
             }
-
-            console.log(beforeEdit);
+            //console.log(beforeEdit);
         })     
 
         // set click row
         $scope.setClickedRow = function(index){
 
-          if(index != indexEdit){
-            $scope.selectedRow = index;
-            console.log("Row " + $scope.selectedRow);
-            console.log(beforeEdit);
-            console.log(indexEdit);
-            console.log($scope.access_permission_list)
+          //console.log(index);
 
-            if(indexEdit != -1){
-              $scope.access_permission_list[indexEdit][1] = beforeEdit[indexEdit][0];
-              $scope.access_permission_list[indexEdit][2] = beforeEdit[indexEdit][1];
-            }
+          //console.log(beforeEdit);
 
-            indexEdit= $scope.selectedRow;
+          $scope.selectedRow = index;
+
+          if(indexEdit == -1){
+            indexEdit = index;
           }
+          else if(index != indexEdit){
+
+            //console.log(beforeEdit[indexEdit][0]);
+
+            $scope.access_permission_list[indexEdit][1] = beforeEdit[indexEdit][0];
+            $scope.access_permission_list[indexEdit][2] = beforeEdit[indexEdit][1];
+            $scope.access_permission_list[indexEdit][3] = beforeEdit[indexEdit][2];
+            indexEdit = index;
+          }
+
+          // if(index != indexEdit){
+          //   $scope.selectedRow = index;
+          //   console.log("Row " + $scope.selectedRow);
+          //   console.log(beforeEdit);
+          //   console.log(indexEdit);
+          //   console.log($scope.access_permission_list)
+
+          //   if(indexEdit != -1){
+          //     $scope.access_permission_list[indexEdit][1] = beforeEdit[indexEdit][0];
+          //     $scope.access_permission_list[indexEdit][2] = beforeEdit[indexEdit][1];
+          //   }
+
+          //   indexEdit= $scope.selectedRow;
+          // }
         }
 
         // change location to assign
@@ -1359,7 +1390,11 @@
           //console.log($scope.selectedRow);
           if(!isClickEdit){
             isClickEdit = true;
-            if($scope.selectedRow != null ){
+            if($scope.selectedRow == null || $scope.selectedRow == -1 ){
+              alert("Choose 1 row");
+              isClickEdit = false;
+            }
+            else {
               //console.log("EDIT " + $scope.access_permission_list[$scope.selectedRow]);
               $http.post('/api/edit_access_permission', {
                 row             : $scope.selectedRow,
@@ -1379,6 +1414,7 @@
                       for(var x in res){
                         beforeEdit[x][0] = res[x][1];
                         beforeEdit[x][1] = res[x][2];
+                        beforeEdit[x][2] = res[x][3];
                       }
 
                       console.log(beforeEdit);
@@ -1397,8 +1433,8 @@
           console.log("DELETE");
           if(!isClickDelete){
             isClickDelete = true;
-            if($scope.selectedRow == null){
-              alert("Select one row");
+            if($scope.selectedRow == null || $scope.selectedRow == -1){
+              alert("Choose 1 row");
               isClickDelete = false;
             }
             else {
@@ -1420,6 +1456,7 @@
                           // console.log(res);
                        })   
                        isClickDelete = false;
+                       $scope.selectedRow = -1;
                        $window.alert("DELETE SUCCESS !!")
                       $location.path('/user/accessPermissionManagement');
                     }
@@ -1427,6 +1464,11 @@
                 }
                 else{
                   isClickDelete = false;
+                  $scope.access_permission_list[$scope.selectedRow][1] = beforeEdit[$scope.selectedRow][0];
+                  $scope.access_permission_list[$scope.selectedRow][2] = beforeEdit[$scope.selectedRow][1];
+                  $scope.access_permission_list[$scope.selectedRow][3] = beforeEdit[$scope.selectedRow][2];
+                  $scope.selectedRow = -1;
+                  indexEdit = -1;
                 }
               
             }
@@ -1677,6 +1719,8 @@
                 // isClickSearch = false;
                 if(res[0] == false){
                   alert(res[1]);
+                  $scope.username = "";
+                  $scope.selectedAuthority = "";
                   isClickSearch = false;
                 }
                 else{
@@ -1696,7 +1740,7 @@
 
           if(!isClickDelete){
             isClickDelete = true;
-            if($scope.selectedRow == -1){
+            if($scope.selectedRow == -1 || $scope.selectedRow == null){
               alert("Choose row !!");
               isClickDelete = false;
             }
@@ -1715,7 +1759,7 @@
                       isClickDelete = false;
                       if(res[0]){
                         $scope.phr_list = {};
-                        $scope.selectedRow = null;
+                        $scope.selectedRow = -1;
                         $scope.canDelete = false;
                         $scope.selectedAuthority = "";
                         $scope.username = "";
@@ -1726,6 +1770,7 @@
                     })
                 }
                 else {
+                  $scope.selectedRow = -1;
                   isClickDelete = false;
                 }
             }
@@ -1749,7 +1794,7 @@
               $scope.user = {};
             } 
             else if($scope.user.password == null || $scope.user.password.length < 8 || $scope.user.password.length > 50){
-              alert("Please input password's length between 1 - 50 charecters");
+              alert("Please input password's length between 8 - 50 charecters");
               isClick = false;
               $scope.user = {};
             }

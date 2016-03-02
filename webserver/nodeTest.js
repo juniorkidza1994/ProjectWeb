@@ -423,8 +423,6 @@ else
 
       var userinfo = {};
 
-      if(Object.keys(userinfo).length == 0)
-      {
         // Get table & Call java function
         var attribute_list = m_main_class[req.user.name].getTableUserAttributeSync();
         var authorityName = m_main_class[req.user.name].getAuthorityNameSync();
@@ -448,8 +446,6 @@ else
         userinfo.email_address = email_address;
         userinfo.attribute_list = attribute_list;
 
-      }
-      
       res.send(userinfo);
 
       console.log("--------------------- END USER INFO ---------------------");
@@ -739,6 +735,7 @@ else
       m_main_class[req.user.name].initDeletePHRList(req.body.authorityName, req.body.username, function(err,result){
         if(result) {
           // Call java function
+           setTimeout(function() {
           m_main_class[req.user.name].getTableDeletePHR(function(err,result){
             if(!err){
               console.log("RESULT : " + result);
@@ -747,6 +744,7 @@ else
               console.log("------------------- END DELETE PHR LIST ------------------------");
             }
           });
+          },1200);
         }
         else{
           var empty_array = [];
@@ -1157,7 +1155,9 @@ else
     var restricted_table = null;
 
     console.log("-------------- get Restricted table ---------------");
+     m_main_class[req.user.name].updateRestrictedRequestSync();
 
+     setTimeout(function() {
         // call java function
         m_main_class[req.user.name].getTableRestricted(function(err,result){
           if(result){
@@ -1168,6 +1168,7 @@ else
             res.send(restricted_table);
           }
         });
+    }, 1000);
   });
 
   app.post('/api/approve_restricted', function (req, res) {
