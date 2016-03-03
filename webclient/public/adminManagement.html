@@ -27,9 +27,9 @@
             <div class="col-sm-offset-2 col-sm-10">
               <br />
               <a href="/#/admin/registeradmin" class="btn btn-lg btn-info" role="button"> Register an admin</a>
-              <button class="btn btn-lg btn-danger" type="button" ng-click ="edit()">edit</button>
-              <button class="btn btn-lg btn-danger" type="button" ng-click ="reset()">Reset Password</button>
-              <button class="btn btn-lg btn-danger" type="button" ng-click ="delete()">Remove</button>
+              <button class="btn btn-lg btn-danger" type="button" ng-click ="edit()" ng-if="selectedRow != -1">edit</button>
+              <button class="btn btn-lg btn-danger" type="button" ng-click ="reset()" ng-if="selectedRow != -1">Reset Password</button>
+              <button class="btn btn-lg btn-danger" type="button" ng-click ="delete()" ng-if="selectedRow != -1">Remove</button>
             </div>	
          </div>
     </form>

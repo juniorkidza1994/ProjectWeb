@@ -570,12 +570,12 @@
                 transaction_log_type  : $scope.transaction_log_type, 
                 start_year_index      : $scope.Date.startDate.getFullYear(), 
                 start_month_index     : $scope.Date.startDate.getMonth(), 
-                start_day_index       : $scope.Date.startDate.getDate(), 
+                start_day_index       : $scope.Date.startDate.getDate()-1, 
                 start_hour_index      : $scope.Date.startTime.getHours(), 
                 start_minute_index    : $scope.Date.startTime.getMinutes(), 
                 end_year_index        : $scope.Date.endDate.getFullYear(), 
                 end_month_index       : $scope.Date.endDate.getMonth(), 
-                end_day_index         : $scope.Date.endDate.getDate(), 
+                end_day_index         : $scope.Date.endDate.getDate()-1, 
                 end_hour_index        : $scope.Date.endTime.getHours(), 
                 end_minute_index      : $scope.Date.endTime.getMinutes() 
               })
@@ -1307,6 +1307,7 @@
               //console.log("SUCCESS");
               isClick = false;
               $window.alert(res[1])
+              $scope.data.password = "";
               if(res[0])
                 $location.path('/');
             })
@@ -1788,18 +1789,18 @@
 
             isClick = true;
 
-            if($scope.user.username == null || $scope.user.username.length > 50 || $scope.user.username.length == 0){
-              alert("Please input username's length between 1 - 50 charecters");
+            if($scope.user.username == null || $scope.user.username.length > 20 || $scope.user.username.length == 0){
+              alert("Please input username's length between 1 - 20 charecters");
               isClick = false;
               $scope.user = {};
             } 
-            else if($scope.user.password == null || $scope.user.password.length < 8 || $scope.user.password.length > 50){
-              alert("Please input password's length between 8 - 50 charecters");
+            else if($scope.user.type == null){
+              alert("Please choose 1 account type");
               isClick = false;
               $scope.user = {};
             }
-            else if($scope.user.type == null){
-              alert("Please choose 1 account type");
+            else if($scope.user.password == null || $scope.user.password.length < 8 || $scope.user.password.length > 50){
+              alert("Please input password's length between 8 - 50 charecters");
               isClick = false;
               $scope.user = {};
             }
@@ -1856,71 +1857,78 @@
 
         $scope.requestCode = function(){
           
-          if($scope.user.type == null){
-              alert("CHOOSE TYPE USER");
-          }
-          else if(!isClickRequest){
+          if(!isClickRequest){
          //   console.log("GO LOGIN");
             isClickRequest = true;
-            if($scope.user.username == null){
-              $scope.user.username = "";
-            }
-
-
-            $http.post('/api/requestCode', {
-              username: $scope.user.username,
-              type    : $scope.user.type
-            })
-            .success(function(res){
-              // No error: authentication OK
-          //    console.log("SUCCESS");
-          //    console.log(user);
+            if($scope.user.username == null || $scope.user.username == ""){
+              alert("Please input username's length between 1 - 20 charecters");
               isClickRequest = false;
-              alert(res[1]);
+            }
+            else if($scope.user.type == null){
+              alert("CHOOSE TYPE USER");
+              isClickRequest = false;
+            }
+            else {
+              $http.post('/api/requestCode', {
+                username: $scope.user.username,
+                type    : $scope.user.type
+              })
+              .success(function(res){
+                // No error: authentication OK
+            //    console.log("SUCCESS");
+            //    console.log(user);
+                isClickRequest = false;
+                alert(res[1]);
 
-              if(res[0]){
-                $location.path('/');
-              }
-              else {
-                $scope.user = {};
-              }
-            })
+                if(res[0]){
+                  $location.path('/');
+                }
+                else {
+                  $scope.user = {};
+                }
+              })
+            }
           }
         };
 
         $scope.resetPwd = function(){
-          if($scope.user.type == null){
-              alert("CHOOSE TYPE USER");
-          }
-          else if(!isClickReset){
+          
+          if(!isClickReset){
          //   console.log("GO LOGIN");
             isClickReset = true;
-            if($scope.user.username == null){
-              $scope.user.username = "";
-            }
-            if($scope.user.type == null){
-              $scope.user.type = "";
-            }
-
-            $http.post('/api/resetPwd', {
-              username      : $scope.user.username,
-              resettingCode : $scope.user.resettingCode,
-              type          : $scope.user.type
-            })
-            .success(function(res){
-              // No error: authentication OK
-          //    console.log("SUCCESS");
-          //    console.log(user);
+            if($scope.user.username == null || $scope.user.username == ""){
+              alert("Please input username's length between 1 - 20 charecters");
               isClickReset = false;
-              alert(res[1]);
+            }
+            else if($scope.user.type == null){
+              alert("CHOOSE TYPE USER");
+              isClickReset = false;
+            }
+            else if($scope.user.resettingCode == "" || $scope.user.resettingCode == null){
+              alert("the restting code 's length is 8 charecters.");
+              isClickReset = false;
+            }
+            else {
+              $http.post('/api/resetPwd', {
+                username      : $scope.user.username,
+                resettingCode : $scope.user.resettingCode,
+                type          : $scope.user.type
+              })
+              .success(function(res){
+                // No error: authentication OK
+            //    console.log("SUCCESS");
+            //    console.log(user);
+                isClickReset = false;
+                alert(res[1]);
 
-              if(res[0]){
-                $location.path('/');
-              }
-              else {
-                $scope.user = {};
-              }
-            })
+                if(res[0]){
+                  $location.path('/');
+                }
+                else {
+                  $scope.user = {};
+                }
+              })
+            }
           }
         }
     });
@@ -1979,6 +1987,7 @@
             .success(function(res){
               alert(res[1]);
               isClick = false;
+              $scope.password = "";
               if(res[0]){
                 $location.path("/admin/info");
               }
@@ -2041,6 +2050,10 @@
                 isClick = false;
 
                 alert(res[1]);
+
+                $scope.password = "";
+                $scope.new_passwd = "";
+                $scope.confirm_passwd = "";
 
                 if(res[0]){
                   $location.path("/admin/info");
@@ -2185,12 +2198,12 @@
                  transaction_log_type  : $scope.transaction_log_type, 
                  start_year_index      : $scope.Date.startDate.getFullYear(), 
                  start_month_index     : $scope.Date.startDate.getMonth(), 
-                 start_day_index       : $scope.Date.startDate.getDate(), 
+                 start_day_index       : $scope.Date.startDate.getDate()-1, 
                  start_hour_index      : $scope.Date.startTime.getHours(), 
                  start_minute_index    : $scope.Date.startTime.getMinutes(), 
                  end_year_index        : $scope.Date.endDate.getFullYear(), 
                  end_month_index       : $scope.Date.endDate.getMonth(), 
-                 end_day_index         : $scope.Date.endDate.getDate(), 
+                 end_day_index         : $scope.Date.endDate.getDate()-1, 
                  end_hour_index        : $scope.Date.endTime.getHours(), 
                  end_minute_index      : $scope.Date.endTime.getMinutes() 
                })
@@ -2301,6 +2314,7 @@
                       .success(function(res){
                         isClick = false;
                           if(res){
+                            $scope.selectedRow = -1;
                             alert("Delete Success !!");
                             $http.post('/api/adminlist')
                             .success(function(res){
@@ -2335,6 +2349,7 @@
                         username : $scope.admin_list[$scope.selectedRow][0]
                       })
                       .success(function(res){
+                        $scope.selectedRow = -1;
                         isClick = false;
                         alert(res[1]);
                         $location.path('/admin/adminmanagement')
@@ -2470,18 +2485,26 @@
                     })
                     .success(function(res){
                         if(res){
+                          $http.post('/api/admin_authority_list')
+                          .success(function(res){
+                                  $scope.authority_table  = res;
+                                  //console.log($scope.admin_list);
+                          })
+                          $scope.selectedRow = -1;
                           alert("Delete Success !!");
-                          $location.path('/admin/info');
+                          $location.path('/admin/authoritymanagement');
                         }
                         else {
                           alert("Delete Faill !!");
-                          $location.path('/admin/info');
+                          $scope.selectedRow = -1;
+                          $location.path('/admin/authoritymanagement');
                         }
                         isClickDelete  = false;
                     })
               } 
               else {
                 isClickDelete = false;
+                $scope.selectedRow = -1;
               }
           }
         }
@@ -2740,11 +2763,6 @@
             var r = confirm("Are you sure to remove this " + $scope.selectedRow['Type'] + "?\n");
              
               if(r == true) {
-                 if($scope.selectedRow == null){
-                    alert("Choose row !!");
-                     isClicked_remove = false;
-                 }
-                 else {
 
                     $http.post('/api/removeuser',{
                       ID : $scope.selectedRow['ID']
@@ -2763,7 +2781,6 @@
                           $location.path('/admin/usermanagement');
                         }
                     })
-                 }
               } 
               else
                  isClicked_remove = false;

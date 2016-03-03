@@ -102,6 +102,7 @@ class NumericalAttributeValueEditing extends JDialog implements ConstantVars
 			if(edit_user_attribute_value_main(username, attribute_name, attribute_authority_name, attribute_value))
 			{
 				result_flag = true;
+				m_result = "Edit success !!";
 			}
 		}
 	}

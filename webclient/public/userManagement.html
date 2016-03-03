@@ -18,6 +18,6 @@
 		<button class="btn btn-lg btn-default" type="button" ng-click ="register()">Register</button>
         <button class="btn btn-lg btn-success" type="button" ng-click ="edit()" ng-if="isEdit()" >Edit</button>
         <button class="btn btn-lg btn-info" type="button" ng-click ="resetPwd()" ng-if="isResetPwd()" >Reset Password</button>
-        <button class="btn btn-lg btn-danger" type="button" ng-click ="remove()">Remove</button>
+        <button class="btn btn-lg btn-danger" type="button" ng-click ="remove()" ng-if="selectedRow != null">Remove</button>
 	</div>
 	
