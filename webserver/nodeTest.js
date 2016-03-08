@@ -16,7 +16,7 @@ if(cluster.isMaster){
 
   var workers = [];
 
-  var host = "http://192.168.174.138:";
+  var host = "https://192.168.174.138:";
 
   var spawn = require('child_process').spawn,
       ls    = spawn('../phrapp-0.30/delete_PHR_client_multi_start.sh',{
@@ -101,7 +101,7 @@ else
 
   var java = require('java');
   var path = require('path');
-  var express = require('express');
+  
   var multer  = require('multer');
   var passport = require('passport');
   var LocalStrategy = require('passport-local').Strategy;
@@ -110,6 +110,9 @@ else
 
   // USE TO OPEN FILES
   var fs = require('fs');
+
+  var privatekey = fs.readFileSync('../webphr-key.pem');
+  var certificate = fs.readFileSync('../webphr-cert.pem');
 
   // DELETE DIRECTORY THAT IS NOT EMPTY
   var deleteFolderRecursive = function(path) {
@@ -140,7 +143,18 @@ else
     }
   };
 
+  var options = {
+    key: privatekey,
+    cert: certificate
+  };
+
+  var express = require('express');
+
   var app = express();
+
+  var https = require('https');
+
+  var server = https.createServer (options, app);
 
   // TEMP PATH TO SAVE FILES
   var path_files_upload_temp;
@@ -2013,7 +2027,7 @@ else
 
   process.on('message', function(msg) {
     port = msg;
-    app.listen(port);
+    server.listen(port);
     console.log("Started port : " + port);
     rmDir('Upload/temp');
   });
