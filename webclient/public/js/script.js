@@ -9,6 +9,8 @@
 
     var userType;
 
+    var timer = null;
+
     var phrApp = angular.module('phrApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree', 'ngAnimate', 'ui.bootstrap', 'treeGrid'])
 
   .config(function($routeProvider, $locationProvider, $httpProvider) {
@@ -37,15 +39,34 @@
         }
     }];
 
-    var checkLoggedin = function($q, $timeout, $http, $location, $rootScope){
+
+    var checkLoggedin = function($q, $timeout, $http, $location, $rootScope, $window){
       // Initialize a new promise
       var deferred = $q.defer();
-
+      console.log("Test 0");
+      $timeout.cancel(timer);
+      
       // Make an AJAX call to check if the user is logged in
       $http.get('/api/loggedin').success(function(user){
         // Authenticated
-        if (user !== '0'){
+      //  console.log("USER: " + user);
+        if(user === "-1"){
+          console.log("IP don't equals");
+          deferred.reject();
+          $window.location.href = "http://192.168.174.138";
+        }
+        else if (user !== '0'){
           /*$timeout(deferred.resolve, 0);*/
+
+          // Timeout if don't change page
+          timer = $timeout(function(){
+            $http.get('/api/exitworker')
+            .success(function(res){
+              $location.url('/timeout');
+              console.log("EXIT WORKER : " + res);
+            })
+          }, 20000);
+
           if($location.path() != '/'){
             deferred.resolve();
             if(user.type == "User" && ($location.path().indexOf("/admin") > -1 ))
@@ -71,6 +92,14 @@
         // Not Authenticated
         else if($location.path() == '/' || $location.path() == '/forgetpwd'){
           console.log("NO LOGIN");
+          // Timeout if don't login
+          timer = $timeout(function(){
+            $http.get('/api/exitworker')
+            .success(function(res){
+              $location.url('/timeout');
+              console.log("EXIT WORKER : " + res);
+            })
+          }, 10000);
         //  $timeout(function(){deferred.reject();}, 0);
           deferred.resolve();
         }
@@ -358,6 +387,11 @@
         controller  : 'errorController'
       })
 
+      .when('/timeout',{
+        templateUrl : 'notifyTimeout.html',
+        controller  : 'timeoutController'
+      })
+
 
       .otherwise({
         redirectTo: '/error'
@@ -381,15 +415,15 @@
     phrApp.controller('indexController', function($scope, $http, $location) {
       $scope.isLoggin = false;
 
-      console.log("ISLOGGIN : " + $scope.isLoggin);
+   //   console.log("ISLOGGIN : " + $scope.isLoggin);
 
       $http.get('/api/loggedin').success(function(user){
-        console.log(user.type);
+ //       console.log(user);
         // Authenticated
         if (user !== '0'){
           $scope.isLoggin = true;
           $scope.usertype = user.type;
-          console.log($scope.usertype);
+        //  console.log($scope.usertype);
         }
         // Not Authenticated
         else
@@ -403,7 +437,7 @@
           if (user !== '0'){
             $scope.isLoggin = true;
             $scope.usertype = user.type;
-            console.log($scope.usertype);
+          //  console.log($scope.usertype);
           }
           // Not Authenticated
           else
@@ -1780,12 +1814,16 @@
         }
     });
 
-    phrApp.controller('loginController', function($scope,$http,$location, $window, $route){
+    phrApp.controller('loginController', function($scope,$http,$location, $window, $route, $timeout){
         $scope.user = {};
        var isClick = false;
 
+       //$timeout(function(){console.log("TESTTTTTTTTTTTTTTTTTTTTTTTT");}, 6000);  // Wait 5 min
+
         $scope.login = function(){
           if(!isClick){
+
+            $timeout.cancel(timer);
 
             isClick = true;
 
@@ -2948,6 +2986,11 @@
 
     phrApp.controller('errorController', function($scope) {
         $scope.message = "Error Don't have this page";
+        console.log("TESTTTT ");
+    });
+
+    phrApp.controller('timeoutController', function($scope) {
+        $scope.message = "Timeout Please try again later";
         console.log("TESTTTT ");
     });
 

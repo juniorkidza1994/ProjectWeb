@@ -23,8 +23,15 @@ if(cluster.isMaster){
       stdio:['ipc','pipe','pipe']
   });
 
+  var randomIntInc = function(low, high) {
+    return Math.floor(Math.random() * (high - low + 1) + low) + "";
+  }
+
+  var ipToPortList = [];
+  var portToIpList = [];
+
   // Create a worker for each CPU
-  for (var i = 1; i <= 2; i += 1) {
+  for (var i = 1; i <= 1; i += 1) {
 
     //console.log(process.cwd());
 
@@ -43,19 +50,43 @@ if(cluster.isMaster){
         dir = './Client_cache'+dir;
         process.chdir(dir);
 
-        workers[num] = cluster.fork();
-        status_server.set((port_worker + num) + "", 0);
+        var randomPort;
 
-        workers[num].send(port_worker+num);
+        while(1){
+          randomPort = randomIntInc(3000,30000);
+          if(!(randomPort in portToIpList)){
+            portToIpList[randomPort] = "0";
+          //  console.log(portToIpList[randomPort]);
+            break;
+          }
+        }
 
-        console.log("PROCESS ID : " +  workers[num].process.pid);
+
+        workers[randomPort] = cluster.fork();
+        //status_server.set((randomPort) + "", 0);
+
+        workers[randomPort].send("Port>" + randomPort);
+
+
+        workers[randomPort].on("message", function(port) {
+          //console.log(portToIpList[port]);
+          //console.log(ipToPortList[portToIpList[port]]);
+          delete ipToPortList[portToIpList[port]];
+          delete portToIpList[port];
+          //console.log(ipToPortList[portToIpList[port]]);
+          //console.log(portToIpList[port]);
+        });
+
+        console.log("PROCESS ID : " +  workers[randomPort].process.pid);
 
         process.chdir('../');
 
       });
+
+
+
     }, 1300 * i)
 
-    
 
     // workers[i] = cluster.fork();
     // status_server.set((port_worker + i) + "", 0);
@@ -65,32 +96,126 @@ if(cluster.isMaster){
     // console.log("PROCESS ID : " +  workers[i].process.pid);
   }
 
-  app.get('/',function(req,res){
-    var array_key = status_server.keys();
+  cluster.on('exit', function(worker, code, signal) {
+      console.log("------------------------------------------------");
+      console.log("Worker dead");
+      console.log("Create new worker");
 
-    var isBusy  = false;
+      // Create new Server
+      var spawn = require('child_process').spawn,
+        ls    = spawn('../phrapp-0.30/PHR_client_multi_start.sh',{
+        stdio:['ipc','pipe','pipe']
+      });
+
+      ls.stdout.on('data', function (data) {
+        var dir = data + "";
+        dir = dir.replace(/\s+/, "") ;
+        var num = 0;
+        num = parseInt(dir);
+
+        dir = './Client_cache'+dir;
+        process.chdir(dir);
+
+        var randomPort;
+
+        while(1){
+          randomPort = randomIntInc(3000,30000);
+          if(!(randomPort in portToIpList)){
+            portToIpList[randomPort] = "0";
+          //  console.log(portToIpList[randomPort]);
+            break;
+          }
+        }
+
+        workers[randomPort] = cluster.fork();
+        //status_server.set((randomPort) + "", 0);
+
+        workers[randomPort].send("Port>" + randomPort);
+
+
+        workers[randomPort].on("message", function(port) {
+          //console.log(portToIpList[port]);
+          //console.log(ipToPortList[portToIpList[port]]);
+          delete ipToPortList[portToIpList[port]];
+          delete portToIpList[port];
+          //console.log(ipToPortList[portToIpList[port]]);
+          //console.log(portToIpList[port]);
+        });
+
+        console.log("PROCESS ID : " +  workers[randomPort].process.pid);
+
+        process.chdir('../');
+
+      });
+    console.log("------------------------------------------------");
+  });
+
+  app.get('/',function(req,res){
+  //  res.send(req.ip);
+    console.log("------------------------------------------------");
+    console.log(req.ip);
+
+    var array_key = Object.keys(portToIpList);
+
+    var isBusy = true;
+
+    //console.log(array_key);
 
     for(var i in array_key){
-      //console.log("i = " + i);
-      //console.log("port : " + array_key[i]);
-      if(status_server.get(array_key[i]) == 0){
-        //console.log("FREE : " + array_key[i]);
-        status_server.set(array_key[i],1);
-        //console.log("VALUE : " + status_server.get(array_key[i]));
-        //console.log(host+ array_key[i]);
-        res.redirect(host+ array_key[i]);
+      var key = array_key[i];
+      console.log("KEY : " + key);
+      var inIpList = req.ip in ipToPortList;
+      //console.log(inIpList);
+      if(portToIpList[key] == "0" && !inIpList){
+        portToIpList[key] = req.ip;
+        ipToPortList[req.ip] = key;
+        workers[key].send("IP>" + req.ip);
+        console.log("ADD To List");
         isBusy = false;
+        res.redirect(host+ key);
         break;
       }
-      else{
-        isBusy = true;
+      else if(inIpList){
+        var port_redirect = ipToPortList[req.ip];
+        res.redirect(host+ port_redirect);
+        isBusy = false;
+        break;
+        console.log("NOT ADD");
       }
     }
-    if(isBusy){
-      console.log("Busy Server");
-      res.send("SERVER BUSY");
-    }
+
+    if(isBusy)
+      res.send("Server is busy please wait and try again.");
+
+    console.log("------------------------------------------------");
   });
+
+  // app.get('/',function(req,res){
+  //   var array_key = status_server.keys();
+
+  //   var isBusy  = false;
+
+  //   for(var i in array_key){
+  //     //console.log("i = " + i);
+  //     //console.log("port : " + array_key[i]);
+  //     if(status_server.get(array_key[i]) == 0){
+  //       //console.log("FREE : " + array_key[i]);
+  //       status_server.set(array_key[i],1);
+  //       //console.log("VALUE : " + status_server.get(array_key[i]));
+  //       //console.log(host+ array_key[i]);
+  //       res.redirect(host+ array_key[i]);
+  //       isBusy = false;
+  //       break;
+  //     }
+  //     else{
+  //       isBusy = true;
+  //     }
+  //   }
+  //   if(isBusy){
+  //     console.log("Busy Server");
+  //     res.send("SERVER BUSY");
+  //   }
+  // });
 
   app.listen(80);
 
@@ -269,7 +394,13 @@ else
 
   // route to test if the user is logged in or not
   app.get('/api/loggedin', function(req, res) {
-    res.send(req.isAuthenticated() ? req.user : '0');
+    console.log("CHECK IP : " + ip + " Compare " + req.ip);
+    if(ip != req.ip){
+      res.send("-1");
+    }
+    else {
+      res.send(req.isAuthenticated() ? req.user : '0');
+    }
   });
 
   // USE TO LOGIN 
@@ -2011,7 +2142,21 @@ else
 
   });
 
+  app.get('/api/exitworker', function (req, res) {
 
+    console.log("------------------------------------------------");
+    res.send(true);
+
+    console.log("Send message to master");
+     process.send(port);
+
+    setTimeout(function() {
+      console.log("EXIT WORKER");
+      process.exit(0);
+    }, 1000);
+
+    console.log("------------------------------------------------");
+  });
 
   //----------------------------------------------------------------------
 
@@ -2023,13 +2168,27 @@ else
   });
   */
 
+
+
   var port ;
+  var ip = "0";
 
   process.on('message', function(msg) {
-    port = msg;
-    server.listen(port);
-    console.log("Started port : " + port);
-    rmDir('Upload/temp');
+    var str = msg.split(">");
+    console.log("------------------------------------------------");
+    console.log("message form master : " + msg);
+    //console.log("STR[0]" + str[0]);
+    if(str[0] == "Port"){
+      port = str[1];
+      server.listen(port);
+      console.log("Started port : " + port);
+      rmDir('Upload/temp');
+    }
+    else if(str[0] == "IP"){
+      ip = str[1];
+      console.log("IP : " + ip);
+    }
+    console.log("------------------------------------------------");
   });
 
 
