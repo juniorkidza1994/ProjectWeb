@@ -9,6 +9,24 @@ if(cluster.isMaster){
   var app = express();
   var HashMap = require('hashmap');
 
+  var fs = require('fs');
+
+  var privatekey = fs.readFileSync('webphr-key.pem');
+  var certificate = fs.readFileSync('webphr-cert.pem');
+
+  var options = {
+    key: privatekey,
+    cert: certificate
+  };
+
+  var all_time = 0;
+
+  var express = require('express');
+
+  var https = require('https');
+
+  var server = https.createServer (options, app);
+
   var list_server = new HashMap();
   var status_server = new HashMap();
 
@@ -31,7 +49,7 @@ if(cluster.isMaster){
   var portToIpList = [];
 
   // Create a worker for each CPU
-  for (var i = 1; i <= 1; i += 1) {
+  for (var i = 1; i <= 2; i += 1) {
 
     //console.log(process.cwd());
 
@@ -68,11 +86,23 @@ if(cluster.isMaster){
         workers[randomPort].send("Port>" + randomPort);
 
 
-        workers[randomPort].on("message", function(port) {
+        workers[randomPort].on("message", function(msg) {
           //console.log(portToIpList[port]);
           //console.log(ipToPortList[portToIpList[port]]);
-          delete ipToPortList[portToIpList[port]];
-          delete portToIpList[port];
+          var str = msg.split(":");
+
+          console.log("MSG : " + msg);
+
+          if(str[0] == "Time"){
+            all_time += parseInt(str[1]);
+            console.log("All Time : " + all_time);
+          }
+          else if(str[0] == "Port"){
+            var port = parseInt(str[1]);
+            console.log("PORT DELETE : " + port);
+            delete ipToPortList[portToIpList[port]];
+            delete portToIpList[port];
+          }
           //console.log(ipToPortList[portToIpList[port]]);
           //console.log(portToIpList[port]);
         });
@@ -133,11 +163,24 @@ if(cluster.isMaster){
         workers[randomPort].send("Port>" + randomPort);
 
 
-        workers[randomPort].on("message", function(port) {
+        workers[randomPort].on("message", function(msg) {
           //console.log(portToIpList[port]);
           //console.log(ipToPortList[portToIpList[port]]);
-          delete ipToPortList[portToIpList[port]];
-          delete portToIpList[port];
+          var str = msg.split(":");
+
+          console.log("MSG : " + msg);
+
+          if(str[0] == "Time"){
+            all_time += parseInt(str[1]);
+            console.log("All Time : " + all_time);
+          }
+          else if(str[0] == "Port"){
+            var port = parseInt(str[1]);
+            console.log("PORT DELETE : " + port);
+            delete ipToPortList[portToIpList[port]];
+            delete portToIpList[port];
+          }
+
           //console.log(ipToPortList[portToIpList[port]]);
           //console.log(portToIpList[port]);
         });
@@ -166,6 +209,18 @@ if(cluster.isMaster){
       console.log("KEY : " + key);
       var inIpList = req.ip in ipToPortList;
       //console.log(inIpList);
+
+      // Test
+      // if(portToIpList[key] == "0"){
+      //   portToIpList[key] = req.ip;
+      //   ipToPortList[req.ip] = key;
+      //   workers[key].send("IP>" + req.ip);
+      //   console.log("ADD To List");
+      //   isBusy = false;
+      //   res.redirect(host+ key);
+      //   break;
+      // }
+      
       if(portToIpList[key] == "0" && !inIpList){
         portToIpList[key] = req.ip;
         ipToPortList[req.ip] = key;
@@ -190,34 +245,7 @@ if(cluster.isMaster){
     console.log("------------------------------------------------");
   });
 
-  // app.get('/',function(req,res){
-  //   var array_key = status_server.keys();
-
-  //   var isBusy  = false;
-
-  //   for(var i in array_key){
-  //     //console.log("i = " + i);
-  //     //console.log("port : " + array_key[i]);
-  //     if(status_server.get(array_key[i]) == 0){
-  //       //console.log("FREE : " + array_key[i]);
-  //       status_server.set(array_key[i],1);
-  //       //console.log("VALUE : " + status_server.get(array_key[i]));
-  //       //console.log(host+ array_key[i]);
-  //       res.redirect(host+ array_key[i]);
-  //       isBusy = false;
-  //       break;
-  //     }
-  //     else{
-  //       isBusy = true;
-  //     }
-  //   }
-  //   if(isBusy){
-  //     console.log("Busy Server");
-  //     res.send("SERVER BUSY");
-  //   }
-  // });
-
-  app.listen(80);
+  server.listen(443);
 
 }
 else
@@ -235,6 +263,8 @@ else
 
   // USE TO OPEN FILES
   var fs = require('fs');
+
+  var url_web = "https://192.168.174.138";
 
   var privatekey = fs.readFileSync('../webphr-key.pem');
   var certificate = fs.readFileSync('../webphr-cert.pem');
@@ -445,16 +475,22 @@ else
   });
 
   app.get('/api/logout', function(req, res){
-    m_main_class[req.user.name].closeProgramSync();
-    req.logout();
-    res.redirect('/');
+
+      res.send(true);
+
+      process.send("Port:"+port);
+
+      setTimeout(function(){
+        m_main_class[req.user.name].closeProgramSync();
+      },1000);
+      
   });
 
   passport.use(new LocalStrategy(
     { passReqToCallback: true},
     function(req, username, password, done) {
       console.log("--------------- LOGIN ------------------")
-      console.log(username);
+      console.log(username); 
       console.log(password);
       console.log(req.body.type);
      // console.log("DONE : " + done);
@@ -464,6 +500,8 @@ else
   //    console.log(bool);
 
       if (bool){ // stupid example
+
+        process.send("Time:"+bool);
 
   /*      console.log("OLD MAIN CLASS : " + m_main_class);*/
 
@@ -2148,7 +2186,7 @@ else
     res.send(true);
 
     console.log("Send message to master");
-     process.send(port);
+     process.send("Port: " + port);
 
     setTimeout(function() {
       console.log("EXIT WORKER");

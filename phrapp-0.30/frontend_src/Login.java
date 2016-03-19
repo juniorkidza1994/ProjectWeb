@@ -169,6 +169,106 @@ public class Login extends JFrame  implements ConstantVars
 				return result;
 	}
 
+	// TEST TIME
+	// public int login(String user_auth_ip_addr, String username, String passwd, String user_type)
+	// {
+	// 			int result = 0;
+
+	// 			System.out.println("USER IP : " + user_auth_ip_addr);
+	// 			System.out.println("username : " + username);
+	// 			System.out.println("passwd : " + passwd);
+	// 			System.out.println("user_type : " + user_type);
+
+
+	// 			// Validate User Authority's IP address, username and password
+	// 			if(!validate_inputs(user_auth_ip_addr, username, passwd))
+	// 			{
+	// 				return result;
+	// 			}
+
+	// 			// Check for existence of a user authority's public key if it does not exist then load it
+	// 			if(!load_user_authority_pub_key_main(user_auth_ip_addr))  // Call to backend (C function)
+	// 			{
+	// 				System.out.println("SAD");
+	// 				return result;
+	// 			}
+
+	// 			if(user_type.equals(login_as_user))
+	// 			{  
+	// 				// Call to backend (C function)
+	// 				if(user_login_main(user_auth_ip_addr, username, passwd))
+	// 				{
+
+	// 					System.out.println("LOGIN SUCCESSFULL !!!!!");
+	// 					m_result_msg = "LOGIN SUCCESSFULL !!!!!";
+
+	// 					System.out.println("Create User Class !!!!!");
+
+	// 					long startTime = System.currentTimeMillis();
+							
+	// 					// Call UserMain object
+	// 					UserMain user_main = new UserMain(username, passwd, email_address, authority_name, user_auth_ip_addr, 
+	// 						audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr, ssl_cert_hash, cpabe_priv_key_hash);
+
+	// 			//		user_main.setVisible(true);
+						
+	// 					main_class = user_main;
+						
+	// 					long stopTime = System.currentTimeMillis();
+
+	// 					long elapsedTime = stopTime - startTime;
+
+	// 					result = (int)elapsedTime;
+
+	// 					System.out.println("TIME LOGIN : " + elapsedTime);
+	// 				}
+	// 				else
+	// 				{
+	// 					main_class = null;
+	// 					result = 0;
+	// 					System.out.println("Can't login User");
+	// 				}
+	// 			}
+	// 			else if(user_type.equals(login_as_admin))
+	// 			{  
+	// 				// Call to backend (C function)
+	// 				if(admin_login_main(user_auth_ip_addr, username, passwd))
+	// 				{
+
+	// 					System.out.println("LOGIN SUCCESSFULL !!!!!");
+	// 					m_result_msg = "LOGIN SUCCESSFULL !!!!!";
+
+	// 					System.out.println("Create Admin Class !!!!!");
+						
+	// 					long startTime = System.currentTimeMillis();
+
+	// 					// Call AdminMain object
+	// 					AdminMain admin_main = new AdminMain(username, passwd, email_address, authority_name, user_auth_ip_addr, 
+	// 						audit_server_ip_addr, phr_server_ip_addr, emergency_server_ip_addr, mail_server_url, 
+	// 						authority_email_address, authority_email_passwd, ssl_cert_hash);
+						
+	// 					long stopTime = System.currentTimeMillis();
+						
+	// 					long elapsedTime = stopTime - startTime;
+
+	// 					System.out.println("TIME LOGIN : " + elapsedTime);
+						
+	// 					main_class = admin_main;
+						
+	// 					result = (int)elapsedTime;
+	// 				}
+	// 				else
+	// 				{
+	// 					main_class = null;
+	// 					System.out.println("Can't login Admin");
+	// 					result = 0;
+	// 	//				user_auth_ip_addr_textfield.requestFocus();
+	// 				}
+	// 			}
+
+	// 			return result;
+	// }
+
 	public Object getMainClass(){
 		return main_class;
 	}

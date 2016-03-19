@@ -11,6 +11,8 @@
 
     var timer = null;
 
+    var url_web = "https://192.168.174.138";
+
     var phrApp = angular.module('phrApp', ['ngResource', 'ngRoute', 'ngFileUpload', 'ui.tree', 'ngAnimate', 'ui.bootstrap', 'treeGrid'])
 
   .config(function($routeProvider, $locationProvider, $httpProvider) {
@@ -53,7 +55,7 @@
         if(user === "-1"){
           console.log("IP don't equals");
           deferred.reject();
-          $window.location.href = "http://192.168.174.138";
+          $window.location.href = url_web;
         }
         else if (user !== '0'){
           /*$timeout(deferred.resolve, 0);*/
@@ -65,7 +67,7 @@
               $location.url('/timeout');
               console.log("EXIT WORKER : " + res);
             })
-          }, 20000);
+          }, 200000); // 200 sec
 
           if($location.path() != '/'){
             deferred.resolve();
@@ -98,8 +100,8 @@
             .success(function(res){
               $location.url('/timeout');
               console.log("EXIT WORKER : " + res);
-            })
-          }, 10000);
+            }) 
+          }, 600000); // 100 sec
         //  $timeout(function(){deferred.reject();}, 0);
           deferred.resolve();
         }
@@ -392,6 +394,11 @@
         controller  : 'timeoutController'
       })
 
+      .when('/logout',{
+        templateUrl : 'logout.html',
+        controller  : 'logoutController'
+      })
+
 
       .otherwise({
         redirectTo: '/error'
@@ -431,17 +438,11 @@
       });
 
       $scope.logout = function(){
+
         $http.get('/api/logout').success(function(user){
-          console.log(user.type);
-          // Authenticated
-          if (user !== '0'){
-            $scope.isLoggin = true;
-            $scope.usertype = user.type;
-          //  console.log($scope.usertype);
-          }
-          // Not Authenticated
-          else
-            $scope.isLoggin = false;
+
+          $location.path("/logout");
+
         });
       }
     });
@@ -2991,6 +2992,11 @@
 
     phrApp.controller('timeoutController', function($scope) {
         $scope.message = "Timeout Please try again later";
+        console.log("TESTTTT ");
+    });
+
+    phrApp.controller('logoutController', function($scope) {
+        $scope.message = "Logout Success !!";
         console.log("TESTTTT ");
     });
 
